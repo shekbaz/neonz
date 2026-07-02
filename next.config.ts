@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
+    // Nécessaire pour les visuels de démo locaux (public/demo/*.svg) — sûr ici
+    // car ce sont des fichiers statiques que nous contrôlons, pas des uploads.
+    dangerouslyAllowSVG: true,
   },
 };
 
