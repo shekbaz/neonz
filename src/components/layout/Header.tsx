@@ -28,22 +28,22 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Zap className="h-4 w-4" fill="currentColor" />
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Zap className="h-3.5 w-3.5" fill="currentColor" />
           </span>
-          <span className="text-lg font-bold tracking-tight">NEONZ</span>
+          <span className="text-base font-semibold tracking-tight">NEONZ</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+                "text-sm text-muted-foreground transition-colors hover:text-foreground",
                 pathname === link.href && "text-foreground"
               )}
             >
@@ -52,24 +52,22 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <LangSwitcher />
           <ThemeToggle />
 
-          <Link href="/panier" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted/50 hover:bg-muted">
+          <Link href="/panier" className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground">
             <ShoppingCart className="h-4 w-4" />
             {cartCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {cartCount}
-              </span>
+              <span className="absolute right-1 top-1 flex h-2 w-2 items-center justify-center rounded-full bg-primary" />
             )}
           </Link>
 
           {session?.user ? (
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-1 md:flex">
               {session.user.role === "admin" && (
                 <Link href="/admin">
-                  <Button variant="secondary" size="sm">{t("admin")}</Button>
+                  <Button variant="ghost" size="sm">{t("admin")}</Button>
                 </Link>
               )}
               <Link href="/compte">
@@ -78,8 +76,8 @@ export function Header() {
               <Button variant="ghost" size="sm" onClick={() => signOut()}>{t("logout")}</Button>
             </div>
           ) : (
-            <Link href="/connexion" className="hidden md:block">
-              <Button size="sm">{t("login")}</Button>
+            <Link href="/connexion" className="ms-1 hidden md:block">
+              <Button size="sm" className="rounded-full px-4">{t("login")}</Button>
             </Link>
           )}
 

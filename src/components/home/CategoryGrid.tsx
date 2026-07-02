@@ -15,22 +15,22 @@ export function CategoryGrid({ categories, locale }: { categories: CategoryDoc[]
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+    <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-6">
       {categories.map((cat) => (
         <Link
           key={cat._id}
           href={{ pathname: "/catalogue", query: { category: cat.slug } }}
-          className="group relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-2xl border border-border bg-muted/50 p-4 text-center transition-all hover:border-primary/50 hover:bg-muted"
+          className="group relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-2xl bg-muted text-center transition-transform duration-500 hover:scale-[1.02]"
         >
           {cat.image && (
             <Image
               src={cat.image}
               alt={cat.translations[locale]?.name ?? cat.slug}
               fill
-              className="object-cover opacity-30 transition-opacity group-hover:opacity-50"
+              className="object-cover opacity-40 transition-opacity duration-500 group-hover:opacity-60"
             />
           )}
-          <span className="relative z-10 text-sm font-semibold">
+          <span className="relative z-10 text-sm font-medium">
             {cat.translations[locale]?.name ?? cat.slug}
           </span>
         </Link>
