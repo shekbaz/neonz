@@ -1,0 +1,139 @@
+{
+  "Nav": {
+    "home": "الرئيسية",
+    "catalog": "الكتالوج",
+    "customize": "تخصيص",
+    "cart": "السلة",
+    "account": "حسابي",
+    "contact": "اتصل بنا",
+    "faq": "الأسئلة الشائعة",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "admin": "الإدارة"
+  },
+  "Home": {
+    "heroTitle": "أضئ مساحتك بلافتة نيون فريدة",
+    "heroSubtitle": "لافتات LED جاهزة للشراء أو مصممة بالكامل حسب شعارك أو نصك.",
+    "heroCtaCatalog": "تصفح الكتالوج",
+    "heroCtaCustomize": "أنشئ لافتتي",
+    "categoriesTitle": "تصنيفاتنا",
+    "popularTitle": "المنتجات الأكثر رواجًا",
+    "reviewsTitle": "آراء عملائنا"
+  },
+  "Catalog": {
+    "title": "كتالوج لافتات النيون",
+    "filters": "التصفية",
+    "priceLabel": "السعر",
+    "colorLabel": "اللون",
+    "categoryLabel": "التصنيف",
+    "resetFilters": "إعادة تعيين",
+    "addToCart": "أضف إلى السلة",
+    "noResults": "لا توجد منتجات مطابقة لبحثك."
+  },
+  "Product": {
+    "addToCart": "أضف إلى السلة",
+    "description": "الوصف",
+    "dimensions": "الأبعاد",
+    "colors": "الألوان المتوفرة",
+    "stock": "المخزون",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر"
+  },
+  "Configurator": {
+    "title": "خصص لافتة النيون الخاصة بك",
+    "steps": {
+      "content": "المحتوى",
+      "trace": "الخطوط",
+      "colors": "الألوان",
+      "dimensions": "الأبعاد",
+      "summary": "الملخص"
+    },
+    "step1": {
+      "title": "اختر المحتوى الخاص بك",
+      "uploadTab": "رفع صورة",
+      "textTab": "إدخال نص",
+      "uploadHint": "الصيغ المقبولة: PNG، JPG، SVG، WebP",
+      "textLabel": "نصك",
+      "textPlaceholder": "مثال: عند مارco",
+      "fontLabel": "خط النيون"
+    },
+    "step2": {
+      "title": "التحقق من الخطوط",
+      "processing": "جاري المعالجة...",
+      "collisionWarningTitle": "تم اكتشاف مناطق تداخل",
+      "collisionWarningDesc": "بعض الخطوط متقاربة جدًا (أقل من 1 سم) ولا يمكن تصنيعها كأنبوب نيون.",
+      "suggestionsTitle": "اقتراحات التعديل",
+      "applyAutoFix": "تطبيق التصحيح التلقائي",
+      "noCollision": "لم يتم اكتشاف أي تداخل، رسمك جاهز!"
+    },
+    "step3": {
+      "title": "اختر ألوانك",
+      "selectPathHint": "انقر على خط في المعاينة لتعيين لون له",
+      "dayPreview": "معاينة نهارية",
+      "nightPreview": "معاينة ليلية"
+    },
+    "step4": {
+      "title": "أبعاد اللافتة",
+      "widthLabel": "العرض (سم)",
+      "heightLabel": "الارتفاع (سم)",
+      "maxSizeWarning": "الأبعاد القصوى: 90 سم × 90 سم",
+      "recalculating": "جاري إعادة حساب الخطوط..."
+    },
+    "step5": {
+      "title": "ملخص إبداعك",
+      "supportLabel": "القاعدة",
+      "supportAcrylicTransparent": "أكريليك شفاف",
+      "supportAcrylicBlack": "أكريليك أسود",
+      "supportSilhouette": "قص حسب الشكل",
+      "remoteLabel": "إضافة جهاز تحكم عن بعد / معتم",
+      "totalPrice": "السعر الإجمالي",
+      "addToCart": "أضف إلى السلة"
+    },
+    "next": "التالي",
+    "back": "رجوع",
+    "cannotProceedCollision": "يرجى حل التداخلات قبل المتابعة."
+  },
+  "Cart": {
+    "title": "سلتك",
+    "empty": "سلتك فارغة",
+    "quantity": "الكمية",
+    "remove": "إزالة",
+    "subtotal": "المجموع الفرعي",
+    "checkout": "إتمام الشراء"
+  },
+  "Checkout": {
+    "title": "إتمام الطلب",
+    "shippingAddress": "عنوان التوصيل",
+    "paymentMethod": "طريقة الدفع",
+    "placeOrder": "تأكيد الطلب"
+  },
+  "Auth": {
+    "loginTitle": "تسجيل الدخول",
+    "registerTitle": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "name": "الاسم الكامل",
+    "submit": "تأكيد",
+    "noAccount": "ليس لديك حساب؟",
+    "haveAccount": "لديك حساب بالفعل؟"
+  },
+  "Admin": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "orders": "الطلبات",
+    "customers": "العملاء",
+    "reviews": "التقييمات",
+    "stats": "الإحصائيات",
+    "revenue": "رقم الأعمال",
+    "newOrder": "تم استلام طلب جديد"
+  },
+  "Common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "next": "التالي",
+    "back": "رجوع",
+    "loading": "جارٍ التحميل...",
+    "currency": "دج",
+    "search": "بحث"
+  }
+}

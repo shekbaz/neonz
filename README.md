@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NEONZ
 
-## Getting Started
+Application de vente et personnalisation d'enseignes lumineuses néon LED — Next.js 16 (App Router), TypeScript, Tailwind CSS, MongoDB/Mongoose.
 
-First, run the development server:
+## Démarrage
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copier `.env.example` vers `.env.local` et renseigner au minimum `MONGODB_URI` et `NEXTAUTH_SECRET`.
+2. Installer les dépendances :
+   ```bash
+   npm install
+   ```
+3. (Optionnel) Peupler la base avec des catégories/produits de démonstration et un compte admin (`admin@neonz.dz` / `Admin1234!`) :
+   ```bash
+   npm run seed
+   ```
+4. Lancer le serveur de développement :
+   ```bash
+   npm run dev
+   ```
+5. Ouvrir [http://localhost:3000](http://localhost:3000) (redirige vers `/fr`).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/lib/neon/` — moteur du configurateur : vectorisation (Potrace), texte→tracés (opentype.js), détection de collision, conversion px↔cm, pricing.
+- `src/models/` — schémas Mongoose (`User`, `Product`, `Category`, `Order`, `CustomDesign`, `Review`).
+- `src/app/api/` — routes REST (`/products`, `/orders`, `/customize/*`, `/checkout`, `/admin/*`).
+- `src/app/[locale]/` — pages publiques + `/admin` (protégé par middleware, rôle `admin` requis).
+- `src/components/configurator/` — wizard de personnalisation en 5 étapes.
+- `src/messages/{fr,en,ar}.json` — traductions (l'arabe est servi en RTL automatiquement).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+- `npm run dev` — serveur de développement
+- `npm run build` — build de production
+- `npm run lint` — ESLint
+- `npm run seed` — peuple la base de données MongoDB avec des données de démonstration
 
-To learn more about Next.js, take a look at the following resources:
+## Variables d'environnement requises
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Voir `.env.example`. Cloudinary et Stripe sont nécessaires respectivement pour l'upload d'images et le paiement en ligne ; sans eux, ces fonctionnalités précises échoueront proprement mais le reste de l'app fonctionne.

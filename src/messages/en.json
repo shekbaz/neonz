@@ -1,0 +1,139 @@
+{
+  "Nav": {
+    "home": "Home",
+    "catalog": "Catalog",
+    "customize": "Customize",
+    "cart": "Cart",
+    "account": "My account",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "login": "Log in",
+    "logout": "Log out",
+    "admin": "Administration"
+  },
+  "Home": {
+    "heroTitle": "Light up your space with a unique neon sign",
+    "heroSubtitle": "Ready-to-buy LED signs or fully custom designs from your logo or text.",
+    "heroCtaCatalog": "Browse the catalog",
+    "heroCtaCustomize": "Create my neon",
+    "categoriesTitle": "Our categories",
+    "popularTitle": "Popular products",
+    "reviewsTitle": "What our customers say"
+  },
+  "Catalog": {
+    "title": "Neon sign catalog",
+    "filters": "Filters",
+    "priceLabel": "Price",
+    "colorLabel": "Color",
+    "categoryLabel": "Category",
+    "resetFilters": "Reset",
+    "addToCart": "Add to cart",
+    "noResults": "No products match your search."
+  },
+  "Product": {
+    "addToCart": "Add to cart",
+    "description": "Description",
+    "dimensions": "Dimensions",
+    "colors": "Available colors",
+    "stock": "Stock",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock"
+  },
+  "Configurator": {
+    "title": "Customize your neon sign",
+    "steps": {
+      "content": "Content",
+      "trace": "Traces",
+      "colors": "Colors",
+      "dimensions": "Dimensions",
+      "summary": "Summary"
+    },
+    "step1": {
+      "title": "Choose your content",
+      "uploadTab": "Upload an image",
+      "textTab": "Enter text",
+      "uploadHint": "Accepted formats: PNG, JPG, SVG, WebP",
+      "textLabel": "Your text",
+      "textPlaceholder": "E.g: Chez Marco",
+      "fontLabel": "Neon font"
+    },
+    "step2": {
+      "title": "Trace verification",
+      "processing": "Processing...",
+      "collisionWarningTitle": "Collision zones detected",
+      "collisionWarningDesc": "Some traces are too close together (less than 1cm) and cannot be manufactured as neon tube.",
+      "suggestionsTitle": "Adjustment suggestions",
+      "applyAutoFix": "Apply automatic fix",
+      "noCollision": "No collision detected, your trace is ready!"
+    },
+    "step3": {
+      "title": "Choose your colors",
+      "selectPathHint": "Click a trace in the preview to assign it a color",
+      "dayPreview": "Day preview",
+      "nightPreview": "Night preview"
+    },
+    "step4": {
+      "title": "Sign dimensions",
+      "widthLabel": "Width (cm)",
+      "heightLabel": "Height (cm)",
+      "maxSizeWarning": "Maximum dimensions: 90cm x 90cm",
+      "recalculating": "Recalculating traces..."
+    },
+    "step5": {
+      "title": "Summary of your creation",
+      "supportLabel": "Backing",
+      "supportAcrylicTransparent": "Transparent acrylic",
+      "supportAcrylicBlack": "Black acrylic",
+      "supportSilhouette": "Silhouette cut",
+      "remoteLabel": "Add a remote / dimmer",
+      "totalPrice": "Total price",
+      "addToCart": "Add to cart"
+    },
+    "next": "Next",
+    "back": "Back",
+    "cannotProceedCollision": "Resolve collisions before continuing."
+  },
+  "Cart": {
+    "title": "Your cart",
+    "empty": "Your cart is empty",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout"
+  },
+  "Checkout": {
+    "title": "Complete your order",
+    "shippingAddress": "Shipping address",
+    "paymentMethod": "Payment method",
+    "placeOrder": "Place order"
+  },
+  "Auth": {
+    "loginTitle": "Log in",
+    "registerTitle": "Create an account",
+    "email": "Email address",
+    "password": "Password",
+    "name": "Full name",
+    "submit": "Submit",
+    "noAccount": "No account yet?",
+    "haveAccount": "Already registered?"
+  },
+  "Admin": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "customers": "Customers",
+    "reviews": "Reviews",
+    "stats": "Statistics",
+    "revenue": "Revenue",
+    "newOrder": "New order received"
+  },
+  "Common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back",
+    "loading": "Loading...",
+    "currency": "DZD",
+    "search": "Search"
+  }
+}

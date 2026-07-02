@@ -1,0 +1,139 @@
+{
+  "Nav": {
+    "home": "Accueil",
+    "catalog": "Catalogue",
+    "customize": "Personnaliser",
+    "cart": "Panier",
+    "account": "Mon compte",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "admin": "Administration"
+  },
+  "Home": {
+    "heroTitle": "Illuminez votre espace avec un néon unique",
+    "heroSubtitle": "Enseignes LED prêtes à l'achat ou entièrement personnalisées à partir de votre logo ou texte.",
+    "heroCtaCatalog": "Voir le catalogue",
+    "heroCtaCustomize": "Créer mon néon",
+    "categoriesTitle": "Nos catégories",
+    "popularTitle": "Produits populaires",
+    "reviewsTitle": "Ce que disent nos clients"
+  },
+  "Catalog": {
+    "title": "Catalogue des enseignes néon",
+    "filters": "Filtres",
+    "priceLabel": "Prix",
+    "colorLabel": "Couleur",
+    "categoryLabel": "Catégorie",
+    "resetFilters": "Réinitialiser",
+    "addToCart": "Ajouter au panier",
+    "noResults": "Aucun produit ne correspond à votre recherche."
+  },
+  "Product": {
+    "addToCart": "Ajouter au panier",
+    "description": "Description",
+    "dimensions": "Dimensions",
+    "colors": "Couleurs disponibles",
+    "stock": "Stock",
+    "inStock": "En stock",
+    "outOfStock": "Rupture de stock"
+  },
+  "Configurator": {
+    "title": "Personnalisez votre enseigne néon",
+    "steps": {
+      "content": "Contenu",
+      "trace": "Tracés",
+      "colors": "Couleurs",
+      "dimensions": "Dimensions",
+      "summary": "Récapitulatif"
+    },
+    "step1": {
+      "title": "Choisissez votre contenu",
+      "uploadTab": "Uploader une image",
+      "textTab": "Saisir un texte",
+      "uploadHint": "Formats acceptés : PNG, JPG, SVG, WebP",
+      "textLabel": "Votre texte",
+      "textPlaceholder": "Ex: Chez Marco",
+      "fontLabel": "Police néon"
+    },
+    "step2": {
+      "title": "Vérification des tracés",
+      "processing": "Traitement en cours...",
+      "collisionWarningTitle": "Zones de collision détectées",
+      "collisionWarningDesc": "Certains tracés sont trop proches (moins de 1cm) et ne peuvent pas être fabriqués en tube néon.",
+      "suggestionsTitle": "Suggestions d'ajustement",
+      "applyAutoFix": "Appliquer la correction automatique",
+      "noCollision": "Aucune collision détectée, votre tracé est prêt !"
+    },
+    "step3": {
+      "title": "Choisissez vos couleurs",
+      "selectPathHint": "Cliquez sur un tracé dans l'aperçu pour lui assigner une couleur",
+      "dayPreview": "Aperçu jour",
+      "nightPreview": "Aperçu nuit"
+    },
+    "step4": {
+      "title": "Dimensions de l'enseigne",
+      "widthLabel": "Largeur (cm)",
+      "heightLabel": "Hauteur (cm)",
+      "maxSizeWarning": "Dimensions maximales : 90cm x 90cm",
+      "recalculating": "Recalcul des tracés en cours..."
+    },
+    "step5": {
+      "title": "Récapitulatif de votre création",
+      "supportLabel": "Support",
+      "supportAcrylicTransparent": "Acrylique transparent",
+      "supportAcrylicBlack": "Acrylique noir",
+      "supportSilhouette": "Découpe silhouette",
+      "remoteLabel": "Ajouter une télécommande / variateur",
+      "totalPrice": "Prix total",
+      "addToCart": "Ajouter au panier"
+    },
+    "next": "Suivant",
+    "back": "Retour",
+    "cannotProceedCollision": "Résolvez les collisions avant de continuer."
+  },
+  "Cart": {
+    "title": "Votre panier",
+    "empty": "Votre panier est vide",
+    "quantity": "Quantité",
+    "remove": "Retirer",
+    "subtotal": "Sous-total",
+    "checkout": "Passer commande"
+  },
+  "Checkout": {
+    "title": "Finaliser la commande",
+    "shippingAddress": "Adresse de livraison",
+    "paymentMethod": "Moyen de paiement",
+    "placeOrder": "Confirmer la commande"
+  },
+  "Auth": {
+    "loginTitle": "Connexion",
+    "registerTitle": "Créer un compte",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "name": "Nom complet",
+    "submit": "Valider",
+    "noAccount": "Pas encore de compte ?",
+    "haveAccount": "Déjà inscrit ?"
+  },
+  "Admin": {
+    "dashboard": "Tableau de bord",
+    "products": "Produits",
+    "orders": "Commandes",
+    "customers": "Clients",
+    "reviews": "Avis",
+    "stats": "Statistiques",
+    "revenue": "Chiffre d'affaires",
+    "newOrder": "Nouvelle commande reçue"
+  },
+  "Common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "next": "Suivant",
+    "back": "Retour",
+    "loading": "Chargement...",
+    "currency": "DZD",
+    "search": "Rechercher"
+  }
+}
