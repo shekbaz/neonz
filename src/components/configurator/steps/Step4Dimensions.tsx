@@ -94,7 +94,7 @@ export function Step4Dimensions() {
       <p className="text-xs text-muted-foreground">{t("maxSizeWarning")}</p>
 
       {recalculating ? (
-        <div className="flex h-64 items-center justify-center gap-3 rounded-2xl border border-white/10 text-muted-foreground">
+        <div className="flex h-64 items-center justify-center gap-3 rounded-2xl border border-border text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           {t("recalculating")}
         </div>

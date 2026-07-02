@@ -9,7 +9,7 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
 
   return (
     <div>
-      <div className="relative aspect-square overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+      <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-muted">
         {images[active] && <Image src={images[active]} alt={name} fill className="object-cover" />}
       </div>
       {images.length > 1 && (

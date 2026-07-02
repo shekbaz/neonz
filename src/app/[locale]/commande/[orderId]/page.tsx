@@ -24,7 +24,7 @@ export default async function OrderTrackingPage({
 
   await connectDB();
   const order = await Order.findById(orderId).lean();
-  if (!order || order.user.toString() !== session.user.id) notFound();
+  if (!order || order.user?.toString() !== session.user.id) notFound();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
@@ -35,7 +35,7 @@ export default async function OrderTrackingPage({
 
       <div className="space-y-3">
         {order.statusHistory.map((h, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 p-3">
+          <div key={i} className="flex items-center gap-3 rounded-lg border border-border bg-muted/50 p-3">
             <span className="h-2 w-2 rounded-full bg-primary" />
             <span className="text-sm">{STATUS_LABELS[h.status]}</span>
             <span className="ms-auto text-xs text-muted-foreground">
@@ -45,7 +45,7 @@ export default async function OrderTrackingPage({
         ))}
       </div>
 
-      <div className="mt-8 border-t border-white/10 pt-6">
+      <div className="mt-8 border-t border-border pt-6">
         <div className="flex justify-between text-lg font-semibold">
           <span>Total</span>
           <span className="text-primary">{order.total.toLocaleString()} DZD</span>

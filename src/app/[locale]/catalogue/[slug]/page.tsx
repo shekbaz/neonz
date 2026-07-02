@@ -31,11 +31,11 @@ export default async function ProductDetailPage({
           <p className="mt-4 whitespace-pre-line text-muted-foreground">{translation.description}</p>
 
           <dl className="mt-6 space-y-2 text-sm">
-            <div className="flex justify-between border-b border-white/10 py-2">
+            <div className="flex justify-between border-b border-border py-2">
               <dt className="text-muted-foreground">{t("dimensions")}</dt>
               <dd>{plain.dimensions.width}cm x {plain.dimensions.height}cm</dd>
             </div>
-            <div className="flex justify-between border-b border-white/10 py-2">
+            <div className="flex justify-between border-b border-border py-2">
               <dt className="text-muted-foreground">{t("stock")}</dt>
               <dd>{plain.stock > 0 ? t("inStock") : t("outOfStock")}</dd>
             </div>

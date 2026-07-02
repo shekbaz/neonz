@@ -26,7 +26,7 @@ export function LangSwitcher() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 text-sm transition-colors hover:bg-white/10">
+      <DropdownMenuTrigger className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-muted/50 px-3 text-sm transition-colors hover:bg-muted">
         <Globe className="h-4 w-4" />
         {LOCALE_LABELS[locale]}
       </DropdownMenuTrigger>

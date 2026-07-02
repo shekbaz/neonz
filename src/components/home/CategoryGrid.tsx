@@ -20,7 +20,7 @@ export function CategoryGrid({ categories, locale }: { categories: CategoryDoc[]
         <Link
           key={cat._id}
           href={{ pathname: "/catalogue", query: { category: cat.slug } }}
-          className="group relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 text-center transition-all hover:border-primary/50 hover:bg-white/10"
+          className="group relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-2xl border border-border bg-muted/50 p-4 text-center transition-all hover:border-primary/50 hover:bg-muted"
         >
           {cat.image && (
             <Image

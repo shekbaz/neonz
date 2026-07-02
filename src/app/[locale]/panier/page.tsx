@@ -22,8 +22,8 @@ export default function CartPage() {
         <>
           <div className="space-y-4">
             {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="relative h-20 w-20 overflow-hidden rounded-lg bg-black/40">
+              <div key={item.id} className="flex items-center gap-4 rounded-2xl border border-border bg-muted/50 p-4">
+                <div className="relative h-20 w-20 overflow-hidden rounded-lg bg-muted">
                   {item.image && <Image src={item.image} alt={item.name} fill className="object-cover" />}
                 </div>
                 <div className="flex-1">
@@ -46,7 +46,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
+          <div className="mt-8 flex items-center justify-between border-t border-border pt-6">
             <span className="text-lg font-semibold">{t("subtotal")}</span>
             <span className="text-2xl font-bold text-primary">
               {subtotal().toLocaleString()} {tCommon("currency")}

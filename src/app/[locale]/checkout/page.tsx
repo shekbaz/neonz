@@ -2,27 +2,35 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { useSession } from "next-auth/react";
+import { CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useCartStore } from "@/store/cartStore";
 import { toast } from "sonner";
 
+interface CreatedOrder {
+  orderNumber: string;
+  total: number;
+}
+
 export default function CheckoutPage() {
   const t = useTranslations("Checkout");
   const tCommon = useTranslations("Common");
-  const tCart = useTranslations("Cart");
+  const { data: session } = useSession();
   const { items, subtotal, clear } = useCartStore();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [address, setAddress] = useState({ line1: "", city: "", wilaya: "", postalCode: "", country: "Algérie" });
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "cib" | "edahabia">("stripe");
+  const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
 
-  async function handleSubmit() {
+  const [guest, setGuest] = useState({ name: "", phone: "", email: "" });
+  const [address, setAddress] = useState({ line1: "", city: "", wilaya: "" });
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setLoading(true);
     try {
-      const orderRes = await fetch("/api/orders", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -32,35 +40,19 @@ export default function CheckoutPage() {
             customDesign: i.type === "custom" ? i.id : undefined,
             quantity: i.quantity,
           })),
-          shippingAddress: address,
-          paymentMethod,
+          shippingAddress: { ...address, country: "Algérie" },
+          guestInfo: session?.user ? undefined : guest,
         }),
       });
 
-      if (!orderRes.ok) {
-        const data = await orderRes.json();
-        throw new Error(data.error?.toString() ?? "Erreur lors de la création de la commande.");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error?.toString() ?? "Erreur lors de l'envoi de la commande.");
       }
 
-      const order = await orderRes.json();
-
-      if (paymentMethod === "stripe") {
-        const checkoutRes = await fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: order._id }),
-        });
-        const checkoutData = await checkoutRes.json();
-        if (checkoutData.url) {
-          clear();
-          window.location.href = checkoutData.url;
-          return;
-        }
-        throw new Error(checkoutData.error ?? "Échec de l'initialisation du paiement.");
-      }
-
+      const order = await res.json();
+      setCreatedOrder({ orderNumber: order.orderNumber, total: order.total });
       clear();
-      router.push(`/commande/${order._id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
     } finally {
@@ -68,22 +60,66 @@ export default function CheckoutPage() {
     }
   }
 
+  if (createdOrder) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center sm:px-6">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
+          <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+        </div>
+        <h1 className="mt-6 text-2xl font-bold">Commande envoyée !</h1>
+        <p className="mt-2 text-muted-foreground">
+          Votre commande <span className="font-semibold text-foreground">{createdOrder.orderNumber}</span> a bien été reçue.
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/50 p-4 text-sm">
+          <Phone className="h-4 w-4 text-primary" />
+          <span>Nous allons vous appeler très prochainement pour confirmer votre commande.</span>
+        </div>
+        <p className="mt-6 text-lg font-bold text-primary">
+          {createdOrder.total.toLocaleString()} {tCommon("currency")}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-      <h1 className="mb-8 text-3xl font-bold">{t("title")}</h1>
+      <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+      <p className="mb-8 text-muted-foreground">
+        Remplissez vos coordonnées, nous vous appelons pour confirmer la commande — aucun paiement en ligne requis.
+      </p>
 
-      <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {!session?.user && (
+          <div>
+            <h2 className="mb-4 font-semibold">Vos coordonnées</h2>
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="name">Nom complet</Label>
+                <Input id="name" required value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="phone">Téléphone</Label>
+                <Input id="phone" type="tel" required placeholder="05XX XX XX XX" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="email">E-mail (optionnel)</Label>
+                <Input id="email" type="email" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div>
           <h2 className="mb-4 font-semibold">{t("shippingAddress")}</h2>
           <div className="grid gap-4">
             <div>
               <Label htmlFor="line1">Adresse</Label>
-              <Input id="line1" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
+              <Input id="line1" required value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="city">Ville</Label>
-                <Input id="city" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
+                <Input id="city" required value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
               </div>
               <div>
                 <Label htmlFor="wilaya">Wilaya</Label>
@@ -93,32 +129,17 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        <div>
-          <h2 className="mb-4 font-semibold">{t("paymentMethod")}</h2>
-          <div className="flex gap-3">
-            {(["stripe", "cib", "edahabia"] as const).map((method) => (
-              <button
-                key={method}
-                onClick={() => setPaymentMethod(method)}
-                className={`rounded-lg border px-4 py-2 text-sm ${paymentMethod === method ? "border-primary bg-primary/20" : "border-white/10"}`}
-              >
-                {method.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between border-t border-white/10 pt-6">
-          <span className="font-semibold">{tCart("subtotal")}</span>
+        <div className="flex items-center justify-between border-t border-border pt-6">
+          <span className="font-semibold">Total</span>
           <span className="text-xl font-bold text-primary">
             {subtotal().toLocaleString()} {tCommon("currency")}
           </span>
         </div>
 
-        <Button size="lg" className="w-full" disabled={loading || items.length === 0} onClick={handleSubmit}>
-          {loading ? tCommon("loading") : t("placeOrder")}
+        <Button size="lg" className="w-full" disabled={loading || items.length === 0} type="submit">
+          {loading ? tCommon("loading") : "Envoyer ma commande"}
         </Button>
-      </div>
+      </form>
     </div>
   );
 }

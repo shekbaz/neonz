@@ -25,8 +25,8 @@ export function ProductCard({ product, locale }: { product: ProductCardData; loc
   const name = product.translations[locale]?.name ?? product.translations.fr?.name;
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition-all hover:border-primary/40">
-      <Link href={`/catalogue/${product.slug}`} className="relative block aspect-square overflow-hidden bg-black/40">
+    <div className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/5">
+      <Link href={`/catalogue/${product.slug}`} className="relative block aspect-square overflow-hidden bg-muted">
         {product.images[0] && (
           <Image
             src={product.images[0]}

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
@@ -9,18 +10,27 @@ export function Hero() {
   const t = useTranslations("Home");
 
   return (
-    <section className="relative overflow-hidden border-b border-white/10 bg-gradient-to-b from-background via-background to-secondary/30">
+    <section className="relative overflow-hidden border-b border-border">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/4 top-10 h-72 w-72 rounded-full bg-primary/30 blur-[100px]" />
-        <div className="absolute right-1/4 top-40 h-72 w-72 rounded-full bg-accent/30 blur-[100px]" />
+        <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-[120px]" />
       </div>
 
-      <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-24 text-center sm:px-6 sm:py-32">
+      <div className="mx-auto flex max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 sm:py-28">
+        <motion.span
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Configurateur néon en ligne
+        </motion.span>
+
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="neon-glow-text max-w-3xl text-4xl font-extrabold tracking-tight text-primary sm:text-6xl"
+          transition={{ duration: 0.6, delay: 0.05 }}
+          className="max-w-2xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl"
         >
           {t("heroTitle")}
         </motion.h1>
@@ -29,7 +39,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="mt-6 max-w-xl text-lg text-muted-foreground"
+          className="mt-5 max-w-xl text-lg text-muted-foreground"
         >
           {t("heroSubtitle")}
         </motion.p>
@@ -37,16 +47,16 @@ export function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-10 flex flex-col gap-4 sm:flex-row"
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="mt-10 flex flex-col gap-3 sm:flex-row"
         >
           <Link href="/personnaliser">
-            <Button size="lg" className="neon-glow-box shadow-primary/50">
+            <Button size="lg" className="shadow-[0_0_24px_-6px] shadow-primary/60">
               {t("heroCtaCustomize")}
             </Button>
           </Link>
           <Link href="/catalogue">
-            <Button size="lg" variant="secondary">
+            <Button size="lg" variant="outline">
               {t("heroCtaCatalog")}
             </Button>
           </Link>

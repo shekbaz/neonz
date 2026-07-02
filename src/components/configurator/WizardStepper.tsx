@@ -24,7 +24,7 @@ export function WizardStepper({ current }: { current: ConfiguratorStep }) {
               "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors",
               current === step.key && "border-primary bg-primary/20 text-primary",
               current > step.key && "border-primary bg-primary text-primary-foreground",
-              current < step.key && "border-white/20 text-muted-foreground"
+              current < step.key && "border-border text-muted-foreground"
             )}
           >
             {current > step.key ? <Check className="h-4 w-4" /> : step.key}
@@ -32,7 +32,7 @@ export function WizardStepper({ current }: { current: ConfiguratorStep }) {
           <span className={cn("hidden text-xs font-medium sm:inline", current === step.key ? "text-foreground" : "text-muted-foreground")}>
             {step.label}
           </span>
-          {i < steps.length - 1 && <div className="mx-1 h-px flex-1 bg-white/10" />}
+          {i < steps.length - 1 && <div className="mx-1 h-px flex-1 bg-muted" />}
         </li>
       ))}
     </ol>

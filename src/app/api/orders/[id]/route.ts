@@ -22,7 +22,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
   }
 
-  const isOwner = order.user.toString() === session.user.id;
+  const isOwner = order.user?.toString() === session.user.id;
   if (!isOwner && session.user.role !== "admin") {
     return NextResponse.json({ error: "Accès refusé." }, { status: 403 });
   }

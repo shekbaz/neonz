@@ -136,7 +136,7 @@ export function Step5Summary() {
               onClick={() => setSupport(opt.value)}
               className={cn(
                 "rounded-xl border p-3 text-xs font-medium transition-colors",
-                support === opt.value ? "border-primary bg-primary/20" : "border-white/10"
+                support === opt.value ? "border-primary bg-primary/20" : "border-border"
               )}
             >
               {t(opt.labelKey as never)}
@@ -145,12 +145,12 @@ export function Step5Summary() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">
+      <div className="flex items-center justify-between rounded-xl border border-border bg-muted/50 p-4">
         <Label htmlFor="remote">{t("remoteLabel")}</Label>
         <Switch id="remote" checked={hasRemote} onCheckedChange={setHasRemote} />
       </div>
 
-      <div className="flex items-center justify-between border-t border-white/10 pt-6">
+      <div className="flex items-center justify-between border-t border-border pt-6">
         <span className="text-lg font-semibold">{t("totalPrice")}</span>
         {loadingPrice ? (
           <Loader2 className="h-5 w-5 animate-spin text-primary" />

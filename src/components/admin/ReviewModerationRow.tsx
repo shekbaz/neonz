@@ -39,7 +39,7 @@ export function ReviewModerationRow({
   }
 
   return (
-    <div className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4">
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted/50 p-4">
       <div>
         <p className="text-sm font-semibold">{authorName} — {rating}/5</p>
         <p className="mt-1 text-sm text-muted-foreground">{comment}</p>

@@ -69,7 +69,7 @@ export function Step1ContentType() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-white/20 p-12 text-center transition-colors hover:border-primary/50"
+          className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border p-12 text-center transition-colors hover:border-primary/50"
         >
           {uploading ? (
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -87,9 +87,9 @@ export function Step1ContentType() {
         />
 
         {sourceImageUrl && (
-          <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+          <div className="mt-4 overflow-hidden rounded-xl border border-border">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={sourceImageUrl} alt="Aperçu" className="max-h-64 w-full object-contain bg-black/40" />
+            <img src={sourceImageUrl} alt="Aperçu" className="max-h-64 w-full object-contain bg-muted" />
           </div>
         )}
       </TabsContent>

@@ -26,7 +26,7 @@ export default async function AccountPage() {
             <Link
               key={String(order._id)}
               href={`/commande/${String(order._id)}`}
-              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-4 hover:border-primary/40"
+              className="flex items-center justify-between rounded-lg border border-border bg-muted/50 p-4 hover:border-primary/40"
             >
               <div>
                 <p className="font-semibold">{order.orderNumber}</p>

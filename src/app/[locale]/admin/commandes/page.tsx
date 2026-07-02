@@ -54,27 +54,47 @@ export default async function AdminOrdersPage({
           <TableRow>
             <TableHead>N° commande</TableHead>
             <TableHead>Client</TableHead>
+            <TableHead>Téléphone</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Statut</TableHead>
             <TableHead className="text-end">Total</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={String(order._id)}>
-              <TableCell>
-                <Link href={`/admin/commandes/${order._id}`} className="font-medium text-primary hover:underline">
-                  {order.orderNumber}
-                </Link>
-              </TableCell>
-              <TableCell>{(order.user as unknown as { name?: string })?.name ?? "—"}</TableCell>
-              <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <Badge variant="secondary">{STATUS_LABELS[order.status]}</Badge>
-              </TableCell>
-              <TableCell className="text-end">{order.total.toLocaleString()} DZD</TableCell>
-            </TableRow>
-          ))}
+          {orders.map((order) => {
+            const clientName = order.guestInfo?.name ?? (order.user as unknown as { name?: string })?.name ?? "—";
+            const clientPhone = order.guestInfo?.phone ?? "—";
+            const isNew = order.status === "pending";
+            return (
+              <TableRow key={String(order._id)}>
+                <TableCell>
+                  <Link href={`/admin/commandes/${order._id}`} className="font-medium text-primary hover:underline">
+                    {order.orderNumber}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {clientName}
+                    {isNew && <Badge className="bg-primary/15 text-primary hover:bg-primary/15">À appeler</Badge>}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {clientPhone !== "—" ? (
+                    <a href={`tel:${clientPhone}`} className="text-primary hover:underline">
+                      {clientPhone}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
+                <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{STATUS_LABELS[order.status]}</Badge>
+                </TableCell>
+                <TableCell className="text-end">{order.total.toLocaleString()} DZD</TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
 

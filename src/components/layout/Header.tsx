@@ -28,11 +28,13 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold">
-          <Zap className="h-5 w-5 text-primary neon-glow-sm" />
-          <span className="neon-glow-text text-primary">NEONZ</span>
+        <Link href="/" className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Zap className="h-4 w-4" fill="currentColor" />
+          </span>
+          <span className="text-lg font-bold tracking-tight">NEONZ</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -54,7 +56,7 @@ export function Header() {
           <LangSwitcher />
           <ThemeToggle />
 
-          <Link href="/panier" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 hover:bg-white/10">
+          <Link href="/panier" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted/50 hover:bg-muted">
             <ShoppingCart className="h-4 w-4" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
@@ -83,7 +85,7 @@ export function Header() {
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-white/10 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted md:hidden"
               aria-label="Menu"
             >
               <Menu className="h-5 w-5" />

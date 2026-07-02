@@ -16,10 +16,16 @@ const orderItemSchema = z.object({
   quantity: z.number().int().positive().default(1),
 });
 
+const guestInfoSchema = z.object({
+  name: z.string().min(2, "Nom requis"),
+  phone: z.string().min(8, "Numéro de téléphone invalide"),
+  email: z.string().email().optional().or(z.literal("")),
+});
+
 export const orderCreateSchema = z.object({
   items: z.array(orderItemSchema).min(1),
   shippingAddress: addressSchema,
-  paymentMethod: z.enum(["stripe", "cib", "edahabia"]),
+  guestInfo: guestInfoSchema.optional(),
 });
 
 export const orderStatusUpdateSchema = z.object({

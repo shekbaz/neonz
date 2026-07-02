@@ -40,7 +40,7 @@ export function CatalogFilters({ categories, locale }: { categories: CategoryDoc
               key={cat._id}
               onClick={() => updateParam("category", activeCategory === cat.slug ? null : cat.slug)}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-start text-sm transition-colors hover:bg-white/10",
+                "rounded-lg px-3 py-1.5 text-start text-sm transition-colors hover:bg-muted",
                 activeCategory === cat.slug && "bg-primary/20 text-primary"
               )}
             >

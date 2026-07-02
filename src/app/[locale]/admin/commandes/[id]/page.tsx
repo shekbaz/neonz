@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
+import { Phone } from "lucide-react";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { OrderStatusUpdater } from "@/components/admin/OrderStatusUpdater";
 import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -28,11 +30,24 @@ export default async function AdminOrderDetailPage({
           <CardTitle>Client</CardTitle>
         </CardHeader>
         <CardContent className="text-sm">
-          <p>{(order.user as unknown as { name?: string })?.name}</p>
-          <p className="text-muted-foreground">{(order.user as unknown as { email?: string })?.email}</p>
+          <p className="font-medium text-base">
+            {order.guestInfo?.name ?? (order.user as unknown as { name?: string })?.name}
+          </p>
+          <p className="text-muted-foreground">
+            {order.guestInfo?.email ?? (order.user as unknown as { email?: string })?.email}
+          </p>
           <p className="mt-2">
             {order.shippingAddress.line1}, {order.shippingAddress.city} {order.shippingAddress.wilaya ?? ""}
           </p>
+
+          {order.guestInfo?.phone && (
+            <a href={`tel:${order.guestInfo.phone}`} className="mt-4 inline-block">
+              <Button size="sm" className="gap-2">
+                <Phone className="h-4 w-4" />
+                Appeler {order.guestInfo.phone}
+              </Button>
+            </a>
+          )}
         </CardContent>
       </Card>
 
@@ -42,7 +57,7 @@ export default async function AdminOrderDetailPage({
         </CardHeader>
         <CardContent className="space-y-6">
           {order.items.map((item, i) => (
-            <div key={i} className="border-b border-white/10 pb-6 last:border-0 last:pb-0">
+            <div key={i} className="border-b border-border pb-6 last:border-0 last:pb-0">
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="font-medium">
                   {item.type === "custom" ? "Enseigne personnalisée" : "Produit catalogue"} × {item.quantity}
@@ -70,7 +85,7 @@ export default async function AdminOrderDetailPage({
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">
+      <div className="flex items-center justify-between rounded-xl border border-border bg-muted/50 p-4">
         <span className="font-semibold">Total</span>
         <span className="text-xl font-bold text-primary">{order.total.toLocaleString()} DZD</span>
       </div>

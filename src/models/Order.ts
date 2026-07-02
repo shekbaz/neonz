@@ -24,10 +24,22 @@ const addressSnapshotSchema = new Schema(
   { _id: false }
 );
 
+const guestInfoSchema = new Schema(
+  {
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    email: { type: String },
+  },
+  { _id: false }
+);
+
 const orderSchema = new Schema(
   {
     orderNumber: { type: String, required: true, unique: true },
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    // Aucun compte requis pour commander : soit `user` (client connecté), soit `guestInfo`
+    // (nom + téléphone saisis au checkout) est renseigné — jamais aucun des deux.
+    user: { type: Schema.Types.ObjectId, ref: "User" },
+    guestInfo: { type: guestInfoSchema },
     items: { type: [orderItemSchema], required: true, validate: (v: unknown[]) => v.length > 0 },
     status: {
       type: String,
@@ -35,10 +47,11 @@ const orderSchema = new Schema(
       default: "pending",
     },
     shippingAddress: { type: addressSnapshotSchema, required: true },
+    // Pas de paiement en ligne : le client passe la commande, l'admin appelle pour confirmer
+    // et convient du paiement (livraison/COD) hors système.
     payment: {
-      method: { type: String, enum: ["stripe", "cib", "edahabia"], required: true },
-      status: { type: String, enum: ["pending", "paid", "failed", "refunded"], default: "pending" },
-      transactionId: { type: String },
+      status: { type: String, enum: ["unpaid", "paid"], default: "unpaid" },
+      confirmedByAdmin: { type: Boolean, default: false },
     },
     subtotal: { type: Number, required: true },
     shippingCost: { type: Number, required: true, default: 0 },
@@ -58,8 +71,13 @@ const orderSchema = new Schema(
   { timestamps: true }
 );
 
+// La règle "user OU guestInfo requis" est appliquée en amont par le schéma Zod
+// (orderCreateSchema) au niveau de la route API /api/orders — évite les soucis de
+// typage Mongoose sur `this` dans un hook pre-validate générique.
+
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
+orderSchema.index({ "guestInfo.phone": 1 });
 
 export type IOrder = InferSchemaType<typeof orderSchema>;
 

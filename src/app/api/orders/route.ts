@@ -19,15 +19,20 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
-  }
-
   const body = await request.json();
   const parsed = orderCreateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  // Aucun compte requis : soit le client est connecté (session), soit il a rempli
+  // ses coordonnées en tant qu'invité (guestInfo) — l'un des deux doit être présent.
+  const session = await auth();
+  if (!session?.user && !parsed.data.guestInfo) {
+    return NextResponse.json(
+      { error: "Veuillez renseigner vos coordonnées (nom et téléphone)." },
+      { status: 400 }
+    );
   }
 
   await connectDB();
@@ -78,10 +83,11 @@ export async function POST(request: NextRequest) {
 
   const order = await Order.create({
     orderNumber,
-    user: session.user.id,
+    user: session?.user?.id,
+    guestInfo: session?.user ? undefined : parsed.data.guestInfo,
     items,
     shippingAddress: parsed.data.shippingAddress,
-    payment: { method: parsed.data.paymentMethod, status: "pending" },
+    payment: { status: "unpaid" },
     subtotal,
     shippingCost,
     total,

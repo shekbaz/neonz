@@ -15,7 +15,7 @@ export function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {reviews.map((review) => (
-        <div key={review._id} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div key={review._id} className="rounded-2xl border border-border bg-muted/50 p-5">
           <div className="mb-2 flex gap-0.5 text-primary">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star key={i} className="h-4 w-4" fill={i < review.rating ? "currentColor" : "none"} />

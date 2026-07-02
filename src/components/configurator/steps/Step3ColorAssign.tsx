@@ -33,7 +33,7 @@ export function Step3ColorAssign() {
       />
 
       {selectedPath && (
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <div className="rounded-xl border border-border bg-muted/50 p-4">
           <p className="mb-3 text-sm font-medium">Couleur du tracé sélectionné ({selectedPath.id})</p>
           <ColorPicker value={selectedPath.color} onChange={(hex) => setPathColor(selectedPath.id, hex)} />
         </div>
