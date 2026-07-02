@@ -9,6 +9,10 @@ import { loginSchema } from "@/lib/validators/auth.schema";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/connexion" },
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  // Render (comme la plupart des PaaS hors Vercel) est un reverse-proxy : sans ça,
+  // Auth.js v5 rejette le Host header entrant avec une erreur "UntrustedHost".
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
