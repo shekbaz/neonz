@@ -21,19 +21,27 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setLoading(false);
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      toast.error("Identifiants incorrects.");
-      return;
+      if (result?.error) {
+        toast.error("Identifiants incorrects.");
+        return;
+      }
+
+      router.push((searchParams.get("callbackUrl") as never) ?? "/");
+    } catch (error) {
+      // Sans ce filet, une erreur réseau/serveur sur signIn() laissait le
+      // bouton bloqué en chargement sans aucun retour visible pour l'utilisateur.
+      console.error("Échec de connexion:", error);
+      toast.error("Une erreur est survenue. Réessayez.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push((searchParams.get("callbackUrl") as never) ?? "/");
   }
 
   return (
