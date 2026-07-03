@@ -22,7 +22,9 @@ export default async function middleware(request: NextRequest) {
     if (!token || token.role !== "admin") {
       const locale = request.nextUrl.pathname.split("/")[1] || routing.defaultLocale;
       const loginUrl = new URL(`/${locale}/connexion`, request.url);
-      loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname);
+      // Sans préfixe de locale : router.push (next-intl) le rajoute déjà à la
+      // redirection post-connexion, un pathname déjà préfixé le dupliquerait.
+      loginUrl.searchParams.set("callbackUrl", pathWithoutLocale);
       return NextResponse.redirect(loginUrl);
     }
   }
