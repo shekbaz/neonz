@@ -15,6 +15,7 @@
  */
 
 const PING_INTERVAL_MS = 10 * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
@@ -23,14 +24,28 @@ export async function register() {
   const appUrl = process.env.RENDER_EXTERNAL_URL ?? process.env.NEXT_PUBLIC_APP_URL;
   if (!appUrl) {
     console.warn("[keep-alive] Aucune URL d'application configurée, self-ping désactivé.");
-    return;
+  } else {
+    setInterval(async () => {
+      try {
+        await fetch(`${appUrl}/api/health`, { cache: "no-store" });
+      } catch (error) {
+        console.warn("[keep-alive] Échec du ping :", error instanceof Error ? error.message : error);
+      }
+    }, PING_INTERVAL_MS);
   }
 
+  // Supprime les images uploadées dans le configurateur qui n'ont jamais été commandées
+  // (voir src/lib/neon/cleanupUploads.ts). Ne s'exécute que tant que le process reste
+  // en vie — même limite que le self-ping ci-dessus sur un plan Render gratuit.
+  const { cleanupOrphanedUploads } = await import("@/lib/neon/cleanupUploads");
   setInterval(async () => {
     try {
-      await fetch(`${appUrl}/api/health`, { cache: "no-store" });
+      const { deleted, failed } = await cleanupOrphanedUploads();
+      if (deleted || failed) {
+        console.info(`[cleanup-uploads] ${deleted} image(s) orpheline(s) supprimée(s), ${failed} échec(s).`);
+      }
     } catch (error) {
-      console.warn("[keep-alive] Échec du ping :", error instanceof Error ? error.message : error);
+      console.warn("[cleanup-uploads] Échec du nettoyage :", error instanceof Error ? error.message : error);
     }
-  }, PING_INTERVAL_MS);
+  }, CLEANUP_INTERVAL_MS);
 }

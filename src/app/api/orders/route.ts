@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { Product } from "@/models/Product";
 import { CustomDesign } from "@/models/CustomDesign";
+import { UploadedAsset } from "@/models/UploadedAsset";
 import { auth } from "@/lib/auth";
 import { orderCreateSchema } from "@/lib/validators/order.schema";
 import { generateOrderNumber } from "@/lib/orderNumber";
@@ -74,6 +75,12 @@ export async function POST(request: NextRequest) {
       });
       design.status = "ordered";
       await design.save();
+      if (design.sourceImageUrl) {
+        await UploadedAsset.updateOne(
+          { url: design.sourceImageUrl },
+          { $set: { ordered: true } }
+        );
+      }
     }
   }
 

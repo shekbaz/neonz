@@ -26,4 +26,8 @@ export async function uploadBufferToCloudinary(
   });
 }
 
+export async function deleteCloudinaryAsset(publicId: string): Promise<void> {
+  await cloudinary.uploader.destroy(publicId);
+}
+
 export default cloudinary;

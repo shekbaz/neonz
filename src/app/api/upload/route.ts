@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadBufferToCloudinary } from "@/lib/cloudinary";
+import { connectDB } from "@/lib/db";
+import { UploadedAsset } from "@/models/UploadedAsset";
 
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 const MAX_SIZE_BYTES = 10 * 1024 * 1024;
@@ -35,6 +37,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const { url, publicId } = await uploadBufferToCloudinary(buffer, "uploads");
+
+    // Tracé pour permettre le nettoyage automatique des images jamais commandées
+    // (voir src/lib/neon/cleanupUploads.ts) — ne doit jamais faire échouer l'upload.
+    try {
+      await connectDB();
+      await UploadedAsset.create({ publicId, url });
+    } catch (trackingError) {
+      console.error("Échec du suivi de l'upload (nettoyage auto désactivé pour ce fichier):", trackingError);
+    }
+
     return NextResponse.json({ url, publicId });
   } catch (error) {
     console.error("Échec de l'upload Cloudinary:", error);
