@@ -25,7 +25,10 @@ export function ProductCard({ product, locale }: { product: ProductCardData; loc
 
   return (
     <div className="group flex flex-col">
-      <Link href={`/catalogue/${product.slug}`} className="relative block aspect-square overflow-hidden rounded-2xl bg-muted">
+      <Link
+        href={`/catalogue/${product.slug}`}
+        className="relative block aspect-square overflow-hidden rounded-xl bg-muted ring-1 ring-foreground/10 transition-shadow duration-500 group-hover:ring-primary/40 dark:group-hover:shadow-[0_0_28px_-10px_var(--color-primary)]"
+      >
         {product.images[0] && (
           <Image
             src={product.images[0]}
@@ -34,13 +37,18 @@ export function ProductCard({ product, locale }: { product: ProductCardData; loc
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
           />
         )}
+        {product.discountPrice != null && (
+          <span className="absolute end-3 top-3 rounded-full bg-primary px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-primary-foreground dark:shadow-[0_0_10px_var(--color-primary)]">
+            Promo
+          </span>
+        )}
       </Link>
       <div className="flex flex-1 flex-col gap-1 pt-4">
-        <Link href={`/catalogue/${product.slug}`} className="font-medium transition-colors hover:text-primary">
+        <Link href={`/catalogue/${product.slug}`} className="font-medium leading-snug transition-colors hover:text-primary">
           {name}
         </Link>
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
+          <span className="font-mono text-sm tabular-nums text-muted-foreground">
             {price.toLocaleString()} {tCommon("currency")}
           </span>
           <button
@@ -54,7 +62,7 @@ export function ProductCard({ product, locale }: { product: ProductCardData; loc
                 quantity: 1,
               })
             }
-            className="text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100 max-md:opacity-100"
+            className="text-xs font-semibold uppercase tracking-[0.12em] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100 max-md:opacity-100"
           >
             {t("addToCart")}
           </button>

@@ -13,7 +13,7 @@ export default async function AdminProductsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Produits</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">Produits</h1>
         <Link href="/admin/produits/nouveau">
           <Button size="sm">Ajouter un produit</Button>
         </Link>

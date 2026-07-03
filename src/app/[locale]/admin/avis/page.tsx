@@ -11,7 +11,7 @@ export default async function AdminReviewsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Avis en attente de modération</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Avis en attente de modération</h1>
 
       <div className="space-y-3">
         {reviews.map((review) => (

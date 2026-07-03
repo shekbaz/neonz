@@ -19,7 +19,7 @@ export function CollisionWarning({ result, suggestions, onApplyAutoFix, isApplyi
 
   if (!result.hasCollision) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-400">
+      <div className="flex items-center gap-2 rounded-xl border border-emerald-600/25 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:border-emerald-400/30 dark:text-emerald-400">
         <CheckCircle2 className="h-5 w-5 shrink-0" />
         {t("noCollision")}
       </div>
@@ -27,16 +27,16 @@ export function CollisionWarning({ result, suggestions, onApplyAutoFix, isApplyi
   }
 
   return (
-    <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4">
-      <div className="flex items-start gap-2 text-red-400">
+    <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
+      <div className="flex items-start gap-2 text-destructive">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
         <div>
           <p className="font-semibold">{t("collisionWarningTitle")}</p>
-          <p className="mt-1 text-sm text-red-400/80">{t("collisionWarningDesc")}</p>
+          <p className="mt-1 text-sm text-destructive/85">{t("collisionWarningDesc")}</p>
         </div>
       </div>
 
-      <ul className="mt-3 space-y-1 text-sm text-red-300">
+      <ul className="mt-3 space-y-1 font-mono text-xs tabular-nums text-destructive/90">
         {result.zones.slice(0, 5).map((zone, i) => (
           <li key={i}>
             • {zone.pathIds[0]} ↔ {zone.pathIds[1]} — {zone.minDistanceCm.toFixed(2)}cm (min. requis: {result.minAllowedDistanceCm}cm)
@@ -46,8 +46,8 @@ export function CollisionWarning({ result, suggestions, onApplyAutoFix, isApplyi
 
       {suggestions.length > 0 && (
         <div className="mt-4">
-          <p className="text-sm font-semibold text-red-300">{t("suggestionsTitle")}</p>
-          <ul className="mt-1 list-disc space-y-1 ps-5 text-sm text-red-300/80">
+          <p className="text-sm font-semibold text-destructive">{t("suggestionsTitle")}</p>
+          <ul className="mt-1 list-disc space-y-1 ps-5 text-sm text-destructive/85">
             {suggestions.map((s, i) => (
               <li key={i}>{s}</li>
             ))}

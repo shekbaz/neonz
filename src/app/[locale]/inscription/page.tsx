@@ -41,7 +41,7 @@ export default function RegisterPage() {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-16 sm:px-6">
-      <h1 className="mb-8 text-2xl font-bold">{t("registerTitle")}</h1>
+      <h1 className="mb-8 font-display text-4xl font-bold uppercase tracking-[0.03em]">{t("registerTitle")}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

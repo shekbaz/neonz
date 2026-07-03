@@ -18,7 +18,11 @@ export default function ConfiguratorPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="mb-8 text-3xl font-bold">{t("title")}</h1>
+      <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+        <span className="tube-dash" aria-hidden />
+        Atelier
+      </p>
+      <h1 className="mb-10 font-display text-5xl font-bold uppercase tracking-[0.03em] sm:text-6xl">{t("title")}</h1>
 
       <WizardStepper current={step} />
 
@@ -37,12 +41,12 @@ export default function ConfiguratorPage() {
           </Button>
           <div className="text-end">
             {!canProceed && step === 2 && (
-              <p className="mb-2 text-xs text-red-400">{t("cannotProceedCollision")}</p>
+              <p className="mb-2 text-xs text-destructive">{t("cannotProceedCollision")}</p>
             )}
             {!canProceed && step === 4 && (
-              <p className="mb-2 text-xs text-red-400">{t("cannotProceedCollision")}</p>
+              <p className="mb-2 text-xs text-destructive">{t("cannotProceedCollision")}</p>
             )}
-            <Button onClick={goNext} disabled={!canProceed}>
+            <Button onClick={goNext} disabled={!canProceed} className="glow-primary px-6">
               {t("next")}
             </Button>
           </div>

@@ -45,7 +45,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Tableau de bord</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Tableau de bord</h1>
 
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
               <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold">{s.value}</p>
+              <p className="font-display text-3xl font-bold tracking-[0.02em]">{s.value}</p>
             </CardContent>
           </Card>
         ))}

@@ -33,15 +33,15 @@ export function CatalogFilters({ categories, locale }: { categories: CategoryDoc
   return (
     <aside className="space-y-8">
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">{t("categoryLabel")}</h3>
-        <div className="flex flex-col gap-1">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("categoryLabel")}</h3>
+        <div className="flex flex-col gap-0.5">
           {categories.map((cat) => (
             <button
               key={cat._id}
               onClick={() => updateParam("category", activeCategory === cat.slug ? null : cat.slug)}
               className={cn(
-                "rounded-lg px-3 py-1.5 text-start text-sm transition-colors hover:bg-muted",
-                activeCategory === cat.slug && "bg-primary/20 text-primary"
+                "rounded-md border-s-2 border-transparent px-3 py-1.5 text-start text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                activeCategory === cat.slug && "border-primary bg-primary/10 font-medium text-primary"
               )}
             >
               {cat.translations[locale]?.name ?? cat.slug}
@@ -51,18 +51,22 @@ export function CatalogFilters({ categories, locale }: { categories: CategoryDoc
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-muted-foreground">{t("colorLabel")}</h3>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("colorLabel")}</h3>
         <div className="flex flex-wrap gap-2">
           {NEON_COLORS.map((color) => (
             <button
               key={color.id}
               onClick={() => updateParam("color", activeColor === color.id ? null : color.id)}
               className={cn(
-                "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110",
-                activeColor === color.id ? "border-foreground" : "border-transparent"
+                "h-7 w-7 rounded-full ring-offset-2 ring-offset-background transition-all hover:scale-110",
+                activeColor === color.id && "scale-110 ring-2 ring-foreground/70"
               )}
-              style={{ backgroundColor: color.hex }}
+              style={{
+                backgroundColor: color.hex,
+                boxShadow: activeColor === color.id ? `0 0 10px ${color.hex}` : undefined,
+              }}
               aria-label={color.label}
+              aria-pressed={activeColor === color.id}
             />
           ))}
         </div>

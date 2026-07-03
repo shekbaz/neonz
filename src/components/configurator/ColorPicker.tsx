@@ -21,11 +21,12 @@ export function ColorPicker({
           disabled={disabled}
           onClick={() => onChange(color.hex)}
           title={color.label}
+          aria-pressed={value === color.hex}
           className={cn(
-            "h-9 w-9 rounded-full border-2 transition-transform enabled:hover:scale-110 disabled:opacity-40",
-            value === color.hex ? "border-foreground" : "border-transparent"
+            "h-9 w-9 rounded-full ring-offset-2 ring-offset-background transition-all enabled:hover:scale-110 disabled:opacity-40",
+            value === color.hex && "scale-110 ring-2 ring-foreground/70"
           )}
-          style={{ backgroundColor: color.hex, boxShadow: value === color.hex ? `0 0 10px ${color.hex}` : undefined }}
+          style={{ backgroundColor: color.hex, boxShadow: value === color.hex ? `0 0 14px ${color.hex}` : undefined }}
         />
       ))}
     </div>

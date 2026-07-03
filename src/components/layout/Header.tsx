@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, ShoppingCart, User as UserIcon, Zap } from "lucide-react";
+import { Menu, ShoppingCart, User as UserIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -28,23 +28,21 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Zap className="h-3.5 w-3.5" fill="currentColor" />
-          </span>
-          <span className="text-base font-semibold tracking-tight">NEONZ</span>
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <Link href="/" className="flex items-baseline gap-0.5 font-display text-[1.75rem] font-bold leading-none tracking-[0.06em]">
+          NEON<span className="tube">Z</span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "text-sm text-muted-foreground transition-colors hover:text-foreground",
-                pathname === link.href && "text-foreground"
+                "relative py-1 text-[0.8rem] font-medium uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground",
+                pathname === link.href &&
+                  "text-foreground after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-primary dark:after:shadow-[0_0_8px_var(--color-primary)]"
               )}
             >
               {link.label}
@@ -56,10 +54,16 @@ export function Header() {
           <LangSwitcher />
           <ThemeToggle />
 
-          <Link href="/panier" className="relative flex h-9 w-9 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-foreground">
+          <Link
+            href="/panier"
+            className="relative flex h-9 w-9 items-center justify-center rounded-md text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
+            aria-label={t("cart")}
+          >
             <ShoppingCart className="h-4 w-4" />
             {cartCount > 0 && (
-              <span className="absolute right-1 top-1 flex h-2 w-2 items-center justify-center rounded-full bg-primary" />
+              <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground dark:shadow-[0_0_8px_var(--color-primary)]">
+                {cartCount}
+              </span>
             )}
           </Link>
 
@@ -76,8 +80,8 @@ export function Header() {
               <Button variant="ghost" size="sm" onClick={() => signOut()}>{t("logout")}</Button>
             </div>
           ) : (
-            <Link href="/connexion" className="ms-1 hidden md:block">
-              <Button size="sm" className="rounded-full px-4">{t("login")}</Button>
+            <Link href="/connexion" className="ms-2 hidden md:block">
+              <Button size="sm" className="px-4">{t("login")}</Button>
             </Link>
           )}
 
@@ -89,9 +93,17 @@ export function Header() {
               <Menu className="h-5 w-5" />
             </SheetTrigger>
             <SheetContent side="left" className="w-72">
-              <nav className="mt-10 flex flex-col gap-4 px-4">
+              <nav className="mt-10 flex flex-col gap-5 px-4">
                 {links.map((link) => (
-                  <Link key={link.href} href={link.href} onClick={() => setOpen(false)} className="text-base font-medium">
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "font-display text-2xl font-semibold uppercase tracking-[0.06em]",
+                      pathname === link.href && "tube"
+                    )}
+                  >
                     {link.label}
                   </Link>
                 ))}

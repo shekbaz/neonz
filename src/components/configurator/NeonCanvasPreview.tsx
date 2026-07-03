@@ -37,8 +37,10 @@ export function NeonCanvasPreview({
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center overflow-hidden rounded-2xl border transition-colors",
-        background === "night" ? "border-border bg-[#0a0a10]" : "border-black/10 bg-[#f4f4f2]",
+        "relative flex items-center justify-center overflow-hidden rounded-xl ring-1 transition-colors",
+        background === "night"
+          ? "bg-[oklch(0.13_0.025_272)] ring-foreground/15"
+          : "bg-[oklch(0.96_0.006_84)] ring-[oklch(0.25_0.02_264/0.12)]",
         className
       )}
     >

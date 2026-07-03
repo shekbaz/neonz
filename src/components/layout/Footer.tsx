@@ -1,39 +1,47 @@
 import { useTranslations } from "next-intl";
-import { Zap } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
 export function Footer() {
   const t = useTranslations("Nav");
 
   return (
-    <footer className="border-t border-border bg-background/60">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Zap className="h-3.5 w-3.5" fill="currentColor" />
-            </span>
-            <span className="text-lg font-bold tracking-tight">NEONZ</span>
-          </div>
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Enseignes lumineuses néon LED, prêtes à l&apos;achat ou entièrement personnalisées.
+    /* La vitrine reste allumée toute la journée : le pied de page vit en mode nuit. */
+    <footer className="dark border-t border-border bg-background text-foreground">
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-16 sm:px-6">
+        <p className="font-display text-6xl font-bold leading-none tracking-[0.06em] sm:text-8xl">
+          NEON<span className="tube">Z</span>
+        </p>
+
+        <div className="mt-10 grid gap-10 md:grid-cols-3">
+          <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+            Atelier d&apos;enseignes lumineuses néon LED — prêtes à l&apos;achat ou façonnées
+            sur-mesure à partir de votre logo ou de votre texte.
           </p>
+
+          <nav className="flex flex-col items-start gap-2.5 text-sm">
+            <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <span className="tube-dash" aria-hidden />
+              Boutique
+            </span>
+            <Link href="/catalogue" className="text-muted-foreground transition-colors hover:text-foreground">{t("catalog")}</Link>
+            <Link href="/personnaliser" className="text-muted-foreground transition-colors hover:text-foreground">{t("customize")}</Link>
+          </nav>
+
+          <nav className="flex flex-col items-start gap-2.5 text-sm">
+            <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <span className="tube-dash" aria-hidden />
+              Aide
+            </span>
+            <Link href="/faq" className="text-muted-foreground transition-colors hover:text-foreground">{t("faq")}</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">{t("contact")}</Link>
+            <Link href="/cgv" className="text-muted-foreground transition-colors hover:text-foreground">CGV</Link>
+          </nav>
         </div>
 
-        <div className="flex flex-col gap-2 text-sm">
-          <Link href="/catalogue" className="text-muted-foreground hover:text-foreground">{t("catalog")}</Link>
-          <Link href="/personnaliser" className="text-muted-foreground hover:text-foreground">{t("customize")}</Link>
-          <Link href="/faq" className="text-muted-foreground hover:text-foreground">{t("faq")}</Link>
-          <Link href="/contact" className="text-muted-foreground hover:text-foreground">{t("contact")}</Link>
+        <div className="mt-14 flex flex-col gap-2 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} NEONZ. Tous droits réservés.</span>
+          <span>Fabriqué à la main, allumé chez vous.</span>
         </div>
-
-        <div className="flex flex-col gap-2 text-sm">
-          <Link href="/cgv" className="text-muted-foreground hover:text-foreground">CGV</Link>
-        </div>
-      </div>
-
-      <div className="border-t border-border px-4 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} NEONZ. Tous droits réservés.
       </div>
     </footer>
   );

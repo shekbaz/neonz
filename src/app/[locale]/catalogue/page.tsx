@@ -46,7 +46,11 @@ export default async function CataloguePage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-      <h1 className="mb-8 text-3xl font-bold">{t("title")}</h1>
+      <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+        <span className="tube-dash" aria-hidden />
+        Boutique
+      </p>
+      <h1 className="mb-10 font-display text-5xl font-bold uppercase tracking-[0.03em] sm:text-6xl">{t("title")}</h1>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[240px_1fr]">
         <CatalogFilters categories={JSON.parse(JSON.stringify(categories))} locale={locale} />

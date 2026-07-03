@@ -21,7 +21,7 @@ export default async function AdminOrderDetailPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Commande {order.orderNumber}</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">Commande {order.orderNumber}</h1>
         <OrderStatusUpdater orderId={String(order._id)} currentStatus={order.status} />
       </div>
 

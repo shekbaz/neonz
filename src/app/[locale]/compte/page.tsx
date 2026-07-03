@@ -14,7 +14,7 @@ export default async function AccountPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="mb-2 text-3xl font-bold">{session.user.name}</h1>
+      <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{session.user.name}</h1>
       <p className="mb-8 text-muted-foreground">{session.user.email}</p>
 
       <h2 className="mb-4 text-xl font-semibold">Mes commandes</h2>

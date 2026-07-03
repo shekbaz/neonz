@@ -27,17 +27,19 @@ export default async function ProductDetailPage({
         <ProductGallery images={plain.images} name={translation.name} />
 
         <div>
-          <h1 className="text-3xl font-bold">{translation.name}</h1>
-          <p className="mt-4 whitespace-pre-line text-muted-foreground">{translation.description}</p>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{translation.name}</h1>
+          <p className="mt-5 whitespace-pre-line leading-relaxed text-muted-foreground">{translation.description}</p>
 
-          <dl className="mt-6 space-y-2 text-sm">
-            <div className="flex justify-between border-b border-border py-2">
+          <dl className="mt-8 space-y-2 text-sm">
+            <div className="flex justify-between border-b border-border py-2.5">
               <dt className="text-muted-foreground">{t("dimensions")}</dt>
-              <dd>{plain.dimensions.width}cm x {plain.dimensions.height}cm</dd>
+              <dd className="font-mono tabular-nums">{plain.dimensions.width}cm x {plain.dimensions.height}cm</dd>
             </div>
-            <div className="flex justify-between border-b border-border py-2">
+            <div className="flex justify-between border-b border-border py-2.5">
               <dt className="text-muted-foreground">{t("stock")}</dt>
-              <dd>{plain.stock > 0 ? t("inStock") : t("outOfStock")}</dd>
+              <dd className={plain.stock > 0 ? "font-medium text-emerald-600 dark:text-emerald-400" : "font-medium text-destructive"}>
+                {plain.stock > 0 ? t("inStock") : t("outOfStock")}
+              </dd>
             </div>
           </dl>
 

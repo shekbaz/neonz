@@ -28,15 +28,21 @@ export default async function HomePage({
     <div>
       <Hero />
 
-      <section className="mx-auto max-w-7xl border-t border-border/60 px-4 py-24 sm:px-6">
-        <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-primary">Explorer</p>
-        <h2 className="mb-10 text-2xl font-semibold tracking-tight sm:text-3xl">{t("categoriesTitle")}</h2>
+      <section className="mx-auto max-w-7xl border-t border-border/70 px-4 py-24 sm:px-6">
+        <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+          <span className="tube-dash" aria-hidden />
+          Explorer
+        </p>
+        <h2 className="mb-10 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("categoriesTitle")}</h2>
         <CategoryGrid categories={JSON.parse(JSON.stringify(categories))} locale={locale} />
       </section>
 
-      <section className="mx-auto max-w-7xl border-t border-border/60 px-4 py-24 sm:px-6">
-        <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-primary">Sélection</p>
-        <h2 className="mb-10 text-2xl font-semibold tracking-tight sm:text-3xl">{t("popularTitle")}</h2>
+      <section className="mx-auto max-w-7xl border-t border-border/70 px-4 py-24 sm:px-6">
+        <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+          <span className="tube-dash" aria-hidden />
+          Sélection
+        </p>
+        <h2 className="mb-10 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("popularTitle")}</h2>
         {featuredProducts.length === 0 ? (
           <p className="text-muted-foreground">Aucun produit en vedette pour le moment.</p>
         ) : (
@@ -48,9 +54,12 @@ export default async function HomePage({
         )}
       </section>
 
-      <section className="mx-auto max-w-7xl border-t border-border/60 px-4 py-24 sm:px-6">
-        <p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-primary">Témoignages</p>
-        <h2 className="mb-10 text-2xl font-semibold tracking-tight sm:text-3xl">{t("reviewsTitle")}</h2>
+      <section className="mx-auto max-w-7xl border-t border-border/70 px-4 py-24 sm:px-6">
+        <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+          <span className="tube-dash" aria-hidden />
+          Témoignages
+        </p>
+        <h2 className="mb-10 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("reviewsTitle")}</h2>
         <ReviewsSection reviews={JSON.parse(JSON.stringify(reviews))} />
       </section>
     </div>

@@ -14,7 +14,7 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <h1 className="mb-8 text-3xl font-bold">{t("title")}</h1>
+      <h1 className="mb-8 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("title")}</h1>
 
       {items.length === 0 ? (
         <p className="text-muted-foreground">{t("empty")}</p>

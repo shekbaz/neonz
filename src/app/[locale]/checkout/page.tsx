@@ -66,7 +66,7 @@ export default function CheckoutPage() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
           <CheckCircle2 className="h-8 w-8 text-emerald-500" />
         </div>
-        <h1 className="mt-6 text-2xl font-bold">Commande envoyée !</h1>
+        <h1 className="mt-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Commande envoyée !</h1>
         <p className="mt-2 text-muted-foreground">
           Votre commande <span className="font-semibold text-foreground">{createdOrder.orderNumber}</span> a bien été reçue.
         </p>
@@ -83,7 +83,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-      <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+      <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("title")}</h1>
       <p className="mb-8 text-muted-foreground">
         Remplissez vos coordonnées, nous vous appelons pour confirmer la commande — aucun paiement en ligne requis.
       </p>

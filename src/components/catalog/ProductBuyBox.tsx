@@ -28,20 +28,24 @@ export function ProductBuyBox({ product, locale }: { product: ProductPlain; loca
 
   return (
     <div className="mt-8">
-      <div className="text-3xl font-bold text-primary">
-        {price.toLocaleString()} {tCommon("currency")}
+      <div className="font-display text-5xl font-bold tracking-[0.02em] text-primary">
+        {price.toLocaleString()} <span className="text-2xl">{tCommon("currency")}</span>
       </div>
 
       {product.colors.length > 0 && (
-        <div className="mt-4">
-          <p className="mb-2 text-sm font-medium text-muted-foreground">{t("colors")}</p>
+        <div className="mt-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("colors")}</p>
           <div className="flex gap-2">
             {product.colors.map((color) => (
               <button
                 key={color}
                 onClick={() => setSelectedColor(color)}
-                className={`h-8 w-8 rounded-full border-2 ${selectedColor === color ? "border-foreground" : "border-transparent"}`}
-                style={{ backgroundColor: color }}
+                className={`h-8 w-8 rounded-full ring-offset-2 ring-offset-background transition-all ${selectedColor === color ? "scale-110 ring-2 ring-foreground/70" : "hover:scale-105"}`}
+                style={{
+                  backgroundColor: color,
+                  boxShadow: selectedColor === color ? `0 0 10px ${color}` : undefined,
+                }}
+                aria-pressed={selectedColor === color}
               />
             ))}
           </div>
@@ -50,7 +54,7 @@ export function ProductBuyBox({ product, locale }: { product: ProductPlain; loca
 
       <Button
         size="lg"
-        className="mt-8 w-full"
+        className="glow-primary mt-8 h-12 w-full text-base"
         disabled={product.stock <= 0}
         onClick={() =>
           addItem({

@@ -135,8 +135,10 @@ export function Step5Summary() {
               key={opt.value}
               onClick={() => setSupport(opt.value)}
               className={cn(
-                "rounded-xl border p-3 text-xs font-medium transition-colors",
-                support === opt.value ? "border-primary bg-primary/20" : "border-border"
+                "rounded-lg border p-3 text-xs font-medium transition-all",
+                support === opt.value
+                  ? "border-primary bg-primary/10 text-primary dark:shadow-[0_0_14px_-4px_var(--color-primary)]"
+                  : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
               )}
             >
               {t(opt.labelKey as never)}
@@ -145,7 +147,7 @@ export function Step5Summary() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between rounded-xl border border-border bg-muted/50 p-4">
+      <div className="flex items-center justify-between rounded-xl bg-card p-4 ring-1 ring-foreground/10">
         <Label htmlFor="remote">{t("remoteLabel")}</Label>
         <Switch id="remote" checked={hasRemote} onCheckedChange={setHasRemote} />
       </div>
@@ -155,13 +157,13 @@ export function Step5Summary() {
         {loadingPrice ? (
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         ) : (
-          <span className="text-2xl font-bold text-primary">
-            {priceBreakdown?.total.toLocaleString() ?? "—"} {tCommon("currency")}
+          <span className="font-display text-4xl font-bold tracking-[0.02em] text-primary">
+            {priceBreakdown?.total.toLocaleString() ?? "—"} <span className="text-xl">{tCommon("currency")}</span>
           </span>
         )}
       </div>
 
-      <Button size="lg" className="w-full" disabled={submitting || loadingPrice} onClick={handleAddToCart}>
+      <Button size="lg" className="glow-primary h-12 w-full text-base" disabled={submitting || loadingPrice} onClick={handleAddToCart}>
         {t("addToCart")}
       </Button>
     </div>

@@ -69,7 +69,7 @@ export function Step1ContentType() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border p-12 text-center transition-colors hover:border-primary/50"
+          className="flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-card/50 p-12 text-center transition-colors hover:border-primary/60 hover:bg-primary/[0.04]"
         >
           {uploading ? (
             <Loader2 className="h-10 w-10 animate-spin text-primary" />

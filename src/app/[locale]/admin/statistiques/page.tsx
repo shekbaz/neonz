@@ -39,7 +39,7 @@ export default async function AdminStatsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Statistiques</h1>
+      <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">Statistiques</h1>
 
       <Card>
         <CardHeader>

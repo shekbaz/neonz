@@ -15,15 +15,18 @@ export function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {reviews.map((review) => (
-        <div key={review._id} className="rounded-2xl border border-border bg-muted/50 p-5">
-          <div className="mb-2 flex gap-0.5 text-primary">
+        <figure key={review._id} className="flex flex-col rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+          <div className="mb-3 flex gap-0.5 text-primary" aria-label={`${review.rating}/5`}>
             {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-4 w-4" fill={i < review.rating ? "currentColor" : "none"} />
+              <Star key={i} className="h-3.5 w-3.5" fill={i < review.rating ? "currentColor" : "none"} strokeWidth={i < review.rating ? 0 : 1.5} />
             ))}
           </div>
-          <p className="text-sm text-muted-foreground">{review.comment}</p>
-          <p className="mt-3 text-sm font-semibold">{review.user?.name}</p>
-        </div>
+          <blockquote className="flex-1 text-sm leading-relaxed text-muted-foreground">{review.comment}</blockquote>
+          <figcaption className="mt-4 flex items-center gap-2 text-sm font-medium">
+            <span className="tube-dash w-3!" aria-hidden />
+            {review.user?.name}
+          </figcaption>
+        </figure>
       ))}
     </div>
   );

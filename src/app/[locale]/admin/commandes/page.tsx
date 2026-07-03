@@ -32,7 +32,7 @@ export default async function AdminOrdersPage({
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Commandes</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Commandes</h1>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Link href="/admin/commandes" className="text-sm text-muted-foreground hover:text-foreground">

@@ -66,7 +66,7 @@ export function Step4Dimensions() {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <Label>{t("widthLabel")}</Label>
-          <span className="text-sm font-semibold text-primary">{localWidth} cm</span>
+          <span className="font-mono text-sm font-semibold tabular-nums text-primary">{localWidth} cm</span>
         </div>
         <Slider
           min={10}
@@ -80,7 +80,7 @@ export function Step4Dimensions() {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <Label>{t("heightLabel")}</Label>
-          <span className="text-sm font-semibold text-primary">{localHeight} cm</span>
+          <span className="font-mono text-sm font-semibold tabular-nums text-primary">{localHeight} cm</span>
         </div>
         <Slider
           min={10}
@@ -94,7 +94,7 @@ export function Step4Dimensions() {
       <p className="text-xs text-muted-foreground">{t("maxSizeWarning")}</p>
 
       {recalculating ? (
-        <div className="flex h-64 items-center justify-center gap-3 rounded-2xl border border-border text-muted-foreground">
+        <div className="flex h-64 items-center justify-center gap-3 rounded-xl bg-card text-muted-foreground ring-1 ring-foreground/10">
           <Loader2 className="h-5 w-5 animate-spin" />
           {t("recalculating")}
         </div>
