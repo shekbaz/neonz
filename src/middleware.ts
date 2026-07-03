@@ -1,6 +1,6 @@
 import createMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
@@ -13,30 +13,28 @@ function stripLocale(pathname: string): string {
   return pathname;
 }
 
-export default async function middleware(request: NextRequest) {
+// `auth()` en wrapper de middleware (plutôt que getToken() + secret manuel) :
+// c'est la méthode officiellement recommandée par NextAuth v5 pour lire la
+// session ici, garantissant la même logique de décodage que partout ailleurs
+// dans l'app (auth.ts) — getToken() nécessitait de repasser le secret à la
+// main et risquait de diverger subtilement (cf. historique des redirections
+// vers /connexion malgré une session admin valide).
+export default auth((request) => {
   const pathWithoutLocale = stripLocale(request.nextUrl.pathname);
 
   if (pathWithoutLocale.startsWith("/admin")) {
-    // Doit correspondre exactement au secret utilisé par NextAuth (src/lib/auth.ts)
-    // pour signer le JWT — un secret différent invaliderait silencieusement le
-    // token et provoquerait une boucle de redirection vers /connexion.
-    const token = await getToken({
-      req: request,
-      secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-    });
+    const session = request.auth;
 
-    if (!token || token.role !== "admin") {
+    if (!session?.user || session.user.role !== "admin") {
       const locale = request.nextUrl.pathname.split("/")[1] || routing.defaultLocale;
       const loginUrl = new URL(`/${locale}/connexion`, request.url);
-      // Sans préfixe de locale : router.push (next-intl) le rajoute déjà à la
-      // redirection post-connexion, un pathname déjà préfixé le dupliquerait.
       loginUrl.searchParams.set("callbackUrl", pathWithoutLocale);
       return NextResponse.redirect(loginUrl);
     }
   }
 
   return intlMiddleware(request);
-}
+});
 
 export const config = {
   matcher: ["/((?!api|trpc|_next|_vercel|.*\\..*).*)"],
