@@ -141,6 +141,14 @@
     "revenue": "Chiffre d'affaires",
     "newOrder": "Nouvelle commande reçue"
   },
+  "Footer": {
+    "tagline": "Atelier d'enseignes lumineuses néon LED — prêtes à l'achat ou façonnées sur-mesure à partir de votre logo ou de votre texte.",
+    "shopHeading": "Boutique",
+    "helpHeading": "Aide",
+    "terms": "CGV",
+    "rights": "Tous droits réservés.",
+    "tagline2": "Fabriqué à la main, allumé chez vous."
+  },
   "Common": {
     "save": "Enregistrer",
     "cancel": "Annuler",

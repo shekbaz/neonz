@@ -141,6 +141,14 @@
     "revenue": "Revenue",
     "newOrder": "New order received"
   },
+  "Footer": {
+    "tagline": "LED neon sign workshop — ready to buy or fully custom-made from your logo or text.",
+    "shopHeading": "Shop",
+    "helpHeading": "Help",
+    "terms": "Terms",
+    "rights": "All rights reserved.",
+    "tagline2": "Handmade to order, lit up at your place."
+  },
   "Common": {
     "save": "Save",
     "cancel": "Cancel",

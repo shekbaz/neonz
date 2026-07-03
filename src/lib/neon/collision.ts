@@ -196,7 +196,10 @@ export function suggestAdjustments(result: CollisionResult): string[] {
     );
   }
 
-  if (result.zones.length > 2) {
+  // Une auto-collision (même tracé des deux côtés) vient de contours déjà
+  // substantiels qu'aucun réglage de kerning ne peut écarter : seul
+  // l'agrandissement physique de l'enseigne augmente la distance en cm.
+  if (sameParentCollision || result.zones.length > 2) {
     suggestions.push(
       "Augmenter la taille globale de l'enseigne pour espacer proportionnellement tous les tracés."
     );

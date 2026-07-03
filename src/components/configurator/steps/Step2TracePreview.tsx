@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useConfiguratorStore } from "@/store/configuratorStore";
 import type { NeonPath } from "@/types/neon";
+import { MAX_DIMENSION_CM } from "@/types/neon";
 import { toast } from "sonner";
 
 /** Délai avant relance du pipeline après un réglage (évite de spammer l'API
@@ -49,6 +50,7 @@ export function Step2TracePreview() {
     workspaceHeightPx,
     widthCm,
     heightCm,
+    pxToCm,
     collisionResult,
     isProcessing,
     setTraceSettings,
@@ -148,6 +150,13 @@ export function Step2TracePreview() {
   }, [runPipeline]);
 
   function handleAutoFix() {
+    // Une collision "auto" (même tracé parent des deux côtés) vient de deux
+    // contours disjoints déjà substantiels (ex: jambages d'un logo) — le
+    // filtrage de détail (turdSize) ne les sépare pas, seul l'agrandissement
+    // physique de l'enseigne augmente réellement la distance en cm entre eux.
+    const isSelfCollision =
+      collisionResult?.zones.some((z) => z.pathIds[0] === z.pathIds[1]) ?? false;
+
     if (sourceType === "image") {
       setTraceSettings({
         turdSize: Math.min(200, Math.round(traceSettings.turdSize * 2.5)),
@@ -156,6 +165,15 @@ export function Step2TracePreview() {
       setTraceSettings({
         letterSpacingPx: Math.min(200, traceSettings.letterSpacingPx + 15),
       });
+    }
+
+    if (isSelfCollision) {
+      const growthFactor = 1.15;
+      setDimensions(
+        Math.min(MAX_DIMENSION_CM, Math.round(widthCm * growthFactor)),
+        Math.min(MAX_DIMENSION_CM, Math.round(heightCm * growthFactor)),
+        pxToCm
+      );
     }
   }
 
