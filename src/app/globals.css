@@ -122,10 +122,21 @@
   --sidebar-ring: oklch(0.705 0.19 38 / 0.5);
 }
 
-:lang(ar) {
-  --font-sans: var(--font-cairo);
-  --font-display: var(--font-cairo);
-  --font-mono: var(--font-cairo);
+/*
+ * Hors de tout @layer (donc au-dessus des cascade layers Tailwind, quelle que
+ * soit leur spécificité) : @theme inline résout --font-sans/--font-display/
+ * --font-mono en dur au moment de la compilation (ex. body{font-family:
+ * var(--font-manrope)}), donc redéfinir ces variables ne suffit plus — il faut
+ * réécrire directement la propriété font-family utilisée.
+ */
+:lang(ar) body {
+  font-family: var(--font-cairo);
+}
+:lang(ar) .font-display {
+  font-family: var(--font-cairo);
+}
+:lang(ar) .font-mono {
+  font-family: var(--font-cairo);
 }
 
 @layer base {
