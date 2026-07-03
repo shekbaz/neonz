@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { useCartStore } from "@/store/cartStore";
 import type { Locale } from "@/types/locale";
 
 interface ProductPlain {
@@ -20,7 +20,6 @@ interface ProductPlain {
 export function ProductBuyBox({ product, locale }: { product: ProductPlain; locale: Locale }) {
   const t = useTranslations("Product");
   const tCommon = useTranslations("Common");
-  const addItem = useCartStore((s) => s.addItem);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]);
 
   const price = product.discountPrice ?? product.basePrice;
@@ -52,23 +51,25 @@ export function ProductBuyBox({ product, locale }: { product: ProductPlain; loca
         </div>
       )}
 
-      <Button
-        size="lg"
-        className="glow-primary mt-8 h-12 w-full text-base"
-        disabled={product.stock <= 0}
-        onClick={() =>
-          addItem({
-            id: product._id,
+      <Link
+        href={{
+          pathname: "/checkout",
+          query: {
             type: "catalog",
+            id: product._id,
             name,
-            image: product.images[0],
-            unitPrice: price,
-            quantity: 1,
-          })
-        }
+            price: String(price),
+            image: product.images[0] ?? "",
+          },
+        }}
+        aria-disabled={product.stock <= 0}
+        tabIndex={product.stock <= 0 ? -1 : undefined}
+        className={product.stock <= 0 ? "pointer-events-none" : undefined}
       >
-        {t("addToCart")}
-      </Button>
+        <Button size="lg" className="glow-primary mt-8 h-12 w-full text-base" disabled={product.stock <= 0}>
+          {t("addToCart")}
+        </Button>
+      </Link>
     </div>
   );
 }

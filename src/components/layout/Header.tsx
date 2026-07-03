@@ -3,20 +3,18 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, ShoppingCart, User as UserIcon } from "lucide-react";
+import { Menu, User as UserIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { LangSwitcher } from "@/components/layout/LangSwitcher";
-import { useCartStore } from "@/store/cartStore";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const t = useTranslations("Nav");
   const pathname = usePathname();
   const { data: session } = useSession();
-  const cartCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0));
   const [open, setOpen] = useState(false);
 
   const links = [
@@ -54,20 +52,7 @@ export function Header() {
           <LangSwitcher />
           <ThemeToggle />
 
-          <Link
-            href="/panier"
-            className="relative flex h-9 w-9 items-center justify-center rounded-md text-foreground/80 transition-colors hover:bg-muted hover:text-foreground"
-            aria-label={t("cart")}
-          >
-            <ShoppingCart className="h-4 w-4" />
-            {cartCount > 0 && (
-              <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.6rem] font-bold text-primary-foreground dark:shadow-[0_0_8px_var(--color-primary)]">
-                {cartCount}
-              </span>
-            )}
-          </Link>
-
-          {session?.user ? (
+          {session?.user && (
             <div className="hidden items-center gap-1 md:flex">
               {session.user.role === "admin" && (
                 <Link href="/admin">
@@ -79,10 +64,6 @@ export function Header() {
               </Link>
               <Button variant="ghost" size="sm" onClick={() => signOut()}>{t("logout")}</Button>
             </div>
-          ) : (
-            <Link href="/connexion" className="ms-2 hidden md:block">
-              <Button size="sm" className="px-4">{t("login")}</Button>
-            </Link>
           )}
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -107,17 +88,15 @@ export function Header() {
                     {link.label}
                   </Link>
                 ))}
-                <div className="my-2 h-px bg-border" />
-                {session?.user ? (
+                {session?.user && (
                   <>
+                    <div className="my-2 h-px bg-border" />
                     {session.user.role === "admin" && (
                       <Link href="/admin" onClick={() => setOpen(false)}>{t("admin")}</Link>
                     )}
                     <Link href="/compte" onClick={() => setOpen(false)}>{t("account")}</Link>
                     <button onClick={() => signOut()} className="text-start">{t("logout")}</button>
                   </>
-                ) : (
-                  <Link href="/connexion" onClick={() => setOpen(false)}>{t("login")}</Link>
                 )}
               </nav>
             </SheetContent>

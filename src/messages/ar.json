@@ -3,11 +3,9 @@
     "home": "الرئيسية",
     "catalog": "الكتالوج",
     "customize": "تخصيص",
-    "cart": "السلة",
     "account": "حسابي",
     "contact": "اتصل بنا",
     "faq": "الأسئلة الشائعة",
-    "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
     "admin": "الإدارة"
   },
@@ -27,11 +25,10 @@
     "colorLabel": "اللون",
     "categoryLabel": "التصنيف",
     "resetFilters": "إعادة تعيين",
-    "addToCart": "أضف إلى السلة",
     "noResults": "لا توجد منتجات مطابقة لبحثك."
   },
   "Product": {
-    "addToCart": "أضف إلى السلة",
+    "addToCart": "اطلب الآن",
     "description": "الوصف",
     "dimensions": "الأبعاد",
     "colors": "الألوان المتوفرة",
@@ -101,19 +98,11 @@
       "supportSilhouette": "قص حسب الشكل",
       "remoteLabel": "إضافة جهاز تحكم عن بعد / معتم",
       "totalPrice": "السعر الإجمالي",
-      "addToCart": "أضف إلى السلة"
+      "addToCart": "اطلب الآن"
     },
     "next": "التالي",
     "back": "رجوع",
     "cannotProceedCollision": "يرجى حل التداخلات قبل المتابعة."
-  },
-  "Cart": {
-    "title": "سلتك",
-    "empty": "سلتك فارغة",
-    "quantity": "الكمية",
-    "remove": "إزالة",
-    "subtotal": "المجموع الفرعي",
-    "checkout": "إتمام الشراء"
   },
   "Checkout": {
     "title": "إتمام الطلب",

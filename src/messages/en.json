@@ -3,11 +3,9 @@
     "home": "Home",
     "catalog": "Catalog",
     "customize": "Customize",
-    "cart": "Cart",
     "account": "My account",
     "contact": "Contact",
     "faq": "FAQ",
-    "login": "Log in",
     "logout": "Log out",
     "admin": "Administration"
   },
@@ -27,11 +25,10 @@
     "colorLabel": "Color",
     "categoryLabel": "Category",
     "resetFilters": "Reset",
-    "addToCart": "Add to cart",
     "noResults": "No products match your search."
   },
   "Product": {
-    "addToCart": "Add to cart",
+    "addToCart": "Order now",
     "description": "Description",
     "dimensions": "Dimensions",
     "colors": "Available colors",
@@ -101,19 +98,11 @@
       "supportSilhouette": "Silhouette cut",
       "remoteLabel": "Add a remote / dimmer",
       "totalPrice": "Total price",
-      "addToCart": "Add to cart"
+      "addToCart": "Order now"
     },
     "next": "Next",
     "back": "Back",
     "cannotProceedCollision": "Resolve collisions before continuing."
-  },
-  "Cart": {
-    "title": "Your cart",
-    "empty": "Your cart is empty",
-    "quantity": "Quantity",
-    "remove": "Remove",
-    "subtotal": "Subtotal",
-    "checkout": "Checkout"
   },
   "Checkout": {
     "title": "Complete your order",

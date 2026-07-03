@@ -3,11 +3,9 @@
     "home": "Accueil",
     "catalog": "Catalogue",
     "customize": "Personnaliser",
-    "cart": "Panier",
     "account": "Mon compte",
     "contact": "Contact",
     "faq": "FAQ",
-    "login": "Connexion",
     "logout": "Déconnexion",
     "admin": "Administration"
   },
@@ -27,11 +25,10 @@
     "colorLabel": "Couleur",
     "categoryLabel": "Catégorie",
     "resetFilters": "Réinitialiser",
-    "addToCart": "Ajouter au panier",
     "noResults": "Aucun produit ne correspond à votre recherche."
   },
   "Product": {
-    "addToCart": "Ajouter au panier",
+    "addToCart": "Commander",
     "description": "Description",
     "dimensions": "Dimensions",
     "colors": "Couleurs disponibles",
@@ -101,19 +98,11 @@
       "supportSilhouette": "Découpe silhouette",
       "remoteLabel": "Ajouter une télécommande / variateur",
       "totalPrice": "Prix total",
-      "addToCart": "Ajouter au panier"
+      "addToCart": "Commander"
     },
     "next": "Suivant",
     "back": "Retour",
     "cannotProceedCollision": "Résolvez les collisions avant de continuer."
-  },
-  "Cart": {
-    "title": "Votre panier",
-    "empty": "Votre panier est vide",
-    "quantity": "Quantité",
-    "remove": "Retirer",
-    "subtotal": "Sous-total",
-    "checkout": "Passer commande"
   },
   "Checkout": {
     "title": "Finaliser la commande",

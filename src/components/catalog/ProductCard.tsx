@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { useCartStore } from "@/store/cartStore";
 import type { Locale } from "@/types/locale";
 
 export interface ProductCardData {
@@ -16,9 +15,7 @@ export interface ProductCardData {
 }
 
 export function ProductCard({ product, locale }: { product: ProductCardData; locale: Locale }) {
-  const t = useTranslations("Catalog");
   const tCommon = useTranslations("Common");
-  const addItem = useCartStore((s) => s.addItem);
 
   const price = product.discountPrice ?? product.basePrice;
   const name = product.translations[locale]?.name ?? product.translations.fr?.name;
@@ -47,25 +44,10 @@ export function ProductCard({ product, locale }: { product: ProductCardData; loc
         <Link href={`/catalogue/${product.slug}`} className="font-medium leading-snug transition-colors hover:text-primary">
           {name}
         </Link>
-        <div className="mt-1 flex items-center justify-between">
+        <div className="mt-1">
           <span className="font-mono text-sm tabular-nums text-muted-foreground">
             {price.toLocaleString()} {tCommon("currency")}
           </span>
-          <button
-            onClick={() =>
-              addItem({
-                id: product._id,
-                type: "catalog",
-                name,
-                image: product.images[0],
-                unitPrice: price,
-                quantity: 1,
-              })
-            }
-            className="text-xs font-semibold uppercase tracking-[0.12em] text-primary opacity-0 transition-opacity hover:underline group-hover:opacity-100 max-md:opacity-100"
-          >
-            {t("addToCart")}
-          </button>
         </div>
       </div>
     </div>

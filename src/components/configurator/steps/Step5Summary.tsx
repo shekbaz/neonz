@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useConfiguratorStore, type SupportType } from "@/store/configuratorStore";
-import { useCartStore } from "@/store/cartStore";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,7 +22,6 @@ export function Step5Summary() {
   const t = useTranslations("Configurator.step5");
   const tCommon = useTranslations("Common");
   const router = useRouter();
-  const addCartItem = useCartStore((s) => s.addItem);
 
   const {
     paths,
@@ -74,7 +72,7 @@ export function Step5Summary() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [support, hasRemote]);
 
-  async function handleAddToCart() {
+  async function handleOrder() {
     setSubmitting(true);
     try {
       const res = await fetch("/api/customize/designs", {
@@ -99,18 +97,14 @@ export function Step5Summary() {
       }
 
       const design = await res.json();
+      const name = sourceType === "text" ? sourceText : "Enseigne personnalisée";
+      const price = priceBreakdown?.total ?? 0;
 
-      addCartItem({
-        id: design._id,
-        type: "custom",
-        name: sourceType === "text" ? sourceText : "Enseigne personnalisée",
-        unitPrice: priceBreakdown?.total ?? 0,
-        quantity: 1,
-      });
-
-      toast.success("Votre design a été ajouté au panier !");
       reset();
-      router.push("/panier");
+      router.push({
+        pathname: "/checkout",
+        query: { type: "custom", id: design._id, name, price: String(price) },
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
     } finally {
@@ -163,7 +157,7 @@ export function Step5Summary() {
         )}
       </div>
 
-      <Button size="lg" className="glow-primary h-12 w-full text-base" disabled={submitting || loadingPrice} onClick={handleAddToCart}>
+      <Button size="lg" className="glow-primary h-12 w-full text-base" disabled={submitting || loadingPrice} onClick={handleOrder}>
         {t("addToCart")}
       </Button>
     </div>

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCartStore } from "@/store/cartStore";
+import { Link } from "@/i18n/navigation";
 import { toast } from "sonner";
 
 interface CreatedOrder {
@@ -19,27 +20,40 @@ export default function CheckoutPage() {
   const t = useTranslations("Checkout");
   const tCommon = useTranslations("Common");
   const { data: session } = useSession();
-  const { items, subtotal, clear } = useCartStore();
+  const searchParams = useSearchParams();
+
+  const itemType = searchParams.get("type");
+  const itemId = searchParams.get("id");
+  const itemName = searchParams.get("name") ?? "";
+  const unitPrice = Number(searchParams.get("price") ?? "0");
+
+  const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
 
   const [guest, setGuest] = useState({ name: "", phone: "", email: "" });
   const [address, setAddress] = useState({ line1: "", city: "", wilaya: "" });
 
+  const total = unitPrice * quantity;
+  const hasValidItem = (itemType === "catalog" || itemType === "custom") && !!itemId;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!hasValidItem) return;
     setLoading(true);
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map((i) => ({
-            type: i.type,
-            product: i.type === "catalog" ? i.id : undefined,
-            customDesign: i.type === "custom" ? i.id : undefined,
-            quantity: i.quantity,
-          })),
+          items: [
+            {
+              type: itemType,
+              product: itemType === "catalog" ? itemId : undefined,
+              customDesign: itemType === "custom" ? itemId : undefined,
+              quantity,
+            },
+          ],
           shippingAddress: { ...address, country: "Algérie" },
           guestInfo: session?.user ? undefined : guest,
         }),
@@ -52,7 +66,6 @@ export default function CheckoutPage() {
 
       const order = await res.json();
       setCreatedOrder({ orderNumber: order.orderNumber, total: order.total });
-      clear();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
     } finally {
@@ -81,6 +94,24 @@ export default function CheckoutPage() {
     );
   }
 
+  if (!hasValidItem) {
+    return (
+      <div className="mx-auto max-w-md px-4 py-20 text-center sm:px-6">
+        <p className="text-muted-foreground">
+          Aucun article à commander. Choisissez un produit dans le catalogue ou créez votre néon personnalisé.
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Link href="/catalogue">
+            <Button variant="secondary">Voir le catalogue</Button>
+          </Link>
+          <Link href="/personnaliser">
+            <Button>Créer mon néon</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("title")}</h1>
@@ -89,6 +120,22 @@ export default function CheckoutPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="flex items-center gap-4 rounded-2xl border border-border bg-muted/50 p-4">
+          <div className="flex-1">
+            <p className="font-semibold">{itemName}</p>
+            <p className="text-sm text-primary">
+              {unitPrice.toLocaleString()} {tCommon("currency")}
+            </p>
+          </div>
+          <Input
+            type="number"
+            min={1}
+            value={quantity}
+            onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+            className="w-20"
+          />
+        </div>
+
         {!session?.user && (
           <div>
             <h2 className="mb-4 font-semibold">Vos coordonnées</h2>
@@ -132,11 +179,11 @@ export default function CheckoutPage() {
         <div className="flex items-center justify-between border-t border-border pt-6">
           <span className="font-semibold">Total</span>
           <span className="text-xl font-bold text-primary">
-            {subtotal().toLocaleString()} {tCommon("currency")}
+            {total.toLocaleString()} {tCommon("currency")}
           </span>
         </div>
 
-        <Button size="lg" className="w-full" disabled={loading || items.length === 0} type="submit">
+        <Button size="lg" className="w-full" disabled={loading} type="submit">
           {loading ? tCommon("loading") : "Envoyer ma commande"}
         </Button>
       </form>

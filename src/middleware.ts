@@ -17,7 +17,13 @@ export default async function middleware(request: NextRequest) {
   const pathWithoutLocale = stripLocale(request.nextUrl.pathname);
 
   if (pathWithoutLocale.startsWith("/admin")) {
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    // Doit correspondre exactement au secret utilisé par NextAuth (src/lib/auth.ts)
+    // pour signer le JWT — un secret différent invaliderait silencieusement le
+    // token et provoquerait une boucle de redirection vers /connexion.
+    const token = await getToken({
+      req: request,
+      secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+    });
 
     if (!token || token.role !== "admin") {
       const locale = request.nextUrl.pathname.split("/")[1] || routing.defaultLocale;
