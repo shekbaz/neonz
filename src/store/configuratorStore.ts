@@ -55,7 +55,7 @@ interface ConfiguratorState {
 
 const initialState = {
   step: 1 as ConfiguratorStep,
-  sourceType: null,
+  sourceType: "image" as "image" | "text" | null,
   sourceImageUrl: null,
   sourceText: "",
   fontId: "pacifico" as NeonFontId,
