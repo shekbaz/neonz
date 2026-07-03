@@ -49,10 +49,13 @@ export default async function LocaleLayout({
   const dir = isRtl(locale) ? "rtl" : "ltr";
 
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body
-        className={`${manrope.variable} ${geistMono.variable} ${bigShoulders.variable} ${cairo.variable} antialiased`}
-      >
+    <html
+      lang={locale}
+      dir={dir}
+      suppressHydrationWarning
+      className={`${manrope.variable} ${geistMono.variable} ${bigShoulders.variable} ${cairo.variable}`}
+    >
+      <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
             <AuthProvider>
