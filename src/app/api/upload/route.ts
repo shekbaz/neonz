@@ -23,8 +23,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Fichier trop volumineux (max 10 Mo)." }, { status: 400 });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const { url, publicId } = await uploadBufferToCloudinary(buffer, "uploads");
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    console.error("Upload impossible : variables CLOUDINARY_* manquantes sur le serveur.");
+    return NextResponse.json(
+      { error: "Configuration serveur incomplète pour l'upload d'images." },
+      { status: 500 }
+    );
+  }
 
-  return NextResponse.json({ url, publicId });
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  try {
+    const { url, publicId } = await uploadBufferToCloudinary(buffer, "uploads");
+    return NextResponse.json({ url, publicId });
+  } catch (error) {
+    console.error("Échec de l'upload Cloudinary:", error);
+    return NextResponse.json(
+      { error: "Échec de l'upload de l'image. Réessayez." },
+      { status: 500 }
+    );
+  }
 }
