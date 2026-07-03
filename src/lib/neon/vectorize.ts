@@ -34,6 +34,22 @@ const DEFAULT_OPTIONS: Required<VectorizeOptions> = {
   normalizeWidthPx: 800,
 };
 
+/**
+ * Fusionne les options en IGNORANT les clés explicitement `undefined`.
+ * Indispensable : les routes API passent souvent `{ threshold: undefined }`
+ * (champ optionnel non fourni), et un spread naïf `{...defaults, ...options}`
+ * écraserait alors les défauts avec `undefined` — Potrace recevrait
+ * `threshold: undefined` et ne détecterait plus AUCUN contour (path vide).
+ */
+function mergeOptions(options: VectorizeOptions): Required<VectorizeOptions> {
+  const merged = { ...DEFAULT_OPTIONS };
+  for (const key of Object.keys(options) as (keyof VectorizeOptions)[]) {
+    const value = options[key];
+    if (value !== undefined) merged[key] = value;
+  }
+  return merged;
+}
+
 /** Extrait les attributs "d" de chaque <path> du SVG généré par potrace. */
 function extractPathData(svg: string): string[] {
   const matches = [...svg.matchAll(/<path[^>]*\bd="([^"]+)"/g)];
@@ -71,7 +87,7 @@ export async function vectorizeImage(
   imageBuffer: Buffer,
   options: VectorizeOptions = {}
 ): Promise<{ paths: NeonPath[]; workspaceWidthPx: number; workspaceHeightPx: number }> {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const opts = mergeOptions(options);
 
   const normalized = await sharp(imageBuffer)
     .resize({ width: opts.normalizeWidthPx, withoutEnlargement: false })

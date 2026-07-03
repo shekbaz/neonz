@@ -48,6 +48,45 @@ export interface TextToPathResult {
 
 const DEFAULT_FONT_SIZE_PX = 200;
 
+/**
+ * Sérialise les commandes d'un Path opentype.js en attribut SVG "d".
+ *
+ * On N'UTILISE PAS `path.toPathData()` d'opentype.js 2.0.0 : son arrondi
+ * interne (`roundDecimal`) concatène le nombre à une chaîne d'exposant
+ * (`Math.round(decimalPart + "e+3")`). Quand la partie décimale est infime
+ * (ex: 1.13e-13, artefact flottant d'un offset fractionnaire comme
+ * l'ascender), la chaîne devient "1.13e-13e+3" → NaN, qui se retrouve tel
+ * quel dans le "d" et casse le rendu SVG + la détection de collision.
+ */
+function commandsToPathData(commands: opentype.PathCommand[], decimals = 3): string {
+  const n = (v: number) => {
+    const r = Number(v.toFixed(decimals));
+    // Sécurité : une coordonnée non finie invaliderait tout le tracé SVG.
+    return Number.isFinite(r) ? String(r) : "0";
+  };
+  let d = "";
+  for (const cmd of commands) {
+    switch (cmd.type) {
+      case "M":
+        d += `M${n(cmd.x)} ${n(cmd.y)}`;
+        break;
+      case "L":
+        d += `L${n(cmd.x)} ${n(cmd.y)}`;
+        break;
+      case "C":
+        d += `C${n(cmd.x1)} ${n(cmd.y1)} ${n(cmd.x2)} ${n(cmd.y2)} ${n(cmd.x)} ${n(cmd.y)}`;
+        break;
+      case "Q":
+        d += `Q${n(cmd.x1)} ${n(cmd.y1)} ${n(cmd.x)} ${n(cmd.y)}`;
+        break;
+      case "Z":
+        d += "Z";
+        break;
+    }
+  }
+  return d;
+}
+
 export async function textToNeonPaths(
   text: string,
   options: TextToPathOptions
@@ -75,7 +114,7 @@ export async function textToNeonPaths(
     if (char.trim().length > 0) {
       paths.push({
         id: `char-${index}`,
-        d: glyphPath.toPathData(3),
+        d: commandsToPathData(glyphPath.commands),
         color: NEON_COLORS[0].hex,
         order: index,
         groupId: "text",

@@ -6,6 +6,7 @@ const fontIds = NEON_FONTS.map((f) => f.id) as [string, ...string[]];
 export const textToPathInputSchema = z.object({
   text: z.string().min(1).max(60),
   fontId: z.enum(fontIds),
+  fontSizePx: z.number().min(80).max(400).optional(),
   extraLetterSpacingPx: z.number().min(0).max(200).optional(),
 });
 
@@ -13,6 +14,8 @@ export const vectorizeInputSchema = z.object({
   imageUrl: z.string().url(),
   turdSize: z.number().min(2).max(200).optional(),
   threshold: z.number().min(0).max(255).optional(),
+  /** 1 = seuil noir/blanc simple, 2-5 = posterize multi-niveaux (plus de détail) */
+  steps: z.number().int().min(1).max(5).optional(),
 });
 
 const neonPathSchema = z.object({

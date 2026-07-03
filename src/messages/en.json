@@ -64,7 +64,21 @@
       "collisionWarningDesc": "Some traces are too close together (less than 1cm) and cannot be manufactured as neon tube.",
       "suggestionsTitle": "Adjustment suggestions",
       "applyAutoFix": "Apply automatic fix",
-      "noCollision": "No collision detected, your trace is ready!"
+      "noCollision": "No collision detected, your trace is ready!",
+      "settingsTitle": "Trace settings",
+      "resetSettings": "Reset",
+      "threshold": "Black / white threshold",
+      "thresholdHint": "A higher threshold includes more light areas in the trace.",
+      "turdSize": "Detail filtering",
+      "turdSizeHint": "Ignores details smaller than this size (reduces noise and collisions).",
+      "steps": "Tracing mode",
+      "stepsSimple": "Simple silhouette (black / white)",
+      "stepsLevels": "Posterize — {count} levels",
+      "stepsHint": "Posterize traces several gray levels: more detail, but more tubes.",
+      "fontSize": "Text size",
+      "fontSizeHint": "Font size within the workspace.",
+      "letterSpacing": "Letter spacing",
+      "letterSpacingHint": "Spreads letters apart so the tubes don't touch."
     },
     "step3": {
       "title": "Choose your colors",

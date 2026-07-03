@@ -64,7 +64,21 @@
       "collisionWarningDesc": "Certains tracés sont trop proches (moins de 1cm) et ne peuvent pas être fabriqués en tube néon.",
       "suggestionsTitle": "Suggestions d'ajustement",
       "applyAutoFix": "Appliquer la correction automatique",
-      "noCollision": "Aucune collision détectée, votre tracé est prêt !"
+      "noCollision": "Aucune collision détectée, votre tracé est prêt !",
+      "settingsTitle": "Réglages du tracé",
+      "resetSettings": "Réinitialiser",
+      "threshold": "Seuil noir / blanc",
+      "thresholdHint": "Plus le seuil est haut, plus de zones claires sont incluses dans le tracé.",
+      "turdSize": "Filtrage des détails",
+      "turdSizeHint": "Ignore les détails plus petits que cette taille (réduit le bruit et les collisions).",
+      "steps": "Mode de traçage",
+      "stepsSimple": "Silhouette simple (noir / blanc)",
+      "stepsLevels": "Posterize — {count} niveaux",
+      "stepsHint": "Le mode posterize trace plusieurs niveaux de gris : plus de détail, mais plus de tubes.",
+      "fontSize": "Taille du texte",
+      "fontSizeHint": "Corps de la police dans l'espace de travail.",
+      "letterSpacing": "Espacement des lettres",
+      "letterSpacingHint": "Écarte les lettres pour éviter que les tubes ne se touchent."
     },
     "step3": {
       "title": "Choisissez vos couleurs",
