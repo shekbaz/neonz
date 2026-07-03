@@ -1,9 +1,16 @@
 import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 import { routing } from "@/i18n/routing";
 
 const intlMiddleware = createMiddleware(routing);
+
+// Instance NextAuth dédiée au middleware, construite à partir de la config
+// Edge-safe uniquement (@/lib/auth.config, sans provider ni accès base) —
+// @/lib/auth (avec bcrypt/mongoose pour le login) n'est pas compatible avec
+// l'Edge Runtime sur lequel tourne le middleware Next.js.
+const { auth } = NextAuth(authConfig);
 
 function stripLocale(pathname: string): string {
   const segments = pathname.split("/");
