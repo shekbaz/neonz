@@ -4,6 +4,7 @@ import { CustomDesign } from "@/models/CustomDesign";
 import { auth } from "@/lib/auth";
 import { customDesignCreateSchema } from "@/lib/validators/customDesign.schema";
 import { checkCollisions } from "@/lib/neon/collision";
+import { calculateDesignPrice, applyFinalOptions } from "@/lib/neon/pricing";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -27,6 +28,14 @@ export async function POST(request: NextRequest) {
   await connectDB();
   const session = await auth();
 
+  const breakdown = calculateDesignPrice({
+    paths: data.paths,
+    pxToCm: data.pxToCmRatio,
+    widthCm: data.dimensions.widthCm,
+    heightCm: data.dimensions.heightCm,
+  });
+  const price = applyFinalOptions(breakdown, { support: data.support, hasRemote: data.hasRemote });
+
   const design = await CustomDesign.create({
     user: session?.user?.id,
     status: "valid",
@@ -40,7 +49,7 @@ export async function POST(request: NextRequest) {
     collision: { hasCollision: false, zones: [], lastCheckedAt: new Date() },
     support: data.support,
     hasRemote: data.hasRemote,
-    price: { base: 0, colorSurcharge: 0, sizeSurcharge: 0, complexitySurcharge: 0, total: 0 },
+    price,
   });
 
   return NextResponse.json(design, { status: 201 });

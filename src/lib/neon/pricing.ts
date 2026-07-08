@@ -23,9 +23,17 @@ export const PRICING_CONFIG = {
 
 export interface DesignPriceBreakdown {
   base: number;
+  /** Frais fixes (conception, découpe support, alimentation de base) — sous-partie de `base`. */
+  fixedFee: number;
+  /** Coût du tube néon au linéaire — sous-partie de `base`. */
+  tubePrice: number;
   colorSurcharge: number;
   sizeSurcharge: number;
   complexitySurcharge: number;
+  /** Supplément support (rempli par applyFinalOptions, 0 tant que non appliqué). */
+  supportSurcharge: number;
+  /** Supplément télécommande/variateur (rempli par applyFinalOptions, 0 tant que non appliqué). */
+  remoteSurcharge: number;
   total: number;
   totalTubeLengthCm: number;
   currency: string;
@@ -69,9 +77,13 @@ export function calculateDesignPrice(params: {
 
   return {
     base: Math.round(base),
+    fixedFee: Math.round(cfg.basePrice),
+    tubePrice: Math.round(tubePrice),
     colorSurcharge: Math.round(colorSurcharge),
     sizeSurcharge: Math.round(sizeSurcharge),
     complexitySurcharge: Math.round(complexitySurcharge),
+    supportSurcharge: 0,
+    remoteSurcharge: 0,
     total,
     totalTubeLengthCm: Number(tubeLengthCm.toFixed(1)),
     currency: cfg.currency,
@@ -97,6 +109,8 @@ export function applyFinalOptions(
   const remotePrice = options.hasRemote ? REMOTE_OPTION_PRICE : 0;
   return {
     ...breakdown,
+    supportSurcharge: supportPrice,
+    remoteSurcharge: remotePrice,
     total: breakdown.total + supportPrice + remotePrice,
   };
 }

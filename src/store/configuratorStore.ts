@@ -1,37 +1,22 @@
 import { create } from "zustand";
-import type { CollisionResult, NeonPath } from "@/types/neon";
+import { persist, createJSONStorage } from "zustand/middleware";
+import type { NeonPath } from "@/types/neon";
 import type { DesignPriceBreakdown } from "@/lib/neon/pricing";
 import type { NeonFontId } from "@/types/neon";
+import { DEFAULT_TRACE_SETTINGS, type TraceSettings } from "@/lib/neon/traceSettings";
 
-export type ConfiguratorStep = 1 | 2 | 3 | 4 | 5;
+export type { TraceSettings };
+export { DEFAULT_TRACE_SETTINGS };
+
+export type ConfiguratorStep = 1 | 2 | 3;
 export type SupportType = "acrylic-transparent" | "acrylic-black" | "silhouette-cut";
-
-/** Réglages du traçage (étape 2) — pilotent la vectorisation (image) et la
- *  conversion texte → tracés. Conservés dans le store pour survivre aux
- *  allers-retours entre étapes. */
-export interface TraceSettings {
-  /** Image : seuil noir/blanc 0-255 (potrace) */
-  threshold: number;
-  /** Image : taille min. (px) d'un détail conservé — filtre le bruit */
-  turdSize: number;
-  /** Image : 1 = silhouette simple, 2-5 = posterize multi-niveaux */
-  steps: number;
-  /** Texte : corps de police en px dans l'espace de travail */
-  fontSizePx: number;
-  /** Texte : espacement additionnel entre lettres, en px */
-  letterSpacingPx: number;
-}
-
-export const DEFAULT_TRACE_SETTINGS: TraceSettings = {
-  threshold: 160,
-  turdSize: 8,
-  steps: 1,
-  fontSizePx: 200,
-  letterSpacingPx: 0,
-};
+export type ResolutionStatus = "idle" | "resolving" | "resolved" | "unresolved";
 
 interface ConfiguratorState {
   step: ConfiguratorStep;
+  /** Étape la plus avancée jamais atteinte — borne la navigation avant du stepper cliquable. */
+  furthestStepReached: ConfiguratorStep;
+
   sourceType: "image" | "text" | null;
   sourceImageUrl: string | null;
   sourceText: string;
@@ -47,7 +32,11 @@ interface ConfiguratorState {
   heightCm: number;
   pxToCm: number;
 
-  collisionResult: CollisionResult | null;
+  /** Statut de la résolution automatique de collision — jamais montré comme
+   *  tel à l'utilisateur, seulement utilisé pour piloter loaders/blocages. */
+  resolutionStatus: ResolutionStatus;
+  /** Clé de message en langage clair si non-résolu (ex: "traceTooDenseText"). */
+  resolutionFailureReason: string | null;
   isProcessing: boolean;
 
   support: SupportType;
@@ -68,9 +57,10 @@ interface ConfiguratorState {
 
   setPaths: (paths: NeonPath[], workspaceWidthPx: number, workspaceHeightPx: number) => void;
   setPathColor: (pathId: string, color: string) => void;
+  setAllPathColors: (color: string) => void;
 
   setDimensions: (widthCm: number, heightCm: number, pxToCm: number) => void;
-  setCollisionResult: (result: CollisionResult | null) => void;
+  setResolutionStatus: (status: ResolutionStatus, failureReason?: string | null) => void;
   setIsProcessing: (value: boolean) => void;
 
   setSupport: (support: SupportType) => void;
@@ -81,75 +71,112 @@ interface ConfiguratorState {
   reset: () => void;
 }
 
-const initialState = {
-  step: 1 as ConfiguratorStep,
-  sourceType: "image" as "image" | "text" | null,
-  sourceImageUrl: null,
-  sourceText: "",
-  fontId: "pacifico" as NeonFontId,
+const volatileInitialState = {
   traceSettings: DEFAULT_TRACE_SETTINGS,
   paths: [] as NeonPath[],
   workspaceWidthPx: 0,
   workspaceHeightPx: 0,
-  widthCm: 40,
-  heightCm: 20,
   pxToCm: 0,
-  collisionResult: null as CollisionResult | null,
+  resolutionStatus: "idle" as ResolutionStatus,
+  resolutionFailureReason: null as string | null,
   isProcessing: false,
-  support: "acrylic-transparent" as SupportType,
-  hasRemote: false,
   priceBreakdown: null as DesignPriceBreakdown | null,
 };
 
-export const useConfiguratorStore = create<ConfiguratorState>((set, get) => ({
-  ...initialState,
+const initialState = {
+  step: 1 as ConfiguratorStep,
+  furthestStepReached: 1 as ConfiguratorStep,
+  sourceType: "image" as "image" | "text" | null,
+  sourceImageUrl: null,
+  sourceText: "",
+  fontId: "pacifico" as NeonFontId,
+  widthCm: 40,
+  heightCm: 20,
+  support: "acrylic-transparent" as SupportType,
+  hasRemote: false,
+  ...volatileInitialState,
+};
 
-  setStep: (step) => set({ step }),
-  goNext: () =>
-    set((s) => ({ step: (s.step < 5 ? ((s.step + 1) as ConfiguratorStep) : s.step) })),
-  goBack: () => set((s) => ({ step: (s.step > 1 ? ((s.step - 1) as ConfiguratorStep) : s.step) })),
+export const useConfiguratorStore = create<ConfiguratorState>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-  setSourceType: (sourceType) => set({ sourceType }),
-  setSourceImageUrl: (sourceImageUrl) => set({ sourceImageUrl }),
-  setSourceText: (sourceText) => set({ sourceText }),
-  setFontId: (fontId) => set({ fontId }),
-  setTraceSettings: (partial) =>
-    set((s) => ({ traceSettings: { ...s.traceSettings, ...partial } })),
-  resetTraceSettings: () => set({ traceSettings: DEFAULT_TRACE_SETTINGS }),
+      setStep: (step) => set({ step }),
+      goNext: () =>
+        set((s) => {
+          const next = (s.step < 3 ? s.step + 1 : s.step) as ConfiguratorStep;
+          return { step: next, furthestStepReached: (Math.max(s.furthestStepReached, next) as ConfiguratorStep) };
+        }),
+      goBack: () => set((s) => ({ step: (s.step > 1 ? ((s.step - 1) as ConfiguratorStep) : s.step) })),
 
-  setPaths: (paths, workspaceWidthPx, workspaceHeightPx) =>
-    set({ paths, workspaceWidthPx, workspaceHeightPx }),
+      setSourceType: (sourceType) =>
+        set({ sourceType, paths: [], resolutionStatus: "idle", resolutionFailureReason: null }),
+      setSourceImageUrl: (sourceImageUrl) =>
+        set({ sourceImageUrl, resolutionStatus: "idle", resolutionFailureReason: null }),
+      setSourceText: (sourceText) => set({ sourceText, resolutionStatus: "idle", resolutionFailureReason: null }),
+      setFontId: (fontId) => set({ fontId, resolutionStatus: "idle", resolutionFailureReason: null }),
+      setTraceSettings: (partial) =>
+        set((s) => ({ traceSettings: { ...s.traceSettings, ...partial } })),
+      resetTraceSettings: () => set({ traceSettings: DEFAULT_TRACE_SETTINGS }),
 
-  setPathColor: (pathId, color) =>
-    set((s) => ({
-      paths: s.paths.map((p) => (p.id === pathId ? { ...p, color } : p)),
-    })),
+      setPaths: (paths, workspaceWidthPx, workspaceHeightPx) =>
+        set({ paths, workspaceWidthPx, workspaceHeightPx }),
 
-  setDimensions: (widthCm, heightCm, pxToCm) => set({ widthCm, heightCm, pxToCm }),
-  setCollisionResult: (collisionResult) => set({ collisionResult }),
-  setIsProcessing: (isProcessing) => set({ isProcessing }),
+      setPathColor: (pathId, color) =>
+        set((s) => ({
+          paths: s.paths.map((p) => (p.id === pathId ? { ...p, color } : p)),
+        })),
+      setAllPathColors: (color) =>
+        set((s) => ({ paths: s.paths.map((p) => ({ ...p, color })) })),
 
-  setSupport: (support) => set({ support }),
-  setHasRemote: (hasRemote) => set({ hasRemote }),
-  setPriceBreakdown: (priceBreakdown) => set({ priceBreakdown }),
+      setDimensions: (widthCm, heightCm, pxToCm) => set({ widthCm, heightCm, pxToCm }),
+      setResolutionStatus: (resolutionStatus, failureReason = null) =>
+        set({ resolutionStatus, resolutionFailureReason: failureReason }),
+      setIsProcessing: (isProcessing) => set({ isProcessing }),
 
-  canProceedFromCurrentStep: () => {
-    const s = get();
-    switch (s.step) {
-      case 1:
-        return s.sourceType === "image" ? !!s.sourceImageUrl : s.sourceText.trim().length > 0;
-      case 2:
-        return s.paths.length > 0 && !!s.collisionResult && !s.collisionResult.hasCollision;
-      case 3:
-        return s.paths.every((p) => !!p.color);
-      case 4:
-        return s.widthCm > 0 && s.heightCm > 0 && !s.collisionResult?.hasCollision;
-      case 5:
-        return true;
-      default:
-        return false;
+      setSupport: (support) => set({ support }),
+      setHasRemote: (hasRemote) => set({ hasRemote }),
+      setPriceBreakdown: (priceBreakdown) => set({ priceBreakdown }),
+
+      canProceedFromCurrentStep: () => {
+        const s = get();
+        switch (s.step) {
+          case 1: {
+            const hasContent = s.sourceType === "image" ? !!s.sourceImageUrl : s.sourceText.trim().length > 0;
+            return hasContent && s.resolutionStatus === "resolved";
+          }
+          case 2:
+            return s.paths.length > 0 && s.resolutionStatus !== "unresolved";
+          case 3:
+            return true;
+          default:
+            return false;
+        }
+      },
+
+      reset: () => set(initialState),
+    }),
+    {
+      name: "neonz-configurator",
+      storage: createJSONStorage(() => localStorage),
+      version: 1,
+      // Seules les entrées utilisateur sont persistées ; les tracés/prix/état
+      // de résolution sont dérivés et régénérés au montage (voir
+      // hooks/useAutoResolveDesign.ts) — jamais fait confiance à un cache
+      // potentiellement obsolète pour ces données calculées.
+      partialize: (s) => ({
+        step: s.step,
+        furthestStepReached: s.furthestStepReached,
+        sourceType: s.sourceType,
+        sourceImageUrl: s.sourceImageUrl,
+        sourceText: s.sourceText,
+        fontId: s.fontId,
+        widthCm: s.widthCm,
+        heightCm: s.heightCm,
+        support: s.support,
+        hasRemote: s.hasRemote,
+      }),
     }
-  },
-
-  reset: () => set(initialState),
-}));
+  )
+);

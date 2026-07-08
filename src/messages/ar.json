@@ -40,69 +40,62 @@
     "title": "خصص لافتة النيون الخاصة بك",
     "steps": {
       "content": "المحتوى",
-      "trace": "الخطوط",
-      "colors": "الألوان",
-      "dimensions": "الأبعاد",
-      "summary": "الملخص"
+      "style": "النمط",
+      "finalize": "الإنهاء"
     },
     "step1": {
-      "title": "اختر المحتوى الخاص بك",
       "uploadTab": "رفع صورة",
       "textTab": "إدخال نص",
       "uploadHint": "الصيغ المقبولة: PNG، JPG، SVG، WebP",
+      "contrastHint": "استخدم صورة بتباين واضح للحصول على أفضل النتائج.",
       "textLabel": "نصك",
       "textPlaceholder": "مثال: عند ماركو",
-      "fontLabel": "خط النيون"
+      "fontLabel": "خط النيون",
+      "resolving": "جاري تحسين التباعد...",
+      "traceTooDenseText": "هذا النص كثيف جدًا ليتم تصنيعه بشكل نظيف. جرّب خطًا مختلفًا أو عددًا أقل من الأحرف.",
+      "traceTooDenseImage": "هذه الصورة مفصّلة جدًا ليتم تصنيعها بشكل نظيف. جرّب صورة أبسط أو أكثر تباينًا.",
+      "genericError": "حدث خطأ. يرجى المحاولة مرة أخرى."
     },
     "step2": {
-      "title": "التحقق من الخطوط",
-      "processing": "جاري المعالجة...",
-      "collisionWarningTitle": "تم اكتشاف مناطق تداخل",
-      "collisionWarningDesc": "بعض الخطوط متقاربة جدًا (أقل من 1 سم) ولا يمكن تصنيعها كأنبوب نيون.",
-      "suggestionsTitle": "اقتراحات التعديل",
-      "applyAutoFix": "تطبيق التصحيح التلقائي",
-      "noCollision": "لم يتم اكتشاف أي تداخل، رسمك جاهز!",
-      "settingsTitle": "إعدادات التتبع",
-      "resetSettings": "إعادة التعيين",
-      "threshold": "عتبة الأسود / الأبيض",
-      "thresholdHint": "كلما ارتفعت العتبة، زادت المناطق الفاتحة المشمولة في التتبع.",
-      "turdSize": "تصفية التفاصيل",
-      "turdSizeHint": "يتجاهل التفاصيل الأصغر من هذا الحجم (يقلل الضوضاء والتداخلات).",
-      "steps": "وضع التتبع",
-      "stepsSimple": "صورة ظلية بسيطة (أسود / أبيض)",
-      "stepsLevels": "تدرّج — {count} مستويات",
-      "stepsHint": "وضع التدرّج يتتبع عدة مستويات رمادية: تفاصيل أكثر، لكن أنابيب أكثر.",
-      "fontSize": "حجم النص",
-      "fontSizeHint": "حجم الخط داخل مساحة العمل.",
-      "letterSpacing": "تباعد الحروف",
-      "letterSpacingHint": "يباعد بين الحروف حتى لا تتلامس الأنابيب."
-    },
-    "step3": {
-      "title": "اختر ألوانك",
+      "globalColorLabel": "لون اللافتة",
+      "advancedColorToggle": "تخصيص حرفًا بحرف",
       "selectPathHint": "انقر على خط في المعاينة لتعيين لون له",
+      "selectedPathLabel": "الخط المحدد رقم {index}",
       "dayPreview": "معاينة نهارية",
-      "nightPreview": "معاينة ليلية"
-    },
-    "step4": {
-      "title": "أبعاد اللافتة",
+      "nightPreview": "معاينة ليلية",
       "widthLabel": "العرض (سم)",
       "heightLabel": "الارتفاع (سم)",
+      "linkProportions": "ربط النسب",
+      "linkedProportionsHint": "يتم تكبير اللافتة بشكل موحّد: قم بإيقاف هذا الخيار لضبط العرض والارتفاع بشكل مستقل.",
       "maxSizeWarning": "الأبعاد القصوى: 90 سم × 90 سم",
-      "recalculating": "جاري إعادة حساب الخطوط..."
+      "priceBreakdownTitle": "تفاصيل السعر",
+      "lineBase": "الرسوم الأساسية",
+      "lineTube": "أنبوب النيون",
+      "lineColors": "ألوان إضافية",
+      "lineSize": "حجم القاعدة",
+      "lineComplexity": "التعقيد",
+      "lineTotal": "المجموع",
+      "priceEstimateFootnote": "تقدير لا يشمل القاعدة وجهاز التحكم عن بعد، يتم اختيارهما في الخطوة التالية."
     },
-    "step5": {
-      "title": "ملخص إبداعك",
+    "step3": {
       "supportLabel": "القاعدة",
       "supportAcrylicTransparent": "أكريليك شفاف",
       "supportAcrylicBlack": "أكريليك أسود",
       "supportSilhouette": "قص حسب الشكل",
       "remoteLabel": "إضافة جهاز تحكم عن بعد / معتم",
+      "priceBreakdownTitle": "تفاصيل السعر",
+      "lineBase": "الرسوم الأساسية",
+      "lineTube": "أنبوب النيون",
+      "lineColors": "ألوان إضافية",
+      "lineSize": "حجم القاعدة",
+      "lineComplexity": "التعقيد",
+      "lineSupport": "القاعدة المختارة",
+      "lineRemote": "جهاز التحكم عن بعد / المعتم",
       "totalPrice": "السعر الإجمالي",
       "addToCart": "اطلب الآن"
     },
     "next": "التالي",
-    "back": "رجوع",
-    "cannotProceedCollision": "يرجى حل التداخلات قبل المتابعة."
+    "back": "رجوع"
   },
   "Checkout": {
     "title": "إتمام الطلب",

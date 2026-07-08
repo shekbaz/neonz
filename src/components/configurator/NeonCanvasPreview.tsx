@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import type { CollisionZone, NeonPath } from "@/types/neon";
+import type { NeonPath } from "@/types/neon";
 import { cn } from "@/lib/utils";
 
 interface NeonCanvasPreviewProps {
@@ -10,7 +10,6 @@ interface NeonCanvasPreviewProps {
   workspaceHeightPx: number;
   background?: "day" | "night";
   selectedPathId?: string | null;
-  collisionZones?: CollisionZone[];
   onPathClick?: (pathId: string) => void;
   className?: string;
 }
@@ -18,7 +17,9 @@ interface NeonCanvasPreviewProps {
 /**
  * Rendu SVG du design néon avec effet de lumière simulé (superposition de
  * filtres de flou de différentes intensités, à la manière d'un vrai tube LED
- * vu de nuit). Les tracés en zone de collision sont surlignés en rouge.
+ * vu de nuit). La résolution de collision est entièrement automatique côté
+ * serveur (voir lib/neon/autoResolve.ts) — ce composant n'a plus besoin
+ * d'afficher d'état de collision.
  */
 export function NeonCanvasPreview({
   paths,
@@ -26,13 +27,10 @@ export function NeonCanvasPreview({
   workspaceHeightPx,
   background = "night",
   selectedPathId,
-  collisionZones = [],
   onPathClick,
   className,
 }: NeonCanvasPreviewProps) {
   const filterId = useId();
-
-  const pathIdsInCollision = new Set(collisionZones.flatMap((z) => z.pathIds));
 
   return (
     <div
@@ -66,7 +64,6 @@ export function NeonCanvasPreview({
         </defs>
 
         {paths.map((path) => {
-          const isCollision = pathIdsInCollision.has(path.id);
           const isSelected = selectedPathId === path.id;
 
           return (
@@ -74,7 +71,7 @@ export function NeonCanvasPreview({
               {/* Halo large (glow ambiant) */}
               <path
                 d={path.d}
-                stroke={isCollision ? "#ff0033" : path.color}
+                stroke={path.color}
                 strokeWidth={6}
                 fill="none"
                 strokeLinecap="round"
@@ -84,7 +81,7 @@ export function NeonCanvasPreview({
               {/* Tube net + halo proche */}
               <path
                 d={path.d}
-                stroke={isCollision ? "#ff0033" : path.color}
+                stroke={path.color}
                 strokeWidth={3}
                 fill="none"
                 strokeLinecap="round"

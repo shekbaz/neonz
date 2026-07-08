@@ -40,69 +40,62 @@
     "title": "Personnalisez votre enseigne néon",
     "steps": {
       "content": "Contenu",
-      "trace": "Tracés",
-      "colors": "Couleurs",
-      "dimensions": "Dimensions",
-      "summary": "Récapitulatif"
+      "style": "Style",
+      "finalize": "Finaliser"
     },
     "step1": {
-      "title": "Choisissez votre contenu",
       "uploadTab": "Uploader une image",
       "textTab": "Saisir un texte",
       "uploadHint": "Formats acceptés : PNG, JPG, SVG, WebP",
+      "contrastHint": "Utilisez une image avec un contraste marqué pour de meilleurs résultats.",
       "textLabel": "Votre texte",
       "textPlaceholder": "Ex: Chez Marco",
-      "fontLabel": "Police néon"
+      "fontLabel": "Police néon",
+      "resolving": "Optimisation de l'espacement...",
+      "traceTooDenseText": "Ce texte est trop dense pour être fabriqué proprement. Essayez une police différente ou moins de caractères.",
+      "traceTooDenseImage": "Cette image est trop détaillée pour être fabriquée proprement. Essayez une image plus simple ou plus contrastée.",
+      "genericError": "Une erreur est survenue. Réessayez."
     },
     "step2": {
-      "title": "Vérification des tracés",
-      "processing": "Traitement en cours...",
-      "collisionWarningTitle": "Zones de collision détectées",
-      "collisionWarningDesc": "Certains tracés sont trop proches (moins de 1cm) et ne peuvent pas être fabriqués en tube néon.",
-      "suggestionsTitle": "Suggestions d'ajustement",
-      "applyAutoFix": "Appliquer la correction automatique",
-      "noCollision": "Aucune collision détectée, votre tracé est prêt !",
-      "settingsTitle": "Réglages du tracé",
-      "resetSettings": "Réinitialiser",
-      "threshold": "Seuil noir / blanc",
-      "thresholdHint": "Plus le seuil est haut, plus de zones claires sont incluses dans le tracé.",
-      "turdSize": "Filtrage des détails",
-      "turdSizeHint": "Ignore les détails plus petits que cette taille (réduit le bruit et les collisions).",
-      "steps": "Mode de traçage",
-      "stepsSimple": "Silhouette simple (noir / blanc)",
-      "stepsLevels": "Posterize — {count} niveaux",
-      "stepsHint": "Le mode posterize trace plusieurs niveaux de gris : plus de détail, mais plus de tubes.",
-      "fontSize": "Taille du texte",
-      "fontSizeHint": "Corps de la police dans l'espace de travail.",
-      "letterSpacing": "Espacement des lettres",
-      "letterSpacingHint": "Écarte les lettres pour éviter que les tubes ne se touchent."
-    },
-    "step3": {
-      "title": "Choisissez vos couleurs",
+      "globalColorLabel": "Couleur de l'enseigne",
+      "advancedColorToggle": "Personnaliser lettre par lettre",
       "selectPathHint": "Cliquez sur un tracé dans l'aperçu pour lui assigner une couleur",
+      "selectedPathLabel": "Tracé sélectionné n°{index}",
       "dayPreview": "Aperçu jour",
-      "nightPreview": "Aperçu nuit"
-    },
-    "step4": {
-      "title": "Dimensions de l'enseigne",
+      "nightPreview": "Aperçu nuit",
       "widthLabel": "Largeur (cm)",
       "heightLabel": "Hauteur (cm)",
+      "linkProportions": "Lier les proportions",
+      "linkedProportionsHint": "L'enseigne est mise à l'échelle uniformément : désactivez pour ajuster largeur et hauteur indépendamment.",
       "maxSizeWarning": "Dimensions maximales : 90cm x 90cm",
-      "recalculating": "Recalcul des tracés en cours..."
+      "priceBreakdownTitle": "Détail du prix",
+      "lineBase": "Frais de base",
+      "lineTube": "Tube néon",
+      "lineColors": "Couleurs supplémentaires",
+      "lineSize": "Taille du support",
+      "lineComplexity": "Complexité",
+      "lineTotal": "Total",
+      "priceEstimateFootnote": "Estimation hors support et télécommande, à choisir à l'étape suivante."
     },
-    "step5": {
-      "title": "Récapitulatif de votre création",
+    "step3": {
       "supportLabel": "Support",
       "supportAcrylicTransparent": "Acrylique transparent",
       "supportAcrylicBlack": "Acrylique noir",
       "supportSilhouette": "Découpe silhouette",
       "remoteLabel": "Ajouter une télécommande / variateur",
+      "priceBreakdownTitle": "Détail du prix",
+      "lineBase": "Frais de base",
+      "lineTube": "Tube néon",
+      "lineColors": "Couleurs supplémentaires",
+      "lineSize": "Taille du support",
+      "lineComplexity": "Complexité",
+      "lineSupport": "Support choisi",
+      "lineRemote": "Télécommande / variateur",
       "totalPrice": "Prix total",
       "addToCart": "Commander"
     },
     "next": "Suivant",
-    "back": "Retour",
-    "cannotProceedCollision": "Résolvez les collisions avant de continuer."
+    "back": "Retour"
   },
   "Checkout": {
     "title": "Finaliser la commande",

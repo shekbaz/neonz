@@ -40,69 +40,62 @@
     "title": "Customize your neon sign",
     "steps": {
       "content": "Content",
-      "trace": "Traces",
-      "colors": "Colors",
-      "dimensions": "Dimensions",
-      "summary": "Summary"
+      "style": "Style",
+      "finalize": "Finalize"
     },
     "step1": {
-      "title": "Choose your content",
       "uploadTab": "Upload an image",
       "textTab": "Enter text",
       "uploadHint": "Accepted formats: PNG, JPG, SVG, WebP",
+      "contrastHint": "Use a high-contrast image for best results.",
       "textLabel": "Your text",
       "textPlaceholder": "E.g: Chez Marco",
-      "fontLabel": "Neon font"
+      "fontLabel": "Neon font",
+      "resolving": "Optimizing spacing...",
+      "traceTooDenseText": "This text is too dense to be manufactured cleanly. Try a different font or fewer characters.",
+      "traceTooDenseImage": "This image is too detailed to be manufactured cleanly. Try a simpler or higher-contrast image.",
+      "genericError": "Something went wrong. Please try again."
     },
     "step2": {
-      "title": "Trace verification",
-      "processing": "Processing...",
-      "collisionWarningTitle": "Collision zones detected",
-      "collisionWarningDesc": "Some traces are too close together (less than 1cm) and cannot be manufactured as neon tube.",
-      "suggestionsTitle": "Adjustment suggestions",
-      "applyAutoFix": "Apply automatic fix",
-      "noCollision": "No collision detected, your trace is ready!",
-      "settingsTitle": "Trace settings",
-      "resetSettings": "Reset",
-      "threshold": "Black / white threshold",
-      "thresholdHint": "A higher threshold includes more light areas in the trace.",
-      "turdSize": "Detail filtering",
-      "turdSizeHint": "Ignores details smaller than this size (reduces noise and collisions).",
-      "steps": "Tracing mode",
-      "stepsSimple": "Simple silhouette (black / white)",
-      "stepsLevels": "Posterize — {count} levels",
-      "stepsHint": "Posterize traces several gray levels: more detail, but more tubes.",
-      "fontSize": "Text size",
-      "fontSizeHint": "Font size within the workspace.",
-      "letterSpacing": "Letter spacing",
-      "letterSpacingHint": "Spreads letters apart so the tubes don't touch."
-    },
-    "step3": {
-      "title": "Choose your colors",
+      "globalColorLabel": "Sign color",
+      "advancedColorToggle": "Customize letter by letter",
       "selectPathHint": "Click a trace in the preview to assign it a color",
+      "selectedPathLabel": "Selected trace #{index}",
       "dayPreview": "Day preview",
-      "nightPreview": "Night preview"
-    },
-    "step4": {
-      "title": "Sign dimensions",
+      "nightPreview": "Night preview",
       "widthLabel": "Width (cm)",
       "heightLabel": "Height (cm)",
+      "linkProportions": "Link proportions",
+      "linkedProportionsHint": "The sign scales uniformly: turn off to set width and height independently.",
       "maxSizeWarning": "Maximum dimensions: 90cm x 90cm",
-      "recalculating": "Recalculating traces..."
+      "priceBreakdownTitle": "Price breakdown",
+      "lineBase": "Base fee",
+      "lineTube": "Neon tube",
+      "lineColors": "Extra colors",
+      "lineSize": "Backing size",
+      "lineComplexity": "Complexity",
+      "lineTotal": "Total",
+      "priceEstimateFootnote": "Estimate excludes backing and remote, chosen in the next step."
     },
-    "step5": {
-      "title": "Summary of your creation",
+    "step3": {
       "supportLabel": "Backing",
       "supportAcrylicTransparent": "Transparent acrylic",
       "supportAcrylicBlack": "Black acrylic",
       "supportSilhouette": "Silhouette cut",
       "remoteLabel": "Add a remote / dimmer",
+      "priceBreakdownTitle": "Price breakdown",
+      "lineBase": "Base fee",
+      "lineTube": "Neon tube",
+      "lineColors": "Extra colors",
+      "lineSize": "Backing size",
+      "lineComplexity": "Complexity",
+      "lineSupport": "Chosen backing",
+      "lineRemote": "Remote / dimmer",
       "totalPrice": "Total price",
       "addToCart": "Order now"
     },
     "next": "Next",
-    "back": "Back",
-    "cannotProceedCollision": "Resolve collisions before continuing."
+    "back": "Back"
   },
   "Checkout": {
     "title": "Complete your order",

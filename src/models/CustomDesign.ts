@@ -57,9 +57,13 @@ const customDesignSchema = new Schema(
 
     price: {
       base: { type: Number, required: true },
+      fixedFee: { type: Number },
+      tubePrice: { type: Number },
       colorSurcharge: { type: Number, required: true },
       sizeSurcharge: { type: Number, required: true },
       complexitySurcharge: { type: Number, required: true },
+      supportSurcharge: { type: Number },
+      remoteSurcharge: { type: Number },
       total: { type: Number, required: true },
     },
 

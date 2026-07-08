@@ -18,8 +18,8 @@ const SUPPORT_OPTIONS: { value: SupportType; labelKey: string }[] = [
   { value: "silhouette-cut", labelKey: "supportSilhouette" },
 ];
 
-export function Step5Summary() {
-  const t = useTranslations("Configurator.step5");
+export function Step3Finalize() {
+  const t = useTranslations("Configurator.step3");
   const tCommon = useTranslations("Common");
   const router = useRouter();
 
@@ -144,6 +144,52 @@ export function Step5Summary() {
       <div className="flex items-center justify-between rounded-xl bg-card p-4 ring-1 ring-foreground/10">
         <Label htmlFor="remote">{t("remoteLabel")}</Label>
         <Switch id="remote" checked={hasRemote} onCheckedChange={setHasRemote} />
+      </div>
+
+      <div className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
+        <p className="mb-3 text-sm font-semibold">{t("priceBreakdownTitle")}</p>
+        {priceBreakdown ? (
+          <dl className="space-y-1.5 text-sm">
+            <div className="flex justify-between text-muted-foreground">
+              <dt>{t("lineBase")}</dt>
+              <dd className="tabular-nums">{priceBreakdown.fixedFee.toLocaleString()} {tCommon("currency")}</dd>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <dt>{t("lineTube")}</dt>
+              <dd className="tabular-nums">{priceBreakdown.tubePrice.toLocaleString()} {tCommon("currency")}</dd>
+            </div>
+            {priceBreakdown.colorSurcharge > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <dt>{t("lineColors")}</dt>
+                <dd className="tabular-nums">{priceBreakdown.colorSurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              </div>
+            )}
+            <div className="flex justify-between text-muted-foreground">
+              <dt>{t("lineSize")}</dt>
+              <dd className="tabular-nums">{priceBreakdown.sizeSurcharge.toLocaleString()} {tCommon("currency")}</dd>
+            </div>
+            {priceBreakdown.complexitySurcharge > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <dt>{t("lineComplexity")}</dt>
+                <dd className="tabular-nums">{priceBreakdown.complexitySurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              </div>
+            )}
+            {priceBreakdown.supportSurcharge > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <dt>{t("lineSupport")}</dt>
+                <dd className="tabular-nums">{priceBreakdown.supportSurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              </div>
+            )}
+            {priceBreakdown.remoteSurcharge > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <dt>{t("lineRemote")}</dt>
+                <dd className="tabular-nums">{priceBreakdown.remoteSurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              </div>
+            )}
+          </dl>
+        ) : (
+          <p className="text-sm text-muted-foreground">—</p>
+        )}
       </div>
 
       <div className="flex items-center justify-between border-t border-border pt-6">
