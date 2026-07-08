@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { ImageUploader } from "@/components/admin/ImageUploader";
+import { ColorPicker } from "@/components/admin/ColorPicker";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 
@@ -14,6 +16,12 @@ interface CategoryOption {
   _id: string;
   slug: string;
   translations: { fr: { name: string } };
+}
+
+interface ColorOption {
+  _id: string;
+  name: string;
+  hex: string;
 }
 
 interface ProductInitialData {
@@ -38,10 +46,12 @@ const emptyTranslation = { name: "", description: "" };
 
 export function ProductForm({
   categories,
+  colors,
   productId,
   initialData,
 }: {
   categories: CategoryOption[];
+  colors: ColorOption[];
   productId?: string;
   initialData?: ProductInitialData;
 }) {
@@ -50,8 +60,8 @@ export function ProductForm({
   const [form, setForm] = useState({
     slug: initialData?.slug ?? "",
     category: initialData?.category ?? categories[0]?._id ?? "",
-    images: initialData?.images.join(", ") ?? "",
-    colors: initialData?.colors.join(", ") ?? "",
+    images: initialData?.images ?? [],
+    colors: initialData?.colors ?? [],
     basePrice: initialData?.basePrice ?? 0,
     stock: initialData?.stock ?? 0,
     isCustomizable: initialData?.isCustomizable ?? false,
@@ -74,11 +84,7 @@ export function ProductForm({
       const res = await fetch(isEditing ? `/api/products/${productId}` : "/api/products", {
         method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
-          colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
-        }),
+        body: JSON.stringify(form),
       });
 
       if (!res.ok) {
@@ -161,13 +167,23 @@ export function ProductForm({
       </div>
 
       <div>
-        <Label htmlFor="images">Images (URLs séparées par des virgules)</Label>
-        <Input id="images" value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} />
+        <Label>Images</Label>
+        <ImageUploader images={form.images} onChange={(images) => setForm({ ...form, images })} />
       </div>
 
       <div>
-        <Label htmlFor="colors">Couleurs (codes hex séparés par des virgules)</Label>
-        <Input id="colors" value={form.colors} onChange={(e) => setForm({ ...form, colors: e.target.value })} />
+        <Label>Couleurs</Label>
+        {colors.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aucune couleur dans la palette — ajoutez-en depuis la page Couleurs.
+          </p>
+        ) : (
+          <ColorPicker
+            colors={colors}
+            selected={form.colors}
+            onChange={(selected) => setForm({ ...form, colors: selected })}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
