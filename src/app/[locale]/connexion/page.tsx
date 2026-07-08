@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,7 +51,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Label htmlFor="email">{t("email")}</Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input id="email" type="text" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
           <Label htmlFor="password">{t("password")}</Label>
@@ -61,13 +61,6 @@ export default function LoginPage() {
           {t("submit")}
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        {t("noAccount")}{" "}
-        <Link href="/inscription" className="text-primary hover:underline">
-          {t("registerTitle")}
-        </Link>
-      </p>
     </div>
   );
 }

@@ -112,13 +112,9 @@
   },
   "Auth": {
     "loginTitle": "Connexion",
-    "registerTitle": "Créer un compte",
     "email": "Adresse e-mail",
     "password": "Mot de passe",
-    "name": "Nom complet",
-    "submit": "Valider",
-    "noAccount": "Pas encore de compte ?",
-    "haveAccount": "Déjà inscrit ?"
+    "submit": "Valider"
   },
   "Admin": {
     "dashboard": "Tableau de bord",

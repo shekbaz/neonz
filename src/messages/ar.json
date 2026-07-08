@@ -112,13 +112,9 @@
   },
   "Auth": {
     "loginTitle": "تسجيل الدخول",
-    "registerTitle": "إنشاء حساب",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
-    "name": "الاسم الكامل",
-    "submit": "تأكيد",
-    "noAccount": "ليس لديك حساب؟",
-    "haveAccount": "لديك حساب بالفعل؟"
+    "submit": "تأكيد"
   },
   "Admin": {
     "dashboard": "لوحة التحكم",

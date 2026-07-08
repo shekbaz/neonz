@@ -102,17 +102,30 @@ async function seed() {
     },
   ]);
 
-  const adminEmail = "admin@neonz.dz";
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.toLowerCase();
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminEmail || !adminPassword) {
+    throw new Error(
+      "SEED_ADMIN_EMAIL et SEED_ADMIN_PASSWORD doivent être définis dans l'environnement."
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(adminPassword, 12);
   const existingAdmin = await User.findOne({ email: adminEmail });
   if (!existingAdmin) {
-    const hashedPassword = await bcrypt.hash("Admin1234!", 12);
     await User.create({
       name: "Admin NEONZ",
       email: adminEmail,
       password: hashedPassword,
       role: "admin",
     });
-    console.log(`Compte admin créé : ${adminEmail} / Admin1234!`);
+    console.log(`Compte admin créé : ${adminEmail}`);
+  } else {
+    // Rejoue le seed pour tourner le mot de passe (ex: après une fuite de l'ancien).
+    existingAdmin.password = hashedPassword;
+    existingAdmin.role = "admin";
+    await existingAdmin.save();
+    console.log(`Mot de passe admin mis à jour : ${adminEmail}`);
   }
 
   console.log("Seed terminé avec succès.");

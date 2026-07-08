@@ -112,13 +112,9 @@
   },
   "Auth": {
     "loginTitle": "Log in",
-    "registerTitle": "Create an account",
     "email": "Email address",
     "password": "Password",
-    "name": "Full name",
-    "submit": "Submit",
-    "noAccount": "No account yet?",
-    "haveAccount": "Already registered?"
+    "submit": "Submit"
   },
   "Admin": {
     "dashboard": "Dashboard",
