@@ -67,6 +67,17 @@ export const NEON_FONTS = [
   { id: "tangerine", label: "Tangerine", file: "/fonts/Tangerine-Bold.ttf" },
   { id: "sacramento", label: "Sacramento", file: "/fonts/Sacramento-Regular.ttf" },
   { id: "great-vibes", label: "Great Vibes", file: "/fonts/GreatVibes-Regular.ttf" },
+  { id: "lobster", label: "Lobster", file: "/fonts/Lobster-Regular.ttf" },
+  { id: "alex-brush", label: "Alex Brush", file: "/fonts/AlexBrush-Regular.ttf" },
+  { id: "allura", label: "Allura", file: "/fonts/Allura-Regular.ttf" },
+  { id: "kaushan-script", label: "Kaushan Script", file: "/fonts/KaushanScript-Regular.ttf" },
+  { id: "poppins-bold", label: "Poppins Bold", file: "/fonts/Poppins-Bold.ttf" },
+  { id: "bebas-neue", label: "Bebas Neue", file: "/fonts/BebasNeue-Regular.ttf" },
+  { id: "anton", label: "Anton", file: "/fonts/Anton-Regular.ttf" },
+  { id: "righteous", label: "Righteous", file: "/fonts/Righteous-Regular.ttf" },
+  { id: "pathway-gothic", label: "Pathway Gothic", file: "/fonts/PathwayGothicOne-Regular.ttf" },
+  { id: "bangers", label: "Bangers", file: "/fonts/Bangers-Regular.ttf" },
+  { id: "monoton", label: "Monoton", file: "/fonts/Monoton-Regular.ttf" },
 ] as const;
 
 export type NeonFontId = (typeof NEON_FONTS)[number]["id"];

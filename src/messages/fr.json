@@ -50,6 +50,7 @@
       "contrastHint": "Utilisez une image avec un contraste marqué pour de meilleurs résultats.",
       "textLabel": "Votre texte",
       "textPlaceholder": "Ex: Chez Marco",
+      "singleLineHint": "Le texte s'affiche sur une seule ligne.",
       "fontLabel": "Police néon",
       "resolving": "Optimisation de l'espacement...",
       "traceTooDenseText": "Ce texte est trop dense pour être fabriqué proprement. Essayez une police différente ou moins de caractères.",

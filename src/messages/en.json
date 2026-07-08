@@ -50,6 +50,7 @@
       "contrastHint": "Use a high-contrast image for best results.",
       "textLabel": "Your text",
       "textPlaceholder": "E.g: Chez Marco",
+      "singleLineHint": "The text is displayed on a single line.",
       "fontLabel": "Neon font",
       "resolving": "Optimizing spacing...",
       "traceTooDenseText": "This text is too dense to be manufactured cleanly. Try a different font or fewer characters.",

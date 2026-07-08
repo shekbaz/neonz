@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UploadCloud, Loader2, AlertCircle } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -101,13 +101,14 @@ export function Step1Content() {
         <TabsContent value="text" className="mt-6 space-y-4">
           <div>
             <Label htmlFor="neon-text">{t("textLabel")}</Label>
-            <Textarea
+            <Input
               id="neon-text"
               placeholder={t("textPlaceholder")}
               maxLength={60}
               value={sourceText}
-              onChange={(e) => setSourceText(e.target.value)}
+              onChange={(e) => setSourceText(e.target.value.replace(/[\r\n]+/g, " "))}
             />
+            <p className="mt-1 text-xs text-muted-foreground">{t("singleLineHint")}</p>
           </div>
 
           <div>

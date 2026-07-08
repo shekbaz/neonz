@@ -90,8 +90,12 @@ const initialState = {
   sourceImageUrl: null,
   sourceText: "",
   fontId: "pacifico" as NeonFontId,
-  widthCm: 40,
-  heightCm: 20,
+  // Départ plus généreux que le minimum (10cm) : une phrase de quelques mots
+  // a besoin de cette marge pour que la résolution auto de collision
+  // (lib/neon/autoResolve.ts) ait la place de séparer les lettres sans
+  // buter immédiatement sur le plafond de 90cm.
+  widthCm: 60,
+  heightCm: 30,
   support: "acrylic-transparent" as SupportType,
   hasRemote: false,
   ...volatileInitialState,
