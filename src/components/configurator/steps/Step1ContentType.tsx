@@ -108,7 +108,11 @@ export function Step1ContentType() {
 
         <div>
           <Label htmlFor="neon-font">{t("fontLabel")}</Label>
-          <Select value={fontId} onValueChange={(v) => setFontId(v as NeonFontId)}>
+          <Select
+            items={NEON_FONTS.map((font) => ({ value: font.id, label: font.label }))}
+            value={fontId}
+            onValueChange={(v) => setFontId(v as NeonFontId)}
+          >
             <SelectTrigger id="neon-font" className="w-full">
               <SelectValue />
             </SelectTrigger>

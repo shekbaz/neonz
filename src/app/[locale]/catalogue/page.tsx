@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/models/Product";
 import { Category } from "@/models/Category";
+import { Color } from "@/models/Color";
 import { ProductCard } from "@/components/catalog/ProductCard";
 import { CatalogFilters } from "@/components/catalog/CatalogFilters";
 import type { Locale } from "@/types/locale";
@@ -39,9 +40,10 @@ export default async function CataloguePage({
     };
   }
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, colors] = await Promise.all([
     Product.find(filter).sort({ createdAt: -1 }).limit(48).lean(),
     Category.find().sort({ order: 1 }).lean(),
+    Color.find().sort({ createdAt: 1 }).lean(),
   ]);
 
   return (
@@ -53,7 +55,11 @@ export default async function CataloguePage({
       <h1 className="mb-10 font-display text-5xl font-bold uppercase tracking-[0.03em] sm:text-6xl">{t("title")}</h1>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[240px_1fr]">
-        <CatalogFilters categories={JSON.parse(JSON.stringify(categories))} locale={locale} />
+        <CatalogFilters
+          categories={JSON.parse(JSON.stringify(categories))}
+          colors={JSON.parse(JSON.stringify(colors))}
+          locale={locale}
+        />
 
         {products.length === 0 ? (
           <p className="text-muted-foreground">{t("noResults")}</p>

@@ -152,7 +152,11 @@ export function ProductForm({
 
       <div>
         <Label>Catégorie</Label>
-        <Select value={form.category} onValueChange={(v) => v && setForm({ ...form, category: v })}>
+        <Select
+          items={categories.map((cat) => ({ value: cat._id, label: cat.translations.fr.name }))}
+          value={form.category}
+          onValueChange={(v) => v && setForm({ ...form, category: v })}
+        >
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>

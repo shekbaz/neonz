@@ -46,7 +46,7 @@ export function OrderStatusUpdater({ orderId, currentStatus }: { orderId: string
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={status} onValueChange={(v) => v && setStatus(v)}>
+      <Select items={STATUSES} value={status} onValueChange={(v) => v && setStatus(v)}>
         <SelectTrigger className="w-44">
           <SelectValue />
         </SelectTrigger>

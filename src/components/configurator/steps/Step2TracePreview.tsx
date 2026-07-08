@@ -231,6 +231,13 @@ export function Step2TracePreview() {
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="trace-steps">{t("steps")}</Label>
               <Select
+                items={[
+                  { value: "1", label: t("stepsSimple") },
+                  { value: "2", label: t("stepsLevels", { count: 2 }) },
+                  { value: "3", label: t("stepsLevels", { count: 3 }) },
+                  { value: "4", label: t("stepsLevels", { count: 4 }) },
+                  { value: "5", label: t("stepsLevels", { count: 5 }) },
+                ]}
                 value={String(traceSettings.steps)}
                 onValueChange={(v) => setTraceSettings({ steps: Number(v) })}
               >

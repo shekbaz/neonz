@@ -4,7 +4,8 @@ interface ReviewDoc {
   _id: string;
   rating: number;
   comment: string;
-  user: { name: string };
+  authorName?: string;
+  user?: { name: string };
 }
 
 export function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
@@ -24,7 +25,7 @@ export function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
           <blockquote className="flex-1 text-sm leading-relaxed text-muted-foreground">{review.comment}</blockquote>
           <figcaption className="mt-4 flex items-center gap-2 text-sm font-medium">
             <span className="tube-dash w-3!" aria-hidden />
-            {review.user?.name}
+            {review.authorName ?? review.user?.name ?? "Client NEONZ"}
           </figcaption>
         </figure>
       ))}

@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { NEON_COLORS } from "@/types/neon";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/types/locale";
 
@@ -14,7 +13,21 @@ interface CategoryDoc {
   translations: Record<Locale, { name: string }>;
 }
 
-export function CatalogFilters({ categories, locale }: { categories: CategoryDoc[]; locale: Locale }) {
+interface ColorDoc {
+  _id: string;
+  name: string;
+  hex: string;
+}
+
+export function CatalogFilters({
+  categories,
+  colors,
+  locale,
+}: {
+  categories: CategoryDoc[];
+  colors: ColorDoc[];
+  locale: Locale;
+}) {
   const t = useTranslations("Catalog");
   const router = useRouter();
   const pathname = usePathname();
@@ -50,27 +63,29 @@ export function CatalogFilters({ categories, locale }: { categories: CategoryDoc
         </div>
       </div>
 
-      <div>
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("colorLabel")}</h3>
-        <div className="flex flex-wrap gap-2">
-          {NEON_COLORS.map((color) => (
-            <button
-              key={color.id}
-              onClick={() => updateParam("color", activeColor === color.id ? null : color.id)}
-              className={cn(
-                "h-7 w-7 rounded-full ring-offset-2 ring-offset-background transition-all hover:scale-110",
-                activeColor === color.id && "scale-110 ring-2 ring-foreground/70"
-              )}
-              style={{
-                backgroundColor: color.hex,
-                boxShadow: activeColor === color.id ? `0 0 10px ${color.hex}` : undefined,
-              }}
-              aria-label={color.label}
-              aria-pressed={activeColor === color.id}
-            />
-          ))}
+      {colors.length > 0 && (
+        <div>
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{t("colorLabel")}</h3>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((color) => (
+              <button
+                key={color._id}
+                onClick={() => updateParam("color", activeColor === color.hex ? null : color.hex)}
+                className={cn(
+                  "h-7 w-7 rounded-full ring-offset-2 ring-offset-background transition-all hover:scale-110",
+                  activeColor === color.hex && "scale-110 ring-2 ring-foreground/70"
+                )}
+                style={{
+                  backgroundColor: color.hex,
+                  boxShadow: activeColor === color.hex ? `0 0 10px ${color.hex}` : undefined,
+                }}
+                aria-label={color.name}
+                aria-pressed={activeColor === color.hex}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <Button variant="ghost" size="sm" onClick={() => router.push(pathname)}>
         {t("resetFilters")}
