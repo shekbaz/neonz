@@ -16,7 +16,11 @@ export const productInputSchema = z.object({
     ar: localizedTextSchema,
   }),
   category: z.string().min(1, "Catégorie requise"),
-  images: z.array(z.string().url()).min(1, "Au moins une image requise"),
+  // Accepte les URLs absolues (Cloudinary) et les chemins relatifs du site
+  // (ex: /demo/*.svg pour les produits de démo créés par scripts/seed.ts).
+  images: z
+    .array(z.string().refine((v) => v.startsWith("/") || /^https?:\/\//.test(v), "URL d'image invalide"))
+    .min(1, "Au moins une image requise"),
   basePrice: z.number().positive(),
   discountPrice: z.number().positive().optional(),
   colors: z.array(z.string()).default([]),

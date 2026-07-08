@@ -53,6 +53,7 @@ export default async function AdminOrdersPage({
         <TableHeader>
           <TableRow>
             <TableHead>N° commande</TableHead>
+            <TableHead>Article</TableHead>
             <TableHead>Client</TableHead>
             <TableHead>Téléphone</TableHead>
             <TableHead>Date</TableHead>
@@ -65,12 +66,33 @@ export default async function AdminOrdersPage({
             const clientName = order.guestInfo?.name ?? (order.user as unknown as { name?: string })?.name ?? "—";
             const clientPhone = order.guestInfo?.phone ?? "—";
             const isNew = order.status === "pending";
+            const firstItem = order.items[0];
+            const extraCount = order.items.length - 1;
+            const firstItemLabel =
+              firstItem?.type === "custom"
+                ? "Enseigne personnalisée"
+                : (firstItem?.snapshot?.translations?.fr?.name ?? "Produit catalogue");
+            const firstItemImage = firstItem?.type === "catalog" ? firstItem?.snapshot?.images?.[0] : undefined;
             return (
               <TableRow key={String(order._id)}>
                 <TableCell>
                   <Link href={`/admin/commandes/${order._id}`} className="font-medium text-primary hover:underline">
                     {order.orderNumber}
                   </Link>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {firstItemImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- URLs Cloudinary externes ou chemins /demo statiques
+                      <img src={firstItemImage} alt="" className="h-10 w-10 shrink-0 rounded-md border border-border object-cover" />
+                    ) : (
+                      <div className="h-10 w-10 shrink-0 rounded-md border border-dashed border-border" />
+                    )}
+                    <span className="text-sm">
+                      {firstItemLabel}
+                      {extraCount > 0 && <span className="text-muted-foreground"> +{extraCount}</span>}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">

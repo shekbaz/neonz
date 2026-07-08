@@ -14,7 +14,11 @@ export const categoryInputSchema = z.object({
     en: localizedNameSchema,
     ar: localizedNameSchema,
   }),
-  image: z.union([z.string().url(), z.literal("")]).optional(),
+  // Accepte les URLs absolues (Cloudinary) et les chemins relatifs du site
+  // (ex: /demo/*.svg pour les catégories de démo créées par scripts/seed.ts).
+  image: z
+    .union([z.string().refine((v) => v.startsWith("/") || /^https?:\/\//.test(v)), z.literal("")])
+    .optional(),
   order: z.number().int().default(0),
 });
 

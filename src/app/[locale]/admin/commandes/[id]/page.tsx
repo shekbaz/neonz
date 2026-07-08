@@ -6,6 +6,7 @@ import { OrderStatusUpdater } from "@/components/admin/OrderStatusUpdater";
 import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 export default async function AdminOrderDetailPage({
   params,
@@ -60,10 +61,37 @@ export default async function AdminOrderDetailPage({
             <div key={i} className="border-b border-border pb-6 last:border-0 last:pb-0">
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="font-medium">
-                  {item.type === "custom" ? "Enseigne personnalisée" : "Produit catalogue"} × {item.quantity}
+                  {item.type === "custom"
+                    ? "Enseigne personnalisée"
+                    : (item.snapshot?.translations?.fr?.name ?? "Produit catalogue")}{" "}
+                  × {item.quantity}
                 </span>
                 <span className="font-semibold text-primary">{item.unitPrice.toLocaleString()} DZD</span>
               </div>
+
+              {item.type === "catalog" && (
+                <div className="flex items-center gap-3">
+                  {item.snapshot?.images?.[0] && (
+                    // eslint-disable-next-line @next/next/no-img-element -- URLs Cloudinary externes ou chemins /demo statiques
+                    <img
+                      src={item.snapshot.images[0]}
+                      alt=""
+                      className="h-20 w-20 shrink-0 rounded-md border border-border object-cover"
+                    />
+                  )}
+                  <div className="text-xs text-muted-foreground">
+                    {item.product && (
+                      <Link
+                        href={`/admin/produits/${String(item.product)}`}
+                        className="text-primary hover:underline"
+                      >
+                        Voir la fiche produit
+                      </Link>
+                    )}
+                    {item.snapshot?.slug && <p className="mt-1">Réf. : {item.snapshot.slug}</p>}
+                  </div>
+                </div>
+              )}
 
               {item.type === "custom" && item.snapshot?.paths && (
                 <div className="space-y-2">
@@ -74,6 +102,10 @@ export default async function AdminOrderDetailPage({
                     className="h-48"
                   />
                   <p className="text-xs text-muted-foreground">
+                    {item.snapshot.sourceType === "text" && item.snapshot.sourceText
+                      ? `Texte : "${item.snapshot.sourceText}"`
+                      : "À partir d'une image importée"}
+                    {" — "}
                     Dimensions : {item.snapshot.dimensions?.widthCm}cm x {item.snapshot.dimensions?.heightCm}cm —
                     Support : {item.snapshot.support}
                     {item.snapshot.hasRemote ? " — Avec télécommande" : ""}
