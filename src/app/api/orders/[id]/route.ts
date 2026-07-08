@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       status: parsed.data.status,
       $push: { statusHistory: { status: parsed.data.status, date: new Date(), note: parsed.data.note } },
     },
-    { new: true }
+    { returnDocument: "after" }
   );
 
   if (!order) {

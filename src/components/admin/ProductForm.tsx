@@ -16,44 +16,77 @@ interface CategoryOption {
   translations: { fr: { name: string } };
 }
 
+interface ProductInitialData {
+  slug: string;
+  category: string;
+  images: string[];
+  colors: string[];
+  basePrice: number;
+  stock: number;
+  isCustomizable: boolean;
+  isFeatured: boolean;
+  isActive: boolean;
+  translations: {
+    fr: { name: string; description: string };
+    en: { name: string; description: string };
+    ar: { name: string; description: string };
+  };
+  dimensions: { width: number; height: number; unit: "cm" };
+}
+
 const emptyTranslation = { name: "", description: "" };
 
-export function ProductForm({ categories }: { categories: CategoryOption[] }) {
+export function ProductForm({
+  categories,
+  productId,
+  initialData,
+}: {
+  categories: CategoryOption[];
+  productId?: string;
+  initialData?: ProductInitialData;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    slug: "",
-    category: categories[0]?._id ?? "",
-    images: "",
-    basePrice: 0,
-    stock: 0,
-    isFeatured: false,
-    isActive: true,
-    translations: { fr: { ...emptyTranslation }, en: { ...emptyTranslation }, ar: { ...emptyTranslation } },
-    dimensions: { width: 30, height: 30, unit: "cm" as const },
+    slug: initialData?.slug ?? "",
+    category: initialData?.category ?? categories[0]?._id ?? "",
+    images: initialData?.images.join(", ") ?? "",
+    colors: initialData?.colors.join(", ") ?? "",
+    basePrice: initialData?.basePrice ?? 0,
+    stock: initialData?.stock ?? 0,
+    isCustomizable: initialData?.isCustomizable ?? false,
+    isFeatured: initialData?.isFeatured ?? false,
+    isActive: initialData?.isActive ?? true,
+    translations: initialData?.translations ?? {
+      fr: { ...emptyTranslation },
+      en: { ...emptyTranslation },
+      ar: { ...emptyTranslation },
+    },
+    dimensions: initialData?.dimensions ?? { width: 30, height: 30, unit: "cm" as const },
   });
+
+  const isEditing = Boolean(productId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const res = await fetch(isEditing ? `/api/products/${productId}` : "/api/products", {
+        method: isEditing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
           images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
-          colors: [],
-          isCustomizable: false,
+          colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
         }),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(JSON.stringify(data.error) ?? "Échec de la création.");
+        throw new Error(JSON.stringify(data.error) ?? `Échec de ${isEditing ? "la modification" : "la création"}.`);
       }
 
-      toast.success("Produit créé.");
+      toast.success(isEditing ? "Produit modifié." : "Produit créé.");
       router.push("/admin/produits");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
@@ -132,6 +165,11 @@ export function ProductForm({ categories }: { categories: CategoryOption[] }) {
         <Input id="images" value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} />
       </div>
 
+      <div>
+        <Label htmlFor="colors">Couleurs (codes hex séparés par des virgules)</Label>
+        <Input id="colors" value={form.colors} onChange={(e) => setForm({ ...form, colors: e.target.value })} />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="basePrice">Prix (DZD)</Label>
@@ -176,8 +214,35 @@ export function ProductForm({ categories }: { categories: CategoryOption[] }) {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-6">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.isActive}
+            onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+          />
+          Actif (visible sur le site)
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.isFeatured}
+            onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+          />
+          Mis en avant
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.isCustomizable}
+            onChange={(e) => setForm({ ...form, isCustomizable: e.target.checked })}
+          />
+          Personnalisable
+        </label>
+      </div>
+
       <Button type="submit" disabled={loading}>
-        Créer le produit
+        {isEditing ? "Enregistrer les modifications" : "Créer le produit"}
       </Button>
     </form>
   );

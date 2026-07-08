@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   await connectDB();
-  const review = await Review.findByIdAndUpdate(id, { status: parsed.data.status }, { new: true });
+  const review = await Review.findByIdAndUpdate(id, { status: parsed.data.status }, { returnDocument: "after" });
   if (!review) {
     return NextResponse.json({ error: "Avis introuvable." }, { status: 404 });
   }

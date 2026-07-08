@@ -1,3 +1,4 @@
+import { Pencil } from "lucide-react";
 import { connectDB } from "@/lib/db";
 import { Product } from "@/models/Product";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -41,6 +42,11 @@ export default async function AdminProductsPage() {
                 </Badge>
               </TableCell>
               <TableCell className="text-end">
+                <Link href={`/admin/produits/${String(p._id)}`}>
+                  <Button variant="ghost" size="icon">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                </Link>
                 <ProductDeleteButton productId={String(p._id)} />
               </TableCell>
             </TableRow>

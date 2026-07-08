@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   await connectDB();
-  const product = await Product.findByIdAndUpdate(id, parsed.data, { new: true });
+  const product = await Product.findByIdAndUpdate(id, parsed.data, { returnDocument: "after" });
   if (!product) {
     return NextResponse.json({ error: "Produit introuvable." }, { status: 404 });
   }
