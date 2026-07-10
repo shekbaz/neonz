@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { ColorPicker } from "@/components/admin/ColorPicker";
 import { useRouter } from "@/i18n/navigation";
+import { describeApiError } from "@/lib/formErrorMessage";
 import { toast } from "sonner";
 
 interface CategoryOption {
@@ -56,6 +58,7 @@ export function ProductForm({
   initialData?: ProductInitialData;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     slug: initialData?.slug ?? "",
@@ -88,14 +91,14 @@ export function ProductForm({
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(JSON.stringify(data.error) ?? `Échec de ${isEditing ? "la modification" : "la création"}.`);
+        const data = await res.json().catch(() => ({}));
+        throw new Error(describeApiError(data.error, locale));
       }
 
       toast.success(isEditing ? "Produit modifié." : "Produit créé.");
       router.push("/admin/produits");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : describeApiError(undefined, locale));
     } finally {
       setLoading(false);
     }

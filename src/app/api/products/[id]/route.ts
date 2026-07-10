@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { Product } from "@/models/Product";
 import { auth } from "@/lib/auth";
 import { productInputSchema } from "@/lib/validators/product.schema";
+import { formatZodIssues } from "@/lib/validators/zodErrorResponse";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -29,7 +30,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const body = await request.json();
   const parsed = productInputSchema.partial().safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: formatZodIssues(parsed.error) }, { status: 400 });
   }
 
   await connectDB();

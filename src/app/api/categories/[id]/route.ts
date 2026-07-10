@@ -4,6 +4,7 @@ import { Category } from "@/models/Category";
 import { Product } from "@/models/Product";
 import { auth } from "@/lib/auth";
 import { categoryInputSchema } from "@/lib/validators/category.schema";
+import { formatZodIssues } from "@/lib/validators/zodErrorResponse";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -19,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const body = await request.json();
   const parsed = categoryInputSchema.partial().safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: formatZodIssues(parsed.error) }, { status: 400 });
   }
 
   await connectDB();

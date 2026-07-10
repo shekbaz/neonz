@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/db";
 import { Category } from "@/models/Category";
 import { auth } from "@/lib/auth";
 import { categoryInputSchema } from "@/lib/validators/category.schema";
+import { formatZodIssues } from "@/lib/validators/zodErrorResponse";
 
 export async function GET() {
   await connectDB();
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const parsed = categoryInputSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: formatZodIssues(parsed.error) }, { status: 400 });
   }
 
   await connectDB();

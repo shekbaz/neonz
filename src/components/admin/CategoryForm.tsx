@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { useRouter } from "@/i18n/navigation";
+import { describeApiError } from "@/lib/formErrorMessage";
 import { toast } from "sonner";
 
 interface CategoryInitialData {
@@ -28,6 +30,7 @@ export function CategoryForm({
   initialData?: CategoryInitialData;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     slug: initialData?.slug ?? "",
@@ -58,8 +61,8 @@ export function CategoryForm({
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(typeof data.error === "string" ? data.error : `Échec de ${isEditing ? "la modification" : "la création"}.`);
+        const data = await res.json().catch(() => ({}));
+        throw new Error(describeApiError(data.error, locale));
       }
 
       toast.success(isEditing ? "Catégorie modifiée." : "Catégorie créée.");
