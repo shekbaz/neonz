@@ -29,6 +29,8 @@ export async function POST(request: NextRequest) {
       turdSize: parsed.data.turdSize,
       threshold: parsed.data.threshold,
       steps: parsed.data.steps,
+      invert: parsed.data.invert,
+      blurSigma: parsed.data.blurSigma,
     });
 
     return NextResponse.json(result);

@@ -16,6 +16,8 @@ export const vectorizeInputSchema = z.object({
   threshold: z.number().min(0).max(255).optional(),
   /** 1 = seuil noir/blanc simple, 2-5 = posterize multi-niveaux (plus de détail) */
   steps: z.number().int().min(1).max(5).optional(),
+  invert: z.boolean().optional(),
+  blurSigma: z.number().min(0).max(20).optional(),
 });
 
 const neonPathSchema = z.object({
@@ -24,6 +26,8 @@ const neonPathSchema = z.object({
   color: z.string(),
   order: z.number().int(),
   groupId: z.string().optional(),
+  glowIntensity: z.number().min(0).max(100).default(60),
+  blink: z.boolean().default(false),
 });
 
 export const collisionCheckInputSchema = z.object({
@@ -45,6 +49,8 @@ const traceSettingsSchema = z.object({
   steps: z.number().int().min(1).max(5).optional(),
   fontSizePx: z.number().min(80).max(400).optional(),
   letterSpacingPx: z.number().min(0).max(200).optional(),
+  invert: z.boolean().optional(),
+  blurSigma: z.number().min(0).max(20).optional(),
 });
 
 export const autoTraceInputSchema = z

@@ -34,6 +34,8 @@ export interface DesignPriceBreakdown {
   supportSurcharge: number;
   /** Supplément télécommande/variateur (rempli par applyFinalOptions, 0 tant que non appliqué). */
   remoteSurcharge: number;
+  /** Supplément contrôleur multi-zone — requis dès qu'un tracé a `blink: true` (rempli par applyFinalOptions). */
+  controllerSurcharge: number;
   total: number;
   totalTubeLengthCm: number;
   currency: string;
@@ -84,6 +86,7 @@ export function calculateDesignPrice(params: {
     complexitySurcharge: Math.round(complexitySurcharge),
     supportSurcharge: 0,
     remoteSurcharge: 0,
+    controllerSurcharge: 0,
     total,
     totalTubeLengthCm: Number(tubeLengthCm.toFixed(1)),
     currency: cfg.currency,
@@ -100,17 +103,21 @@ export const SUPPORT_PRICE_MODIFIERS: Record<
 };
 
 export const REMOTE_OPTION_PRICE = 1800;
+/** Contrôleur multi-zone requis dès qu'un tracé clignote — un seul contrôleur pilote toutes les zones. */
+export const CONTROLLER_OPTION_PRICE = 2500;
 
 export function applyFinalOptions(
   breakdown: DesignPriceBreakdown,
-  options: { support: keyof typeof SUPPORT_PRICE_MODIFIERS; hasRemote: boolean }
+  options: { support: keyof typeof SUPPORT_PRICE_MODIFIERS; hasRemote: boolean; hasController: boolean }
 ): DesignPriceBreakdown {
   const supportPrice = SUPPORT_PRICE_MODIFIERS[options.support];
   const remotePrice = options.hasRemote ? REMOTE_OPTION_PRICE : 0;
+  const controllerPrice = options.hasController ? CONTROLLER_OPTION_PRICE : 0;
   return {
     ...breakdown,
     supportSurcharge: supportPrice,
     remoteSurcharge: remotePrice,
-    total: breakdown.total + supportPrice + remotePrice,
+    controllerSurcharge: controllerPrice,
+    total: breakdown.total + supportPrice + remotePrice + controllerPrice,
   };
 }

@@ -146,6 +146,10 @@ export function Step3Finalize() {
         <Switch id="remote" checked={hasRemote} onCheckedChange={setHasRemote} />
       </div>
 
+      {paths.some((p) => p.blink) && (
+        <p className="text-xs text-muted-foreground">{t("controllerIncludedHint")}</p>
+      )}
+
       <div className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
         <p className="mb-3 text-sm font-semibold">{t("priceBreakdownTitle")}</p>
         {priceBreakdown ? (
@@ -184,6 +188,12 @@ export function Step3Finalize() {
               <div className="flex justify-between text-muted-foreground">
                 <dt>{t("lineRemote")}</dt>
                 <dd className="tabular-nums">{priceBreakdown.remoteSurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              </div>
+            )}
+            {priceBreakdown.controllerSurcharge > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <dt>{t("lineController")}</dt>
+                <dd className="tabular-nums">{priceBreakdown.controllerSurcharge.toLocaleString()} {tCommon("currency")}</dd>
               </div>
             )}
           </dl>

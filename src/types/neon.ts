@@ -17,7 +17,13 @@ export interface NeonPath {
   order: number;
   /** Regroupement optionnel (ex: toutes les lettres d'un même mot) */
   groupId?: string;
+  /** Intensité du halo lumineux (0-100), défaut 60 */
+  glowIntensity?: number;
+  /** Clignotement — implique un contrôleur multi-zone physique, voir pricing.ts */
+  blink?: boolean;
 }
+
+export const DEFAULT_GLOW_INTENSITY = 60;
 
 export interface CollisionZone {
   pathIds: [string, string];

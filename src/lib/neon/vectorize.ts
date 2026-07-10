@@ -25,6 +25,10 @@ export interface VectorizeOptions {
   turdSize?: number;
   /** Largeur cible de normalisation avant traçage, en px (garde le ratio) */
   normalizeWidthPx?: number;
+  /** Inverse noir/blanc avant traçage (logo clair sur fond sombre, ou vice-versa) */
+  invert?: boolean;
+  /** Flou gaussien (px) appliqué avant traçage pour lisser le bruit — 0 = désactivé */
+  blurSigma?: number;
 }
 
 const DEFAULT_OPTIONS: Required<VectorizeOptions> = {
@@ -32,6 +36,8 @@ const DEFAULT_OPTIONS: Required<VectorizeOptions> = {
   threshold: 160,
   turdSize: 8,
   normalizeWidthPx: 800,
+  invert: false,
+  blurSigma: 0,
 };
 
 /**
@@ -45,7 +51,7 @@ function mergeOptions(options: VectorizeOptions): Required<VectorizeOptions> {
   const merged = { ...DEFAULT_OPTIONS };
   for (const key of Object.keys(options) as (keyof VectorizeOptions)[]) {
     const value = options[key];
-    if (value !== undefined) merged[key] = value;
+    if (value !== undefined) (merged as Record<string, unknown>)[key] = value;
   }
   return merged;
 }
@@ -89,11 +95,11 @@ export async function vectorizeImage(
 ): Promise<{ paths: NeonPath[]; workspaceWidthPx: number; workspaceHeightPx: number }> {
   const opts = mergeOptions(options);
 
-  const normalized = await sharp(imageBuffer)
-    .resize({ width: opts.normalizeWidthPx, withoutEnlargement: false })
-    .grayscale()
-    .png()
-    .toBuffer();
+  let pipeline = sharp(imageBuffer).resize({ width: opts.normalizeWidthPx, withoutEnlargement: false });
+  // sharp exige un sigma >= 0.3 pour .blur() — en dessous, l'appel jette.
+  if (opts.blurSigma >= 0.3) pipeline = pipeline.blur(opts.blurSigma);
+  if (opts.invert) pipeline = pipeline.negate({ alpha: false });
+  const normalized = await pipeline.grayscale().png().toBuffer();
 
   const metadata = await sharp(normalized).metadata();
   const workspaceWidthPx = metadata.width ?? opts.normalizeWidthPx;

@@ -30,8 +30,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Jamais confiance au client pour le contrôleur : dérivé des tracés eux-mêmes.
+  const hasController = paths.some((p) => p.blink);
+
   const breakdown = calculateDesignPrice({ paths, pxToCm: pxToCmX, widthCm, heightCm });
-  const final = applyFinalOptions(breakdown, { support, hasRemote });
+  const final = applyFinalOptions(breakdown, { support, hasRemote, hasController });
 
   return NextResponse.json(final);
 }

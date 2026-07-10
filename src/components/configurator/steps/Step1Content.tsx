@@ -4,6 +4,9 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UploadCloud, Loader2, AlertCircle } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -17,6 +20,10 @@ import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
 import { useConfiguratorStore } from "@/store/configuratorStore";
 import { NEON_FONTS, type NeonFontId } from "@/types/neon";
 import { toast } from "sonner";
+
+function sliderValue(v: number | readonly number[]): number {
+  return Array.isArray(v) ? v[0] : (v as number);
+}
 
 export function Step1Content() {
   const t = useTranslations("Configurator.step1");
@@ -34,6 +41,9 @@ export function Step1Content() {
     workspaceHeightPx,
     resolutionStatus,
     resolutionFailureReason,
+    traceSettings,
+    setTraceSettings,
+    resetTraceSettings,
   } = useConfiguratorStore();
 
   const [uploading, setUploading] = useState(false);
@@ -96,6 +106,63 @@ export function Step1Content() {
             className="hidden"
             onChange={handleFileChange}
           />
+
+          {sourceImageUrl && (
+            <Accordion className="mt-4">
+              <AccordionItem value="advanced-trace">
+                <AccordionTrigger>{t("advancedTraceToggle")}</AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-5">
+                    <div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <Label>{t("thresholdLabel")}</Label>
+                        <span className="text-xs text-muted-foreground">{traceSettings.threshold}</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={255}
+                        step={1}
+                        value={[traceSettings.threshold]}
+                        onValueChange={(v) => setTraceSettings({ threshold: sliderValue(v) })}
+                      />
+                      <p className="mt-1 text-xs text-muted-foreground">{t("thresholdHint")}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="trace-invert">{t("invertLabel")}</Label>
+                      <Switch
+                        id="trace-invert"
+                        checked={traceSettings.invert}
+                        onCheckedChange={(v) => setTraceSettings({ invert: v })}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="mb-2 flex items-center justify-between">
+                        <Label>{t("blurLabel")}</Label>
+                        <span className="text-xs text-muted-foreground">{traceSettings.blurSigma}</span>
+                      </div>
+                      <Slider
+                        min={0}
+                        max={10}
+                        step={1}
+                        value={[traceSettings.blurSigma]}
+                        onValueChange={(v) => setTraceSettings({ blurSigma: sliderValue(v) })}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={resetTraceSettings}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      {t("resetTraceSettings")}
+                    </button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
         </TabsContent>
 
         <TabsContent value="text" className="mt-6 space-y-4">

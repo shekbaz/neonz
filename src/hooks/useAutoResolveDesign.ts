@@ -96,6 +96,21 @@ export function useAutoResolveDesign() {
     }
     const timer = setTimeout(run, DEBOUNCE_MS);
     return () => clearTimeout(timer);
+    // Volontairement PAS turdSize/steps/letterSpacingPx/fontSizePx : ces champs
+    // sont auto-ajustés par resolveDesign() lui-même (voir autoResolve.ts) et
+    // les inclure ici créerait une boucle (chaque réponse redéclenchant une
+    // nouvelle requête). threshold/invert/blurSigma, eux, ne sont jamais
+    // modifiés par l'algorithme — seul un réglage manuel les change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceType, sourceImageUrl, sourceText, fontId, widthCm, heightCm]);
+  }, [
+    sourceType,
+    sourceImageUrl,
+    sourceText,
+    fontId,
+    widthCm,
+    heightCm,
+    traceSettings.threshold,
+    traceSettings.invert,
+    traceSettings.blurSigma,
+  ]);
 }

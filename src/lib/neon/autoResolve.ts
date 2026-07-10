@@ -96,6 +96,8 @@ async function trace(
       threshold: settings.threshold,
       turdSize: settings.turdSize,
       steps: settings.steps,
+      invert: settings.invert,
+      blurSigma: settings.blurSigma,
     });
   }
 

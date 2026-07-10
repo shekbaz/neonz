@@ -15,6 +15,10 @@ export interface TraceSettings {
   fontSizePx: number;
   /** Texte : espacement additionnel entre lettres, en px */
   letterSpacingPx: number;
+  /** Image : inverse noir/blanc avant traçage (utile sur logo clair sur fond sombre) */
+  invert: boolean;
+  /** Image : flou gaussien (px) appliqué avant traçage pour lisser le bruit — 0 = désactivé */
+  blurSigma: number;
 }
 
 export const DEFAULT_TRACE_SETTINGS: TraceSettings = {
@@ -23,4 +27,6 @@ export const DEFAULT_TRACE_SETTINGS: TraceSettings = {
   steps: 1,
   fontSizePx: 200,
   letterSpacingPx: 0,
+  invert: false,
+  blurSigma: 0,
 };

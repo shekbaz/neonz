@@ -2,22 +2,40 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  Copy,
+  Eye,
+  EyeOff,
+  CheckSquare,
+  Square,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  AlertCircle,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
 import { ColorPicker } from "@/components/configurator/ColorPicker";
 import { DayNightToggle } from "@/components/configurator/DayNightToggle";
 import { useConfiguratorStore } from "@/store/configuratorStore";
-import { MAX_DIMENSION_CM } from "@/types/neon";
+import { MAX_DIMENSION_CM, DEFAULT_GLOW_INTENSITY } from "@/types/neon";
 import { NEON_COLORS } from "@/types/neon";
+import { CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
 
 function sliderValue(v: number | readonly number[]): number {
   return Array.isArray(v) ? v[0] : (v as number);
 }
+
+const NUDGE_STEP_PX = 6;
 
 export function Step2Style() {
   const t = useTranslations("Configurator.step2");
@@ -31,17 +49,25 @@ export function Step2Style() {
     support,
     hasRemote,
     resolutionStatus,
+    resolutionFailureReason,
     priceBreakdown,
     setAllPathColors,
     setPathColor,
     setDimensions,
     setPriceBreakdown,
+    removePaths,
+    duplicatePaths,
+    nudgePaths,
+    setPathsGlow,
+    setPathsBlink,
+    setResolutionStatus,
   } = useConfiguratorStore();
 
   const [localWidth, setLocalWidth] = useState(widthCm);
   const [localHeight, setLocalHeight] = useState(heightCm);
   const [linked, setLinked] = useState(true);
-  const [selectedPathId, setSelectedPathId] = useState<string | null>(paths[0]?.id ?? null);
+  const [selectedPathIds, setSelectedPathIds] = useState<string[]>(paths[0] ? [paths[0].id] : []);
+  const [soloMode, setSoloMode] = useState(false);
   const [background, setBackground] = useState<"day" | "night">("night");
   const [loadingPrice, setLoadingPrice] = useState(false);
 
@@ -123,9 +149,81 @@ export function Step2Style() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paths, widthCm, heightCm, support, hasRemote, resolutionStatus]);
 
+  // Après une mutation géométrique (suppression/duplication/déplacement), on
+  // revérifie la collision côté serveur (endpoint léger, pas de re-traçage)
+  // pour bloquer immédiatement le passage à l'étape suivante en cas de
+  // chevauchement — la validation finale côté serveur avant commande reste
+  // de toute façon systématique (voir /api/customize/designs).
+  async function recheckCollision() {
+    const current = useConfiguratorStore.getState().paths;
+    try {
+      const res = await fetch("/api/customize/collision-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths: current, workspaceWidthPx, workspaceHeightPx, widthCm, heightCm }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.result?.hasCollision) {
+        setResolutionStatus("unresolved", "editCausedCollision");
+      } else {
+        setResolutionStatus("resolved");
+      }
+    } catch {
+      // best-effort : la revalidation stricte a lieu de toute façon avant la commande
+    }
+  }
+
+  function handlePathClick(pathId: string, e: React.MouseEvent) {
+    setSelectedPathIds((prev) => {
+      if (e.shiftKey) {
+        return prev.includes(pathId) ? prev.filter((id) => id !== pathId) : [...prev, pathId];
+      }
+      return [pathId];
+    });
+  }
+
+  function handleMarqueeSelect(ids: string[], additive: boolean) {
+    if (ids.length === 0 && !additive) return;
+    setSelectedPathIds((prev) => (additive ? Array.from(new Set([...prev, ...ids])) : ids));
+  }
+
+  function handleDelete() {
+    const ok = removePaths(selectedPathIds);
+    if (!ok) {
+      toast.error(t("cannotDeleteAll"));
+      return;
+    }
+    setSelectedPathIds([]);
+    recheckCollision();
+  }
+
+  function handleDuplicate() {
+    if (selectedPathIds.length === 0) return;
+    const newIds = duplicatePaths(selectedPathIds);
+    setSelectedPathIds(newIds);
+    recheckCollision();
+  }
+
+  function handleNudge(dx: number, dy: number) {
+    if (selectedPathIds.length === 0) return;
+    nudgePaths(selectedPathIds, dx, dy);
+    recheckCollision();
+  }
+
   const globalColor = paths[0]?.color ?? NEON_COLORS[0].hex;
-  const selectedPath = paths.find((p) => p.id === selectedPathId);
-  const selectedIndex = selectedPath ? paths.findIndex((p) => p.id === selectedPath.id) + 1 : 0;
+  const selectedPaths = paths.filter((p) => selectedPathIds.includes(p.id));
+  const anchor = selectedPaths[0];
+  const anchorGroupSiblings = anchor?.groupId ? paths.filter((p) => p.groupId === anchor.groupId) : [];
+  const canApplyToGroup = anchor?.groupId != null && anchorGroupSiblings.length > selectedPaths.length;
+
+  function applyToGroup() {
+    if (!anchor?.groupId) return;
+    const groupIds = anchorGroupSiblings.map((p) => p.id);
+    setPathsGlow(groupIds, anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY);
+    setPathsBlink(groupIds, anchor.blink ?? false);
+    setSelectedPathIds(groupIds);
+  }
 
   return (
     <div className="space-y-8">
@@ -135,6 +233,13 @@ export function Step2Style() {
         workspaceHeightPx={workspaceHeightPx}
         className="h-64"
       />
+
+      {resolutionStatus === "unresolved" && resolutionFailureReason === "editCausedCollision" && (
+        <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>{t("editCausedCollision")}</p>
+        </div>
+      )}
 
       <div>
         <Label className="mb-3 block">{t("globalColorLabel")}</Label>
@@ -156,17 +261,107 @@ export function Step2Style() {
                 workspaceWidthPx={workspaceWidthPx}
                 workspaceHeightPx={workspaceHeightPx}
                 background={background}
-                selectedPathId={selectedPathId}
-                onPathClick={setSelectedPathId}
+                selectedPathIds={selectedPathIds}
+                onPathClick={handlePathClick}
+                onMarqueeSelect={handleMarqueeSelect}
+                dimUnselected={soloMode}
                 className="h-64"
               />
 
-              {selectedPath && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setSelectedPathIds(paths.map((p) => p.id))}>
+                  <CheckSquare className="h-3.5 w-3.5" /> {t("selectAll")}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => setSelectedPathIds([])}>
+                  <Square className="h-3.5 w-3.5" /> {t("deselectAll")}
+                </Button>
+                <Button
+                  type="button"
+                  variant={soloMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSoloMode((v) => !v)}
+                  disabled={selectedPathIds.length === 0}
+                >
+                  {soloMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />} {t("isolate")}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleDuplicate} disabled={selectedPathIds.length === 0}>
+                  <Copy className="h-3.5 w-3.5" /> {t("duplicate")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDelete}
+                  disabled={selectedPathIds.length === 0}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> {t("delete")}
+                </Button>
+              </div>
+
+              {selectedPathIds.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="me-1 text-xs text-muted-foreground">{t("nudgeLabel")}</span>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(0, -NUDGE_STEP_PX)}>
+                    <ArrowUp className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(0, NUDGE_STEP_PX)}>
+                    <ArrowDown className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(-NUDGE_STEP_PX, 0)}>
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(NUDGE_STEP_PX, 0)}>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+
+              {anchor && (
                 <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    {t("selectedPathLabel", { index: selectedIndex })}
+                    {t("selectionCountLabel", { count: selectedPaths.length })}
                   </p>
-                  <ColorPicker value={selectedPath.color} onChange={(hex) => setPathColor(selectedPath.id, hex)} />
+                  <ColorPicker
+                    value={anchor.color}
+                    onChange={(hex) => selectedPathIds.forEach((id) => setPathColor(id, hex))}
+                  />
+
+                  <div className="mt-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <Label>{t("glowLabel")}</Label>
+                      <span className="text-xs text-muted-foreground">{anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY}</span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY]}
+                      onValueChange={(v) => setPathsGlow(selectedPathIds, sliderValue(v))}
+                    />
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="blink-switch">{t("blinkLabel")}</Label>
+                      {anchor.blink && (
+                        <p className="text-xs text-muted-foreground">
+                          {t("blinkControllerHint", { price: CONTROLLER_OPTION_PRICE.toLocaleString() })}
+                        </p>
+                      )}
+                    </div>
+                    <Switch
+                      id="blink-switch"
+                      checked={anchor.blink ?? false}
+                      onCheckedChange={(v) => setPathsBlink(selectedPathIds, v)}
+                    />
+                  </div>
+
+                  {canApplyToGroup && (
+                    <button type="button" onClick={applyToGroup} className="mt-3 text-xs font-medium text-primary hover:underline">
+                      {t("applyToGroup")}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -243,6 +438,12 @@ export function Step2Style() {
               <div className="flex justify-between text-muted-foreground">
                 <dt>{t("lineComplexity")}</dt>
                 <dd className="tabular-nums">{priceBreakdown.complexitySurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              </div>
+            )}
+            {priceBreakdown.controllerSurcharge > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <dt>{t("lineController")}</dt>
+                <dd className="tabular-nums">{priceBreakdown.controllerSurcharge.toLocaleString()} {tCommon("currency")}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-border pt-1.5 font-semibold text-foreground">

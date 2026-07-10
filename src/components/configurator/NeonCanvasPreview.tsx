@@ -1,7 +1,8 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import type { NeonPath } from "@/types/neon";
+import { DEFAULT_GLOW_INTENSITY } from "@/types/neon";
 import { cn } from "@/lib/utils";
 
 interface NeonCanvasPreviewProps {
@@ -9,9 +10,17 @@ interface NeonCanvasPreviewProps {
   workspaceWidthPx: number;
   workspaceHeightPx: number;
   background?: "day" | "night";
-  selectedPathId?: string | null;
-  onPathClick?: (pathId: string) => void;
+  selectedPathIds?: string[];
+  onPathClick?: (pathId: string, e: React.MouseEvent) => void;
+  /** Active la sélection par rectangle ("marquee") en glissant sur le fond du canvas. */
+  onMarqueeSelect?: (ids: string[], additive: boolean) => void;
+  /** Estompe les tracés non sélectionnés (mode "isoler"). */
+  dimUnselected?: boolean;
   className?: string;
+}
+
+function lerp(min: number, max: number, t: number): number {
+  return min + (max - min) * Math.max(0, Math.min(1, t));
 }
 
 /**
@@ -26,11 +35,77 @@ export function NeonCanvasPreview({
   workspaceWidthPx,
   workspaceHeightPx,
   background = "night",
-  selectedPathId,
+  selectedPathIds,
   onPathClick,
+  onMarqueeSelect,
+  dimUnselected = false,
   className,
 }: NeonCanvasPreviewProps) {
   const filterId = useId();
+  const svgRef = useRef<SVGSVGElement>(null);
+  const pathElRefs = useRef<Map<string, SVGPathElement>>(new Map());
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const draggedRef = useRef(false);
+  const [marquee, setMarquee] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null);
+  const [dragged, setDragged] = useState(false);
+
+  const distinctIntensities = useMemo(() => {
+    const set = new Set(paths.map((p) => p.glowIntensity ?? DEFAULT_GLOW_INTENSITY));
+    return Array.from(set);
+  }, [paths]);
+
+  function toSvgPoint(clientX: number, clientY: number) {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return { x: 0, y: 0 };
+    const pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    const transformed = pt.matrixTransform(ctm.inverse());
+    return { x: transformed.x, y: transformed.y };
+  }
+
+  function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
+    if (!onMarqueeSelect || e.target !== e.currentTarget) return;
+    const p = toSvgPoint(e.clientX, e.clientY);
+    dragStartRef.current = p;
+    draggedRef.current = false;
+    setDragged(false);
+    setMarquee({ x1: p.x, y1: p.y, x2: p.x, y2: p.y });
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  function handlePointerMove(e: React.PointerEvent<SVGSVGElement>) {
+    if (!dragStartRef.current) return;
+    const p = toSvgPoint(e.clientX, e.clientY);
+    const start = dragStartRef.current;
+    if (Math.abs(p.x - start.x) > 3 || Math.abs(p.y - start.y) > 3) {
+      draggedRef.current = true;
+      setDragged(true);
+    }
+    setMarquee({ x1: start.x, y1: start.y, x2: p.x, y2: p.y });
+  }
+
+  function handlePointerUp(e: React.PointerEvent<SVGSVGElement>) {
+    if (!dragStartRef.current) return;
+    if (draggedRef.current && marquee) {
+      const rx1 = Math.min(marquee.x1, marquee.x2);
+      const ry1 = Math.min(marquee.y1, marquee.y2);
+      const rx2 = Math.max(marquee.x1, marquee.x2);
+      const ry2 = Math.max(marquee.y1, marquee.y2);
+      const ids: string[] = [];
+      pathElRefs.current.forEach((el, id) => {
+        const bbox = el.getBBox();
+        const intersects = bbox.x < rx2 && bbox.x + bbox.width > rx1 && bbox.y < ry2 && bbox.y + bbox.height > ry1;
+        if (intersects) ids.push(id);
+      });
+      onMarqueeSelect?.(ids, e.shiftKey);
+    }
+    dragStartRef.current = null;
+    draggedRef.current = false;
+    setDragged(false);
+    setMarquee(null);
+  }
 
   return (
     <div
@@ -43,31 +118,41 @@ export function NeonCanvasPreview({
       )}
     >
       <svg
+        ref={svgRef}
         viewBox={`0 0 ${workspaceWidthPx || 1} ${workspaceHeightPx || 1}`}
         className="h-full max-h-[480px] w-full max-w-full p-8"
         role="img"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
       >
         <defs>
-          <filter id={`${filterId}-glow-sm`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur-sm" />
-            <feMerge>
-              <feMergeNode in="blur-sm" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id={`${filterId}-glow-lg`} x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="8" result="blur-lg" />
-            <feMerge>
-              <feMergeNode in="blur-lg" />
-            </feMerge>
-          </filter>
+          {distinctIntensities.map((intensity) => (
+            <g key={intensity}>
+              <filter id={`${filterId}-glow-sm-${intensity}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation={lerp(0.5, 4, intensity / 100)} result="blur-sm" />
+                <feMerge>
+                  <feMergeNode in="blur-sm" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id={`${filterId}-glow-lg-${intensity}`} x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation={lerp(1, 14, intensity / 100)} result="blur-lg" />
+                <feMerge>
+                  <feMergeNode in="blur-lg" />
+                </feMerge>
+              </filter>
+            </g>
+          ))}
         </defs>
 
         {paths.map((path) => {
-          const isSelected = selectedPathId === path.id;
+          const isSelected = selectedPathIds?.includes(path.id) ?? false;
+          const intensity = path.glowIntensity ?? DEFAULT_GLOW_INTENSITY;
+          const dimmed = dimUnselected && !isSelected;
 
           return (
-            <g key={path.id}>
+            <g key={path.id} opacity={dimmed ? 0.15 : 1}>
               {/* Halo large (glow ambiant) */}
               <path
                 d={path.d}
@@ -76,23 +161,41 @@ export function NeonCanvasPreview({
                 fill="none"
                 strokeLinecap="round"
                 opacity={background === "night" ? 0.5 : 0.25}
-                filter={`url(#${filterId}-glow-lg)`}
+                filter={`url(#${filterId}-glow-lg-${intensity})`}
+                className={cn(path.blink && "animate-neon-blink")}
               />
               {/* Tube net + halo proche */}
               <path
+                ref={(el) => {
+                  if (el) pathElRefs.current.set(path.id, el);
+                  else pathElRefs.current.delete(path.id);
+                }}
                 d={path.d}
                 stroke={path.color}
                 strokeWidth={3}
                 fill="none"
                 strokeLinecap="round"
-                filter={`url(#${filterId}-glow-sm)`}
-                onClick={() => onPathClick?.(path.id)}
-                className={cn(onPathClick && "cursor-pointer", isSelected && "opacity-100")}
+                filter={`url(#${filterId}-glow-sm-${intensity})`}
+                onClick={(e) => onPathClick?.(path.id, e)}
+                className={cn(onPathClick && "cursor-pointer", isSelected && "opacity-100", path.blink && "animate-neon-blink")}
                 style={isSelected ? { outline: "2px dashed white" } : undefined}
               />
             </g>
           );
         })}
+
+        {marquee && dragged && (
+          <rect
+            x={Math.min(marquee.x1, marquee.x2)}
+            y={Math.min(marquee.y1, marquee.y2)}
+            width={Math.abs(marquee.x2 - marquee.x1)}
+            height={Math.abs(marquee.y2 - marquee.y1)}
+            fill="oklch(0.7 0.15 250 / 0.15)"
+            stroke="oklch(0.7 0.15 250)"
+            strokeWidth={1}
+            strokeDasharray="4 3"
+          />
+        )}
       </svg>
 
       {paths.length === 0 && (

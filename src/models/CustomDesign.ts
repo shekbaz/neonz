@@ -7,6 +7,8 @@ const neonPathSchema = new Schema(
     color: { type: String, required: true },
     order: { type: Number, required: true },
     groupId: { type: String },
+    glowIntensity: { type: Number, default: 60 },
+    blink: { type: Boolean, default: false },
   },
   { _id: false }
 );
@@ -54,6 +56,8 @@ const customDesignSchema = new Schema(
       default: "acrylic-transparent",
     },
     hasRemote: { type: Boolean, default: false },
+    // Dérivé server-side de `paths.some(p => p.blink)` — jamais fourni par le client.
+    hasController: { type: Boolean, default: false },
 
     price: {
       base: { type: Number, required: true },
@@ -64,6 +68,7 @@ const customDesignSchema = new Schema(
       complexitySurcharge: { type: Number, required: true },
       supportSurcharge: { type: Number },
       remoteSurcharge: { type: Number },
+      controllerSurcharge: { type: Number },
       total: { type: Number, required: true },
     },
 

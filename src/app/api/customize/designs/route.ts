@@ -28,13 +28,16 @@ export async function POST(request: NextRequest) {
   await connectDB();
   const session = await auth();
 
+  // Jamais confiance au client pour le contrôleur : dérivé des tracés eux-mêmes.
+  const hasController = data.paths.some((p) => p.blink);
+
   const breakdown = calculateDesignPrice({
     paths: data.paths,
     pxToCm: data.pxToCmRatio,
     widthCm: data.dimensions.widthCm,
     heightCm: data.dimensions.heightCm,
   });
-  const price = applyFinalOptions(breakdown, { support: data.support, hasRemote: data.hasRemote });
+  const price = applyFinalOptions(breakdown, { support: data.support, hasRemote: data.hasRemote, hasController });
 
   const design = await CustomDesign.create({
     user: session?.user?.id,
@@ -49,6 +52,7 @@ export async function POST(request: NextRequest) {
     collision: { hasCollision: false, zones: [], lastCheckedAt: new Date() },
     support: data.support,
     hasRemote: data.hasRemote,
+    hasController,
     price,
   });
 

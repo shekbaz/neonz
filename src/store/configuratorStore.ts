@@ -4,6 +4,7 @@ import type { NeonPath } from "@/types/neon";
 import type { DesignPriceBreakdown } from "@/lib/neon/pricing";
 import type { NeonFontId } from "@/types/neon";
 import { DEFAULT_TRACE_SETTINGS, type TraceSettings } from "@/lib/neon/traceSettings";
+import { translateSvgPathD } from "@/lib/neon/pathTransform";
 
 export type { TraceSettings };
 export { DEFAULT_TRACE_SETTINGS };
@@ -58,6 +59,15 @@ interface ConfiguratorState {
   setPaths: (paths: NeonPath[], workspaceWidthPx: number, workspaceHeightPx: number) => void;
   setPathColor: (pathId: string, color: string) => void;
   setAllPathColors: (color: string) => void;
+
+  /** Supprime les tracés donnés. Ne fait rien (retourne false) si ça viderait tout le design. */
+  removePaths: (ids: string[]) => boolean;
+  /** Clone les tracés donnés (décalés visuellement) et retourne les nouveaux ids. */
+  duplicatePaths: (ids: string[]) => string[];
+  /** Repositionne finement les tracés donnés (boutons flèches). */
+  nudgePaths: (ids: string[], dxPx: number, dyPx: number) => void;
+  setPathsGlow: (ids: string[], glowIntensity: number) => void;
+  setPathsBlink: (ids: string[], blink: boolean) => void;
 
   setDimensions: (widthCm: number, heightCm: number, pxToCm: number) => void;
   setResolutionStatus: (status: ResolutionStatus, failureReason?: string | null) => void;
@@ -133,6 +143,45 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
         })),
       setAllPathColors: (color) =>
         set((s) => ({ paths: s.paths.map((p) => ({ ...p, color })) })),
+
+      removePaths: (ids) => {
+        const s = get();
+        const remaining = s.paths.filter((p) => !ids.includes(p.id));
+        if (remaining.length === 0) return false;
+        set({ paths: remaining });
+        return true;
+      },
+
+      duplicatePaths: (ids) => {
+        const s = get();
+        const dx = s.workspaceWidthPx * 0.08;
+        const dy = s.workspaceWidthPx * 0.08;
+        const newIds: string[] = [];
+        const toAdd = s.paths
+          .filter((p) => ids.includes(p.id))
+          .map((p, i) => {
+            const newId = crypto.randomUUID();
+            newIds.push(newId);
+            return { ...p, id: newId, d: translateSvgPathD(p.d, dx, dy), order: s.paths.length + i };
+          });
+        set({ paths: [...s.paths, ...toAdd] });
+        return newIds;
+      },
+
+      nudgePaths: (ids, dxPx, dyPx) =>
+        set((s) => ({
+          paths: s.paths.map((p) => (ids.includes(p.id) ? { ...p, d: translateSvgPathD(p.d, dxPx, dyPx) } : p)),
+        })),
+
+      setPathsGlow: (ids, glowIntensity) =>
+        set((s) => ({
+          paths: s.paths.map((p) => (ids.includes(p.id) ? { ...p, glowIntensity } : p)),
+        })),
+
+      setPathsBlink: (ids, blink) =>
+        set((s) => ({
+          paths: s.paths.map((p) => (ids.includes(p.id) ? { ...p, blink } : p)),
+        })),
 
       setDimensions: (widthCm, heightCm, pxToCm) => set({ widthCm, heightCm, pxToCm }),
       setResolutionStatus: (resolutionStatus, failureReason = null) =>

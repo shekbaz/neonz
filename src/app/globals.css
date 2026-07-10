@@ -191,10 +191,37 @@
     box-shadow: 0 0 24px -6px color-mix(in oklab, var(--primary) 75%, transparent);
   }
 
+  /* Clignotement d'un tracé néon dans l'aperçu du configurateur — implique un
+     contrôleur multi-zone réel, voir pricing.ts (CONTROLLER_OPTION_PRICE). */
+  .animate-neon-blink {
+    animation: neon-blink 1.4s ease-in-out infinite;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .dark .tube-sign {
       animation: tube-ignite 1.5s ease-out both;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-neon-blink {
+      animation: none;
+    }
+  }
+}
+
+@keyframes neon-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  65%,
+  75% {
+    opacity: 0.15;
+  }
+  85%,
+  100% {
+    opacity: 1;
   }
 }
 
