@@ -14,10 +14,13 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default async function AdminOrdersPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ status?: string }>;
 }) {
+  const { locale } = await params;
   const { status } = await searchParams;
 
   await connectDB();
@@ -71,7 +74,9 @@ export default async function AdminOrdersPage({
             const firstItemLabel =
               firstItem?.type === "custom"
                 ? "Enseigne personnalisée"
-                : (firstItem?.snapshot?.translations?.fr?.name ?? "Produit catalogue");
+                : (firstItem?.snapshot?.translations?.[locale]?.name ??
+                  firstItem?.snapshot?.translations?.fr?.name ??
+                  "Produit catalogue");
             const firstItemImage = firstItem?.type === "catalog" ? firstItem?.snapshot?.images?.[0] : undefined;
             return (
               <TableRow key={String(order._id)}>

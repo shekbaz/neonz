@@ -75,7 +75,12 @@ export function CategoryForm({
     <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
       <div>
         <Label htmlFor="slug">Slug</Label>
-        <Input id="slug" required value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+        <Input
+          id="slug"
+          required
+          value={form.slug}
+          onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") })}
+        />
       </div>
 
       <Tabs defaultValue="fr">

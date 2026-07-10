@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 import { uploadBufferToCloudinary } from "@/lib/cloudinary";
 import { connectDB } from "@/lib/db";
 import { UploadedAsset } from "@/models/UploadedAsset";
@@ -33,7 +34,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const rawBuffer = Buffer.from(await file.arrayBuffer());
+
+  // Compresse et redimensionne côté serveur pour garder les images du site légères
+  // (le SVG est vectoriel et n'a pas besoin d'être raster-compressé).
+  const buffer =
+    file.type === "image/svg+xml"
+      ? rawBuffer
+      : await sharp(rawBuffer)
+          .resize({ width: 2000, height: 2000, fit: "inside", withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
 
   try {
     const { url, publicId } = await uploadBufferToCloudinary(buffer, "uploads");

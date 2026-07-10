@@ -11,9 +11,9 @@ import { Link } from "@/i18n/navigation";
 export default async function AdminOrderDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
 
   await connectDB();
   const order = await Order.findById(id).populate("user", "name email").lean();
@@ -63,7 +63,9 @@ export default async function AdminOrderDetailPage({
                 <span className="font-medium">
                   {item.type === "custom"
                     ? "Enseigne personnalisée"
-                    : (item.snapshot?.translations?.fr?.name ?? "Produit catalogue")}{" "}
+                    : (item.snapshot?.translations?.[locale]?.name ??
+                      item.snapshot?.translations?.fr?.name ??
+                      "Produit catalogue")}{" "}
                   × {item.quantity}
                 </span>
                 <span className="font-semibold text-primary">{item.unitPrice.toLocaleString()} DZD</span>

@@ -4,7 +4,8 @@ import { RevenueChart } from "@/components/admin/RevenueChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-export default async function AdminStatsPage() {
+export default async function AdminStatsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   await connectDB();
 
   const [revenueByMonth, topProducts] = await Promise.all([
@@ -66,7 +67,7 @@ export default async function AdminStatsPage() {
             <TableBody>
               {topProducts.map((p) => (
                 <TableRow key={String(p._id)}>
-                  <TableCell>{p.product.translations.fr.name}</TableCell>
+                  <TableCell>{p.product.translations[locale]?.name ?? p.product.translations.fr.name}</TableCell>
                   <TableCell>{p.unitsSold}</TableCell>
                   <TableCell className="text-end">{p.revenue.toLocaleString()} DZD</TableCell>
                 </TableRow>
