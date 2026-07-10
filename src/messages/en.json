@@ -45,6 +45,12 @@
     "stepCreate": {
       "addText": "Add text",
       "addImage": "Add image",
+      "lineTool": "Line",
+      "addRect": "Rectangle",
+      "addCircle": "Circle",
+      "export": "Export",
+      "clearAll": "Clear all",
+      "confirmClearAll": "Are you sure you want to clear everything?",
       "drawTool": "Draw",
       "backToSelect": "Finish drawing",
       "textLabel": "Your text",

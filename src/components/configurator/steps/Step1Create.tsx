@@ -25,6 +25,11 @@ import {
   UploadCloud,
   Pencil,
   MousePointer2,
+  Minus,
+  Square as SquareIcon,
+  Circle as CircleIcon,
+  Download,
+  Trash,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -42,6 +47,7 @@ import { useCollisionRecheck } from "@/hooks/useCollisionRecheck";
 import { MAX_DIMENSION_CM, DEFAULT_GLOW_INTENSITY, NEON_FONTS, NEON_COLORS, type NeonFontId } from "@/types/neon";
 import { CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
 import { fitAndPlacePaths } from "@/lib/neon/pathTransform";
+import { rectPathD, circlePathD } from "@/lib/neon/shapePaths";
 import { DEFAULT_TRACE_SETTINGS } from "@/lib/neon/traceSettings";
 import { detectEdges, buildSpatialGrid, type Point, type SpatialGrid } from "@/lib/neon/edgeDetection";
 import type { NeonPath } from "@/types/neon";
@@ -72,6 +78,7 @@ export function Step1Create() {
     setPathColor,
     setDimensions,
     setPriceBreakdown,
+    setPaths,
     addPathsGroup,
     addDrawnPath,
     removePaths,
@@ -99,8 +106,8 @@ export function Step1Create() {
   const canvasRef = useRef<NeonCanvasHandle>(null);
   const dropCounterRef = useRef(0);
 
-  // --- Ajout de contenu (texte / image / dessin) ---
-  const [canvasMode, setCanvasMode] = useState<"select" | "draw">("select");
+  // --- Ajout de contenu (texte / image / dessin / ligne / formes) ---
+  const [canvasMode, setCanvasMode] = useState<"select" | "draw" | "line">("select");
   const [addingText, setAddingText] = useState(false);
   const [textValue, setTextValue] = useState("");
   const [textFontId, setTextFontId] = useState<NeonFontId>(NEON_FONTS[0].id);
@@ -321,6 +328,30 @@ export function Step1Create() {
     await recheckCollision();
   }
 
+  async function handleAddShape(shape: "rect" | "circle") {
+    const size = Math.min(workspaceWidthPx, workspaceHeightPx) * 0.3;
+    const { x, y } = nextDropPosition(size, size);
+    const d =
+      shape === "rect" ? rectPathD(x, y, size, size) : circlePathD(x + size / 2, y + size / 2, size / 2);
+    const groupId = `draw-shape-${crypto.randomUUID()}`;
+    const newPath: NeonPath = { id: crypto.randomUUID(), d, color: drawColor, order: 0, groupId };
+    addPathsGroup([newPath]);
+    setSelectedPathIds([newPath.id]);
+    await recheckCollision();
+  }
+
+  function handleClearAll() {
+    if (paths.length === 0) return;
+    if (!window.confirm(t("confirmClearAll"))) return;
+    setPaths([], workspaceWidthPx, workspaceHeightPx);
+    setSelectedPathIds([]);
+    setGroupImageUrls({});
+  }
+
+  async function handleExport() {
+    await canvasRef.current?.exportAsPNG(`neonz-${Date.now()}.png`);
+  }
+
   function handlePathClick(pathId: string, e: React.MouseEvent) {
     setSelectedPathIds((prev) => {
       if (e.shiftKey) return prev.includes(pathId) ? prev.filter((id) => id !== pathId) : [...prev, pathId];
@@ -386,7 +417,7 @@ export function Step1Create() {
     function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
       if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
-      if (canvasMode === "draw") return;
+      if (canvasMode !== "select") return;
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
@@ -449,10 +480,45 @@ export function Step1Create() {
           type="button"
           size="sm"
           variant={canvasMode === "draw" ? "default" : "outline"}
-          onClick={() => setCanvasMode((m) => (m === "draw" ? "select" : "draw"))}
+          onClick={() => {
+            setAddingText(false);
+            setCanvasMode((m) => (m === "draw" ? "select" : "draw"));
+          }}
         >
           {canvasMode === "draw" ? <MousePointer2 className="h-3.5 w-3.5" /> : <Pencil className="h-3.5 w-3.5" />}
           {canvasMode === "draw" ? t("backToSelect") : t("drawTool")}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={canvasMode === "line" ? "default" : "outline"}
+          onClick={() => {
+            setAddingText(false);
+            setCanvasMode((m) => (m === "line" ? "select" : "line"));
+          }}
+        >
+          {canvasMode === "line" ? <MousePointer2 className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+          {canvasMode === "line" ? t("backToSelect") : t("lineTool")}
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => handleAddShape("rect")}>
+          <SquareIcon className="h-3.5 w-3.5" /> {t("addRect")}
+        </Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => handleAddShape("circle")}>
+          <CircleIcon className="h-3.5 w-3.5" /> {t("addCircle")}
+        </Button>
+        <span className="mx-1 h-4 w-px bg-border" aria-hidden />
+        <Button type="button" size="sm" variant="outline" onClick={handleExport} disabled={paths.length === 0}>
+          <Download className="h-3.5 w-3.5" /> {t("export")}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={handleClearAll}
+          disabled={paths.length === 0}
+          className="text-destructive hover:text-destructive"
+        >
+          <Trash className="h-3.5 w-3.5" /> {t("clearAll")}
         </Button>
       </div>
 
@@ -483,7 +549,7 @@ export function Step1Create() {
         </div>
       )}
 
-      {canvasMode === "draw" && (
+      {(canvasMode === "draw" || canvasMode === "line") && (
         <div className="space-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
           <div>
             <Label className="mb-2 block">{t("strokeColorLabel")}</Label>
@@ -530,11 +596,12 @@ export function Step1Create() {
         mode={canvasMode}
         strokeColor={drawColor}
         onStrokeComplete={handleStrokeComplete}
-        referenceImageUrl={canvasMode === "draw" ? referenceImageUrl : undefined}
-        snapEnabled={canvasMode === "draw" && snapEnabled}
+        referenceImageUrl={canvasMode === "draw" || canvasMode === "line" ? referenceImageUrl : undefined}
+        snapEnabled={(canvasMode === "draw" || canvasMode === "line") && snapEnabled}
         snapGrid={spatialGrid}
-        showEdgePoints={canvasMode === "draw" && showEdges}
+        showEdgePoints={(canvasMode === "draw" || canvasMode === "line") && showEdges}
         edgePoints={edgePoints}
+        showGrid
         className="h-72"
       />
 

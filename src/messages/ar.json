@@ -45,6 +45,12 @@
     "stepCreate": {
       "addText": "إضافة نص",
       "addImage": "إضافة صورة",
+      "lineTool": "خط مستقيم",
+      "addRect": "مستطيل",
+      "addCircle": "دائرة",
+      "export": "تصدير",
+      "clearAll": "مسح الكل",
+      "confirmClearAll": "هل تريد حقًا مسح كل شيء؟",
       "drawTool": "رسم",
       "backToSelect": "إنهاء الرسم",
       "textLabel": "نصك",

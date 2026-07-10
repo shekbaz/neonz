@@ -45,6 +45,12 @@
     "stepCreate": {
       "addText": "Ajouter du texte",
       "addImage": "Ajouter une image",
+      "lineTool": "Ligne",
+      "addRect": "Rectangle",
+      "addCircle": "Cercle",
+      "export": "Exporter",
+      "clearAll": "Tout effacer",
+      "confirmClearAll": "Voulez-vous vraiment tout effacer ?",
       "drawTool": "Dessiner",
       "backToSelect": "Terminer le dessin",
       "textLabel": "Votre texte",

@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useId, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { NeonPath } from "@/types/neon";
 import { DEFAULT_GLOW_INTENSITY } from "@/types/neon";
 import { snapToNearest, type Point, type SpatialGrid } from "@/lib/neon/edgeDetection";
@@ -9,10 +9,14 @@ import { cn } from "@/lib/utils";
 export interface NeonCanvasHandle {
   /** Bbox union (coordonnées de l'espace de travail) des tracés donnés, ou null si aucun trouvé. */
   getSelectionBBox: (ids: string[]) => { x: number; y: number; width: number; height: number } | null;
+  /** Sérialise le canvas courant en PNG et déclenche son téléchargement. */
+  exportAsPNG: (fileName: string) => Promise<void>;
 }
 
 const SNAP_CELL_SIZE = 20;
 const SNAP_MAX_DISTANCE = 20;
+const GRID_DIVISIONS = 12;
+const EXPORT_SUPERSAMPLE = 2;
 
 interface NeonCanvasPreviewProps {
   paths: NeonPath[];
@@ -27,10 +31,12 @@ interface NeonCanvasPreviewProps {
   onDragCommit?: (ids: string[], dxPx: number, dyPx: number) => void;
   /** Estompe les tracés non sélectionnés (mode "isoler"). */
   dimUnselected?: boolean;
+  /** Grille de repère visuelle en fond de canvas (n'affecte pas les données). */
+  showGrid?: boolean;
   className?: string;
 
-  /** "draw" bascule le canvas en capture de trait libre au lieu de sélection/marquee/glisser-déposer. */
-  mode?: "select" | "draw";
+  /** "draw" capture un trait libre ; "line" capture un segment droit (clic point A, clic point B). */
+  mode?: "select" | "draw" | "line";
   strokeColor?: string;
   onStrokeComplete?: (points: Point[]) => void;
   /** Image de référence (superposée en transparence) pour tracer par-dessus en mode dessin. */
@@ -49,8 +55,8 @@ function lerp(min: number, max: number, t: number): number {
  * Rendu SVG du design néon avec effet de lumière simulé (superposition de
  * filtres de flou de différentes intensités, à la manière d'un vrai tube LED
  * vu de nuit). Gère aussi bien l'édition de zone (sélection, marquee,
- * glisser-déposer) que la capture de trait libre (mode "draw") sur la même
- * surface, pour le canvas unifié du configurateur.
+ * glisser-déposer) que la capture de trait libre/segment droit (modes
+ * "draw"/"line") sur la même surface, pour le canvas unifié du configurateur.
  */
 export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewProps>(function NeonCanvasPreview(
   {
@@ -63,6 +69,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     onMarqueeSelect,
     onDragCommit,
     dimUnselected = false,
+    showGrid = false,
     className,
     mode = "select",
     strokeColor = "#FF073A",
@@ -94,6 +101,15 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   const isDrawingRef = useRef(false);
   const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
 
+  // Capture de segment droit (mode "line") : deux clics (point A, point B).
+  const lineStartRef = useRef<Point | null>(null);
+  const [lineCursor, setLineCursor] = useState<Point | null>(null);
+
+  useEffect(() => {
+    lineStartRef.current = null;
+    setLineCursor(null);
+  }, [mode]);
+
   useImperativeHandle(ref, () => ({
     getSelectionBBox(ids) {
       let box: { x: number; y: number; width: number; height: number } | null = null;
@@ -112,6 +128,35 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
         }
       }
       return box;
+    },
+    async exportAsPNG(fileName) {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const svgString = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
+      try {
+        const img = new Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error("Échec du rendu de l'export."));
+          img.src = url;
+        });
+        const canvas = document.createElement("canvas");
+        canvas.width = workspaceWidthPx * EXPORT_SUPERSAMPLE;
+        canvas.height = workspaceHeightPx * EXPORT_SUPERSAMPLE;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.fillStyle = background === "night" ? "#0a0a0f" : "#f5f4f0";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const link = document.createElement("a");
+        link.download = fileName;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      } finally {
+        URL.revokeObjectURL(url);
+      }
     },
   }));
 
@@ -137,7 +182,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   }
 
   function handlePathPointerDown(pathId: string, e: React.PointerEvent<SVGPathElement>) {
-    if (mode === "draw" || !onDragCommit || !selectedPathIds?.includes(pathId)) return;
+    if (mode !== "select" || !onDragCommit || !selectedPathIds?.includes(pathId)) return;
     e.stopPropagation();
     const p = toSvgPoint(e.clientX, e.clientY);
     pathDragStartRef.current = p;
@@ -154,6 +199,19 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
       return;
     }
 
+    if (mode === "line") {
+      const p = maybeSnap(toSvgPoint(e.clientX, e.clientY));
+      if (!lineStartRef.current) {
+        lineStartRef.current = p;
+        setLineCursor(p);
+      } else {
+        onStrokeComplete?.([lineStartRef.current, p]);
+        lineStartRef.current = null;
+        setLineCursor(null);
+      }
+      return;
+    }
+
     if (!onMarqueeSelect || e.target !== e.currentTarget) return;
     const p = toSvgPoint(e.clientX, e.clientY);
     dragStartRef.current = p;
@@ -167,6 +225,12 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     if (mode === "draw") {
       if (!isDrawingRef.current) return;
       setCurrentPoints((prev) => [...prev, maybeSnap(toSvgPoint(e.clientX, e.clientY))]);
+      return;
+    }
+
+    if (mode === "line") {
+      if (!lineStartRef.current) return;
+      setLineCursor(maybeSnap(toSvgPoint(e.clientX, e.clientY)));
       return;
     }
 
@@ -199,6 +263,8 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
       }
       return;
     }
+
+    if (mode === "line") return;
 
     if (pathDragStartRef.current) {
       if (pathDraggedRef.current && pathDragOffset && selectedPathIds) {
@@ -234,6 +300,18 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     currentPoints.length >= 2 ? "M " + currentPoints.map((p) => `${p.x} ${p.y}`).join(" L ") : "";
   const displayedEdgePoints = showEdgePoints ? edgePoints.filter((_, i) => i % 3 === 0) : [];
 
+  const gridLines = useMemo(() => {
+    if (!showGrid || workspaceWidthPx <= 0 || workspaceHeightPx <= 0) return null;
+    const stepX = workspaceWidthPx / GRID_DIVISIONS;
+    const stepY = workspaceHeightPx / GRID_DIVISIONS;
+    const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
+    for (let i = 1; i < GRID_DIVISIONS; i++) {
+      lines.push({ x1: i * stepX, y1: 0, x2: i * stepX, y2: workspaceHeightPx });
+      lines.push({ x1: 0, y1: i * stepY, x2: workspaceWidthPx, y2: i * stepY });
+    }
+    return lines;
+  }, [showGrid, workspaceWidthPx, workspaceHeightPx]);
+
   return (
     <div
       className={cn(
@@ -241,7 +319,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
         background === "night"
           ? "bg-[oklch(0.13_0.025_272)] ring-foreground/15"
           : "bg-[oklch(0.96_0.006_84)] ring-[oklch(0.25_0.02_264/0.12)]",
-        mode === "draw" && "touch-none",
+        mode !== "select" && "touch-none",
         className
       )}
     >
@@ -274,6 +352,14 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
             </g>
           ))}
         </defs>
+
+        {gridLines && (
+          <g pointerEvents="none" stroke={background === "night" ? "white" : "black"} opacity={0.06}>
+            {gridLines.map((l, i) => (
+              <line key={i} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} strokeWidth={1} />
+            ))}
+          </g>
+        )}
 
         {referenceImageUrl && (
           <image
@@ -337,6 +423,18 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
 
         {currentStrokeD && (
           <path d={currentStrokeD} stroke={strokeColor} strokeWidth={3} fill="none" strokeLinecap="round" />
+        )}
+
+        {lineStartRef.current && lineCursor && (
+          <line
+            x1={lineStartRef.current.x}
+            y1={lineStartRef.current.y}
+            x2={lineCursor.x}
+            y2={lineCursor.y}
+            stroke={strokeColor}
+            strokeWidth={3}
+            strokeDasharray="6 4"
+          />
         )}
 
         {marquee && dragged && (
