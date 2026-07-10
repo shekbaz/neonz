@@ -37,6 +37,10 @@ export function useAutoResolveDesign() {
   const isFirstRunRef = useRef(true);
 
   useEffect(() => {
+    // Le mode "dessin" gère lui-même ses tracés et sa résolution (voir
+    // DrawCanvas.tsx) — jamais d'appel à /api/customize/auto-trace pour ce mode.
+    if (sourceType === "draw") return;
+
     const hasContent = sourceType === "image" ? !!sourceImageUrl : sourceText.trim().length > 0;
     if (!hasContent) {
       setResolutionStatus("idle");

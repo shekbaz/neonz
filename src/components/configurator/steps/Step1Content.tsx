@@ -17,6 +17,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
+import { DrawCanvas } from "@/components/configurator/DrawCanvas";
 import { useConfiguratorStore } from "@/store/configuratorStore";
 import { NEON_FONTS, type NeonFontId } from "@/types/neon";
 import { toast } from "sonner";
@@ -71,18 +72,20 @@ export function Step1Content() {
     }
   }
 
-  const hasContent = sourceType === "image" ? !!sourceImageUrl : sourceText.trim().length > 0;
-  const showPreview = hasContent && (resolutionStatus === "resolving" || paths.length > 0);
+  const hasContent =
+    sourceType === "image" ? !!sourceImageUrl : sourceType === "draw" ? paths.length > 0 : sourceText.trim().length > 0;
+  const showPreview = sourceType !== "draw" && hasContent && (resolutionStatus === "resolving" || paths.length > 0);
 
   return (
     <div className="space-y-6">
       <Tabs
         value={sourceType ?? "image"}
-        onValueChange={(v) => setSourceType(v as "image" | "text")}
+        onValueChange={(v) => setSourceType(v as "image" | "text" | "draw")}
       >
         <TabsList>
           <TabsTrigger value="image">{t("uploadTab")}</TabsTrigger>
           <TabsTrigger value="text">{t("textTab")}</TabsTrigger>
+          <TabsTrigger value="draw">{t("drawTab")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="image" className="mt-6">
@@ -198,6 +201,10 @@ export function Step1Content() {
             </Select>
           </div>
         </TabsContent>
+
+        <TabsContent value="draw" className="mt-6">
+          <DrawCanvas />
+        </TabsContent>
       </Tabs>
 
       {showPreview && (
@@ -217,7 +224,7 @@ export function Step1Content() {
         </div>
       )}
 
-      {resolutionStatus === "unresolved" && resolutionFailureReason && (
+      {sourceType !== "draw" && resolutionStatus === "unresolved" && resolutionFailureReason && (
         <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <p>

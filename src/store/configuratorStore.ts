@@ -4,7 +4,7 @@ import type { NeonPath } from "@/types/neon";
 import type { DesignPriceBreakdown } from "@/lib/neon/pricing";
 import type { NeonFontId } from "@/types/neon";
 import { DEFAULT_TRACE_SETTINGS, type TraceSettings } from "@/lib/neon/traceSettings";
-import { translateSvgPathD } from "@/lib/neon/pathTransform";
+import { translateSvgPathD, rotateSvgPathD, scaleSvgPathD } from "@/lib/neon/pathTransform";
 
 export type { TraceSettings };
 export { DEFAULT_TRACE_SETTINGS };
@@ -18,7 +18,7 @@ interface ConfiguratorState {
   /** Étape la plus avancée jamais atteinte — borne la navigation avant du stepper cliquable. */
   furthestStepReached: ConfiguratorStep;
 
-  sourceType: "image" | "text" | null;
+  sourceType: "image" | "text" | "draw" | null;
   sourceImageUrl: string | null;
   sourceText: string;
   fontId: NeonFontId;
@@ -26,6 +26,9 @@ interface ConfiguratorState {
   traceSettings: TraceSettings;
 
   paths: NeonPath[];
+  /** Piles d'annulation/rétablissement des éditions manuelles de zone (couleur, suppression, déplacement...). */
+  pathsHistory: NeonPath[][];
+  pathsFuture: NeonPath[][];
   workspaceWidthPx: number;
   workspaceHeightPx: number;
 
@@ -49,7 +52,7 @@ interface ConfiguratorState {
   goNext: () => void;
   goBack: () => void;
 
-  setSourceType: (type: "image" | "text") => void;
+  setSourceType: (type: "image" | "text" | "draw") => void;
   setSourceImageUrl: (url: string | null) => void;
   setSourceText: (text: string) => void;
   setFontId: (fontId: NeonFontId) => void;
@@ -64,10 +67,26 @@ interface ConfiguratorState {
   removePaths: (ids: string[]) => boolean;
   /** Clone les tracés donnés (décalés visuellement) et retourne les nouveaux ids. */
   duplicatePaths: (ids: string[]) => string[];
-  /** Repositionne finement les tracés donnés (boutons flèches). */
+  /** Repositionne finement les tracés donnés (boutons flèches ou commit de glisser-déposer). */
   nudgePaths: (ids: string[], dxPx: number, dyPx: number) => void;
+  rotatePaths: (ids: string[], angleDeg: number, cx: number, cy: number) => void;
+  scalePaths: (ids: string[], factor: number, cx: number, cy: number) => void;
+  /** Écrase directement le "d" de tracés donnés (ex: commit de glisser-déposer déjà calculé). */
+  setPathsD: (updates: { id: string; d: string }[]) => void;
   setPathsGlow: (ids: string[], glowIntensity: number) => void;
   setPathsBlink: (ids: string[], blink: boolean) => void;
+  /** Ajoute un tracé dessiné à la main (mode "draw") ; fixe l'espace de travail au premier trait. */
+  addDrawnPath: (
+    points: { x: number; y: number }[],
+    color: string,
+    workspaceWidthPx: number,
+    workspaceHeightPx: number
+  ) => void;
+
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
 
   setDimensions: (widthCm: number, heightCm: number, pxToCm: number) => void;
   setResolutionStatus: (status: ResolutionStatus, failureReason?: string | null) => void;
@@ -81,9 +100,13 @@ interface ConfiguratorState {
   reset: () => void;
 }
 
+const MAX_HISTORY_ENTRIES = 50;
+
 const volatileInitialState = {
   traceSettings: DEFAULT_TRACE_SETTINGS,
   paths: [] as NeonPath[],
+  pathsHistory: [] as NeonPath[][],
+  pathsFuture: [] as NeonPath[][],
   workspaceWidthPx: 0,
   workspaceHeightPx: 0,
   pxToCm: 0,
@@ -96,7 +119,7 @@ const volatileInitialState = {
 const initialState = {
   step: 1 as ConfiguratorStep,
   furthestStepReached: 1 as ConfiguratorStep,
-  sourceType: "image" as "image" | "text" | null,
+  sourceType: "image" as "image" | "text" | "draw" | null,
   sourceImageUrl: null,
   sourceText: "",
   fontId: "pacifico" as NeonFontId,
@@ -110,6 +133,23 @@ const initialState = {
   hasRemote: false,
   ...volatileInitialState,
 };
+
+/**
+ * Applique une édition manuelle de zone en poussant l'état courant sur la
+ * pile d'annulation (bornée) et en vidant le rétablissement — utilisé par
+ * toutes les actions de type "édition" (couleur, suppression, déplacement,
+ * rotation, échelle, glow, clignotement, dessin) mais PAS par `setPaths`
+ * (nouveau tracé de fond, qui repart d'un historique vierge).
+ */
+function mutatePaths(
+  get: () => ConfiguratorState,
+  set: (partial: Partial<ConfiguratorState>) => void,
+  fn: (paths: NeonPath[]) => NeonPath[]
+) {
+  const s = get();
+  const pathsHistory = [...s.pathsHistory, s.paths].slice(-MAX_HISTORY_ENTRIES);
+  set({ paths: fn(s.paths), pathsHistory, pathsFuture: [] });
+}
 
 export const useConfiguratorStore = create<ConfiguratorState>()(
   persist(
@@ -125,7 +165,7 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
       goBack: () => set((s) => ({ step: (s.step > 1 ? ((s.step - 1) as ConfiguratorStep) : s.step) })),
 
       setSourceType: (sourceType) =>
-        set({ sourceType, paths: [], resolutionStatus: "idle", resolutionFailureReason: null }),
+        set({ sourceType, paths: [], pathsHistory: [], pathsFuture: [], resolutionStatus: "idle", resolutionFailureReason: null }),
       setSourceImageUrl: (sourceImageUrl) =>
         set({ sourceImageUrl, resolutionStatus: "idle", resolutionFailureReason: null }),
       setSourceText: (sourceText) => set({ sourceText, resolutionStatus: "idle", resolutionFailureReason: null }),
@@ -134,21 +174,20 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
         set((s) => ({ traceSettings: { ...s.traceSettings, ...partial } })),
       resetTraceSettings: () => set({ traceSettings: DEFAULT_TRACE_SETTINGS }),
 
+      // Nouveau tracé de fond (auto-trace ou dessin depuis zéro) : ce n'est
+      // pas une édition manuelle, donc pas d'entrée d'historique — l'ancien
+      // historique n'a plus de sens sur un tout autre contenu.
       setPaths: (paths, workspaceWidthPx, workspaceHeightPx) =>
-        set({ paths, workspaceWidthPx, workspaceHeightPx }),
+        set({ paths, workspaceWidthPx, workspaceHeightPx, pathsHistory: [], pathsFuture: [] }),
 
       setPathColor: (pathId, color) =>
-        set((s) => ({
-          paths: s.paths.map((p) => (p.id === pathId ? { ...p, color } : p)),
-        })),
-      setAllPathColors: (color) =>
-        set((s) => ({ paths: s.paths.map((p) => ({ ...p, color })) })),
+        mutatePaths(get, set, (paths) => paths.map((p) => (p.id === pathId ? { ...p, color } : p))),
+      setAllPathColors: (color) => mutatePaths(get, set, (paths) => paths.map((p) => ({ ...p, color }))),
 
       removePaths: (ids) => {
-        const s = get();
-        const remaining = s.paths.filter((p) => !ids.includes(p.id));
+        const remaining = get().paths.filter((p) => !ids.includes(p.id));
         if (remaining.length === 0) return false;
-        set({ paths: remaining });
+        mutatePaths(get, set, () => remaining);
         return true;
       },
 
@@ -164,24 +203,68 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
             newIds.push(newId);
             return { ...p, id: newId, d: translateSvgPathD(p.d, dx, dy), order: s.paths.length + i };
           });
-        set({ paths: [...s.paths, ...toAdd] });
+        mutatePaths(get, set, (paths) => [...paths, ...toAdd]);
         return newIds;
       },
 
       nudgePaths: (ids, dxPx, dyPx) =>
-        set((s) => ({
-          paths: s.paths.map((p) => (ids.includes(p.id) ? { ...p, d: translateSvgPathD(p.d, dxPx, dyPx) } : p)),
-        })),
+        mutatePaths(get, set, (paths) =>
+          paths.map((p) => (ids.includes(p.id) ? { ...p, d: translateSvgPathD(p.d, dxPx, dyPx) } : p))
+        ),
+
+      rotatePaths: (ids, angleDeg, cx, cy) =>
+        mutatePaths(get, set, (paths) =>
+          paths.map((p) => (ids.includes(p.id) ? { ...p, d: rotateSvgPathD(p.d, angleDeg, cx, cy) } : p))
+        ),
+
+      scalePaths: (ids, factor, cx, cy) =>
+        mutatePaths(get, set, (paths) =>
+          paths.map((p) => (ids.includes(p.id) ? { ...p, d: scaleSvgPathD(p.d, factor, cx, cy) } : p))
+        ),
+
+      setPathsD: (updates) => {
+        const byId = new Map(updates.map((u) => [u.id, u.d]));
+        mutatePaths(get, set, (paths) => paths.map((p) => (byId.has(p.id) ? { ...p, d: byId.get(p.id)! } : p)));
+      },
 
       setPathsGlow: (ids, glowIntensity) =>
-        set((s) => ({
-          paths: s.paths.map((p) => (ids.includes(p.id) ? { ...p, glowIntensity } : p)),
-        })),
+        mutatePaths(get, set, (paths) => paths.map((p) => (ids.includes(p.id) ? { ...p, glowIntensity } : p))),
 
       setPathsBlink: (ids, blink) =>
-        set((s) => ({
-          paths: s.paths.map((p) => (ids.includes(p.id) ? { ...p, blink } : p)),
-        })),
+        mutatePaths(get, set, (paths) => paths.map((p) => (ids.includes(p.id) ? { ...p, blink } : p))),
+
+      addDrawnPath: (points, color, workspaceWidthPx, workspaceHeightPx) => {
+        if (points.length < 2) return;
+        if (get().workspaceWidthPx === 0) set({ workspaceWidthPx, workspaceHeightPx });
+        const d = "M " + points.map((p) => `${p.x} ${p.y}`).join(" L ");
+        mutatePaths(get, set, (paths) => [
+          ...paths,
+          { id: crypto.randomUUID(), d, color, order: paths.length },
+        ]);
+      },
+
+      undo: () => {
+        const s = get();
+        if (s.pathsHistory.length === 0) return;
+        const previous = s.pathsHistory[s.pathsHistory.length - 1];
+        set({
+          paths: previous,
+          pathsHistory: s.pathsHistory.slice(0, -1),
+          pathsFuture: [s.paths, ...s.pathsFuture].slice(0, MAX_HISTORY_ENTRIES),
+        });
+      },
+      redo: () => {
+        const s = get();
+        if (s.pathsFuture.length === 0) return;
+        const next = s.pathsFuture[0];
+        set({
+          paths: next,
+          pathsHistory: [...s.pathsHistory, s.paths].slice(-MAX_HISTORY_ENTRIES),
+          pathsFuture: s.pathsFuture.slice(1),
+        });
+      },
+      canUndo: () => get().pathsHistory.length > 0,
+      canRedo: () => get().pathsFuture.length > 0,
 
       setDimensions: (widthCm, heightCm, pxToCm) => set({ widthCm, heightCm, pxToCm }),
       setResolutionStatus: (resolutionStatus, failureReason = null) =>
@@ -196,6 +279,7 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
         const s = get();
         switch (s.step) {
           case 1: {
+            if (s.sourceType === "draw") return s.paths.length > 0 && s.resolutionStatus !== "unresolved";
             const hasContent = s.sourceType === "image" ? !!s.sourceImageUrl : s.sourceText.trim().length > 0;
             return hasContent && s.resolutionStatus === "resolved";
           }

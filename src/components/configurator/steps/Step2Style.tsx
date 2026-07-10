@@ -15,6 +15,12 @@ import {
   ArrowLeft,
   ArrowRight,
   AlertCircle,
+  Undo2,
+  Redo2,
+  RotateCcw,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
@@ -23,10 +29,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
+import { NeonCanvasPreview, type NeonCanvasHandle } from "@/components/configurator/NeonCanvasPreview";
 import { ColorPicker } from "@/components/configurator/ColorPicker";
 import { DayNightToggle } from "@/components/configurator/DayNightToggle";
 import { useConfiguratorStore } from "@/store/configuratorStore";
+import { useCollisionRecheck } from "@/hooks/useCollisionRecheck";
 import { MAX_DIMENSION_CM, DEFAULT_GLOW_INTENSITY } from "@/types/neon";
 import { NEON_COLORS } from "@/types/neon";
 import { CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
@@ -58,10 +65,16 @@ export function Step2Style() {
     removePaths,
     duplicatePaths,
     nudgePaths,
+    rotatePaths,
+    scalePaths,
     setPathsGlow,
     setPathsBlink,
-    setResolutionStatus,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useConfiguratorStore();
+  const recheckCollision = useCollisionRecheck();
 
   const [localWidth, setLocalWidth] = useState(widthCm);
   const [localHeight, setLocalHeight] = useState(heightCm);
@@ -70,6 +83,7 @@ export function Step2Style() {
   const [soloMode, setSoloMode] = useState(false);
   const [background, setBackground] = useState<"day" | "night">("night");
   const [loadingPrice, setLoadingPrice] = useState(false);
+  const canvasRef = useRef<NeonCanvasHandle>(null);
 
   // Un design déjà auto-agrandi par la résolution de collision (voir
   // useAutoResolveDesign) doit se refléter ici sans que l'utilisateur ait
@@ -149,31 +163,6 @@ export function Step2Style() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paths, widthCm, heightCm, support, hasRemote, resolutionStatus]);
 
-  // Après une mutation géométrique (suppression/duplication/déplacement), on
-  // revérifie la collision côté serveur (endpoint léger, pas de re-traçage)
-  // pour bloquer immédiatement le passage à l'étape suivante en cas de
-  // chevauchement — la validation finale côté serveur avant commande reste
-  // de toute façon systématique (voir /api/customize/designs).
-  async function recheckCollision() {
-    const current = useConfiguratorStore.getState().paths;
-    try {
-      const res = await fetch("/api/customize/collision-check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paths: current, workspaceWidthPx, workspaceHeightPx, widthCm, heightCm }),
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.result?.hasCollision) {
-        setResolutionStatus("unresolved", "editCausedCollision");
-      } else {
-        setResolutionStatus("resolved");
-      }
-    } catch {
-      // best-effort : la revalidation stricte a lieu de toute façon avant la commande
-    }
-  }
-
   function handlePathClick(pathId: string, e: React.MouseEvent) {
     setSelectedPathIds((prev) => {
       if (e.shiftKey) {
@@ -210,6 +199,66 @@ export function Step2Style() {
     nudgePaths(selectedPathIds, dx, dy);
     recheckCollision();
   }
+
+  function getPivot() {
+    const box = canvasRef.current?.getSelectionBBox(selectedPathIds);
+    if (box) return { cx: box.x + box.width / 2, cy: box.y + box.height / 2 };
+    return { cx: workspaceWidthPx / 2, cy: workspaceHeightPx / 2 };
+  }
+
+  function handleRotate(deltaDeg: number) {
+    if (selectedPathIds.length === 0) return;
+    const { cx, cy } = getPivot();
+    rotatePaths(selectedPathIds, deltaDeg, cx, cy);
+    recheckCollision();
+  }
+
+  function handleScale(factor: number) {
+    if (selectedPathIds.length === 0) return;
+    const { cx, cy } = getPivot();
+    scalePaths(selectedPathIds, factor, cx, cy);
+    recheckCollision();
+  }
+
+  function handleDragCommit(ids: string[], dxPx: number, dyPx: number) {
+    if (dxPx === 0 && dyPx === 0) return;
+    nudgePaths(ids, dxPx, dyPx);
+    recheckCollision();
+  }
+
+  function handleUndo() {
+    undo();
+    recheckCollision();
+  }
+
+  function handleRedo() {
+    redo();
+    recheckCollision();
+  }
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) handleRedo();
+        else handleUndo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        handleRedo();
+      } else if ((e.key === "Delete" || e.key === "Backspace") && selectedPathIds.length > 0) {
+        e.preventDefault();
+        handleDelete();
+      } else if (e.key === "Escape") {
+        setSelectedPathIds([]);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPathIds]);
 
   const globalColor = paths[0]?.color ?? NEON_COLORS[0].hex;
   const selectedPaths = paths.filter((p) => selectedPathIds.includes(p.id));
@@ -257,6 +306,7 @@ export function Step2Style() {
               </div>
 
               <NeonCanvasPreview
+                ref={canvasRef}
                 paths={paths}
                 workspaceWidthPx={workspaceWidthPx}
                 workspaceHeightPx={workspaceHeightPx}
@@ -264,11 +314,18 @@ export function Step2Style() {
                 selectedPathIds={selectedPathIds}
                 onPathClick={handlePathClick}
                 onMarqueeSelect={handleMarqueeSelect}
+                onDragCommit={handleDragCommit}
                 dimUnselected={soloMode}
                 className="h-64"
               />
 
               <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleUndo} disabled={!canUndo()}>
+                  <Undo2 className="h-3.5 w-3.5" /> {t("undo")}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={handleRedo} disabled={!canRedo()}>
+                  <Redo2 className="h-3.5 w-3.5" /> {t("redo")}
+                </Button>
                 <Button type="button" variant="outline" size="sm" onClick={() => setSelectedPathIds(paths.map((p) => p.id))}>
                   <CheckSquare className="h-3.5 w-3.5" /> {t("selectAll")}
                 </Button>
@@ -300,7 +357,7 @@ export function Step2Style() {
               </div>
 
               {selectedPathIds.length > 0 && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   <span className="me-1 text-xs text-muted-foreground">{t("nudgeLabel")}</span>
                   <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(0, -NUDGE_STEP_PX)}>
                     <ArrowUp className="h-3.5 w-3.5" />
@@ -313,6 +370,19 @@ export function Step2Style() {
                   </Button>
                   <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(NUDGE_STEP_PX, 0)}>
                     <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="mx-1 h-4 w-px bg-border" aria-hidden />
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleRotate(-15)}>
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleRotate(15)}>
+                    <RotateCw className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleScale(0.9)}>
+                    <ZoomOut className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleScale(1.1)}>
+                    <ZoomIn className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               )}

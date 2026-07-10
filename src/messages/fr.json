@@ -61,10 +61,22 @@
       "thresholdHint": "Ajustez si des détails importants du logo n'apparaissent pas ou si trop de bruit est détecté.",
       "invertLabel": "Inverser noir/blanc",
       "blurLabel": "Flou (lissage du bruit)",
-      "resetTraceSettings": "Réinitialiser les réglages"
+      "resetTraceSettings": "Réinitialiser les réglages",
+      "drawTab": "Dessiner",
+      "drawHint": "Dessinez un trait à la souris ou au doigt pour créer un tracé néon.",
+      "referenceImageLabel": "Image de référence",
+      "undoStroke": "Annuler",
+      "clearAll": "Tout effacer",
+      "strokeColorLabel": "Couleur du trait",
+      "snapToggleLabel": "Aide au tracé (accroche aux contours)",
+      "snapSensitivityLabel": "Sensibilité de détection",
+      "toggleEdgesLabel": "Voir les contours détectés",
+      "drawCollisionHint": "Ce trait rapproche deux tracés trop près l'un de l'autre. Déplacez-le ou effacez-le avant de continuer."
     },
     "step2": {
       "globalColorLabel": "Couleur de l'enseigne",
+      "undo": "Annuler",
+      "redo": "Rétablir",
       "advancedColorToggle": "Personnaliser lettre par lettre",
       "selectPathHint": "Cliquez sur un tracé (Maj+clic pour en ajouter plusieurs, ou glissez un rectangle) pour le sélectionner",
       "selectedPathLabel": "Tracé sélectionné n°{index}",

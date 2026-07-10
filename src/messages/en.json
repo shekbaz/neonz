@@ -61,10 +61,22 @@
       "thresholdHint": "Adjust if important logo details are missing or too much noise is detected.",
       "invertLabel": "Invert black/white",
       "blurLabel": "Blur (noise smoothing)",
-      "resetTraceSettings": "Reset settings"
+      "resetTraceSettings": "Reset settings",
+      "drawTab": "Draw",
+      "drawHint": "Draw a stroke with your mouse or finger to create a neon trace.",
+      "referenceImageLabel": "Reference image",
+      "undoStroke": "Undo",
+      "clearAll": "Clear all",
+      "strokeColorLabel": "Stroke color",
+      "snapToggleLabel": "Trace assist (snap to edges)",
+      "snapSensitivityLabel": "Detection sensitivity",
+      "toggleEdgesLabel": "Show detected edges",
+      "drawCollisionHint": "This stroke brings two traces too close together. Move or delete it before continuing."
     },
     "step2": {
       "globalColorLabel": "Sign color",
+      "undo": "Undo",
+      "redo": "Redo",
       "advancedColorToggle": "Customize letter by letter",
       "selectPathHint": "Click a trace (Shift+click to add more, or drag a rectangle) to select it",
       "selectedPathLabel": "Selected trace #{index}",

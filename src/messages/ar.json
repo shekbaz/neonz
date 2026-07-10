@@ -61,10 +61,22 @@
       "thresholdHint": "اضبط هذا إذا كانت تفاصيل مهمة من الشعار مفقودة أو تم اكتشاف الكثير من التشويش.",
       "invertLabel": "عكس الأسود/الأبيض",
       "blurLabel": "التمويه (تنعيم التشويش)",
-      "resetTraceSettings": "إعادة تعيين الإعدادات"
+      "resetTraceSettings": "إعادة تعيين الإعدادات",
+      "drawTab": "رسم",
+      "drawHint": "ارسم خطًا بالماوس أو بإصبعك لإنشاء تصميم نيون.",
+      "referenceImageLabel": "صورة مرجعية",
+      "undoStroke": "تراجع",
+      "clearAll": "مسح الكل",
+      "strokeColorLabel": "لون الخط",
+      "snapToggleLabel": "مساعدة الرسم (الالتصاق بالحواف)",
+      "snapSensitivityLabel": "حساسية الكشف",
+      "toggleEdgesLabel": "إظهار الحواف المكتشفة",
+      "drawCollisionHint": "هذا الخط يقرّب تصميمين أكثر من اللازم. حرّكه أو احذفه قبل المتابعة."
     },
     "step2": {
       "globalColorLabel": "لون اللافتة",
+      "undo": "تراجع",
+      "redo": "إعادة",
       "advancedColorToggle": "تخصيص حرفًا بحرف",
       "selectPathHint": "انقر على خط لتحديده (Shift+نقر لإضافة المزيد، أو اسحب مستطيلًا)",
       "selectedPathLabel": "الخط المحدد رقم {index}",

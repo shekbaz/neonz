@@ -68,7 +68,7 @@ export const autoTraceInputSchema = z
   });
 
 export const customDesignCreateSchema = z.object({
-  sourceType: z.enum(["image", "text"]),
+  sourceType: z.enum(["image", "text", "draw"]),
   sourceImageUrl: z.string().url().optional(),
   sourceText: z.string().max(60).optional(),
   fontFamily: z.string().optional(),
