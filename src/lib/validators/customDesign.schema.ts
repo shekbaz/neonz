@@ -43,35 +43,8 @@ export const priceInputSchema = collisionCheckInputSchema.extend({
   hasRemote: z.boolean().default(false),
 });
 
-const traceSettingsSchema = z.object({
-  threshold: z.number().min(0).max(255).optional(),
-  turdSize: z.number().min(2).max(200).optional(),
-  steps: z.number().int().min(1).max(5).optional(),
-  fontSizePx: z.number().min(80).max(400).optional(),
-  letterSpacingPx: z.number().min(0).max(200).optional(),
-  invert: z.boolean().optional(),
-  blurSigma: z.number().min(0).max(20).optional(),
-});
-
-export const autoTraceInputSchema = z
-  .object({
-    sourceType: z.enum(["image", "text"]),
-    sourceImageUrl: z.string().url().optional(),
-    sourceText: z.string().min(1).max(60).optional(),
-    fontId: z.enum(fontIds).optional(),
-    targetWidthCm: z.number().positive().max(MAX_DIMENSION_CM),
-    targetHeightCm: z.number().positive().max(MAX_DIMENSION_CM),
-    startingTraceSettings: traceSettingsSchema.optional(),
-  })
-  .refine((v) => (v.sourceType === "image" ? !!v.sourceImageUrl : !!v.sourceText?.trim()), {
-    message: "Contenu manquant pour le type de source indiqué.",
-  });
-
 export const customDesignCreateSchema = z.object({
-  sourceType: z.enum(["image", "text", "draw"]),
-  sourceImageUrl: z.string().url().optional(),
-  sourceText: z.string().max(60).optional(),
-  fontFamily: z.string().optional(),
+  sourceType: z.enum(["image", "text", "draw", "mixed"]),
   paths: z.array(neonPathSchema).min(1),
   dimensions: z.object({
     widthCm: z.number().positive().max(MAX_DIMENSION_CM),

@@ -4,10 +4,9 @@ import { useConfiguratorStore } from "@/store/configuratorStore";
 
 /**
  * Revérifie la collision côté serveur (endpoint léger, pas de re-vectorisation)
- * après une mutation géométrique manuelle (édition de zone en étape 2, trait
- * dessiné à la main en étape 1). Partagé entre Step2Style et DrawCanvas — la
- * validation stricte avant commande reste de toute façon systématique (voir
- * /api/customize/designs).
+ * après une mutation géométrique manuelle (ajout ou édition de zone dans le
+ * canvas unifié, voir Step1Create.tsx). La validation stricte avant commande
+ * reste de toute façon systématique (voir /api/customize/designs).
  */
 export function useCollisionRecheck() {
   const { workspaceWidthPx, workspaceHeightPx, widthCm, heightCm, setResolutionStatus } = useConfiguratorStore();

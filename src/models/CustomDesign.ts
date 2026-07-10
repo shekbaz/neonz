@@ -30,7 +30,7 @@ const customDesignSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: "User" },
     sessionId: { type: String }, // pour rattacher un design à un panier invité non connecté
     status: { type: String, enum: ["draft", "valid", "ordered"], default: "draft" },
-    sourceType: { type: String, enum: ["image", "text", "draw"], required: true },
+    sourceType: { type: String, enum: ["image", "text", "draw", "mixed"], required: true },
 
     sourceImageUrl: { type: String },
     sourceText: { type: String },

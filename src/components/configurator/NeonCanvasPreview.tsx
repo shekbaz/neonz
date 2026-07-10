@@ -3,12 +3,16 @@
 import { forwardRef, useId, useImperativeHandle, useMemo, useRef, useState } from "react";
 import type { NeonPath } from "@/types/neon";
 import { DEFAULT_GLOW_INTENSITY } from "@/types/neon";
+import { snapToNearest, type Point, type SpatialGrid } from "@/lib/neon/edgeDetection";
 import { cn } from "@/lib/utils";
 
 export interface NeonCanvasHandle {
   /** Bbox union (coordonnées de l'espace de travail) des tracés donnés, ou null si aucun trouvé. */
   getSelectionBBox: (ids: string[]) => { x: number; y: number; width: number; height: number } | null;
 }
+
+const SNAP_CELL_SIZE = 20;
+const SNAP_MAX_DISTANCE = 20;
 
 interface NeonCanvasPreviewProps {
   paths: NeonPath[];
@@ -24,6 +28,17 @@ interface NeonCanvasPreviewProps {
   /** Estompe les tracés non sélectionnés (mode "isoler"). */
   dimUnselected?: boolean;
   className?: string;
+
+  /** "draw" bascule le canvas en capture de trait libre au lieu de sélection/marquee/glisser-déposer. */
+  mode?: "select" | "draw";
+  strokeColor?: string;
+  onStrokeComplete?: (points: Point[]) => void;
+  /** Image de référence (superposée en transparence) pour tracer par-dessus en mode dessin. */
+  referenceImageUrl?: string | null;
+  snapEnabled?: boolean;
+  snapGrid?: SpatialGrid | null;
+  showEdgePoints?: boolean;
+  edgePoints?: Point[];
 }
 
 function lerp(min: number, max: number, t: number): number {
@@ -33,9 +48,9 @@ function lerp(min: number, max: number, t: number): number {
 /**
  * Rendu SVG du design néon avec effet de lumière simulé (superposition de
  * filtres de flou de différentes intensités, à la manière d'un vrai tube LED
- * vu de nuit). La résolution de collision est entièrement automatique côté
- * serveur (voir lib/neon/autoResolve.ts) — ce composant n'a plus besoin
- * d'afficher d'état de collision.
+ * vu de nuit). Gère aussi bien l'édition de zone (sélection, marquee,
+ * glisser-déposer) que la capture de trait libre (mode "draw") sur la même
+ * surface, pour le canvas unifié du configurateur.
  */
 export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewProps>(function NeonCanvasPreview(
   {
@@ -49,6 +64,14 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     onDragCommit,
     dimUnselected = false,
     className,
+    mode = "select",
+    strokeColor = "#FF073A",
+    onStrokeComplete,
+    referenceImageUrl,
+    snapEnabled = false,
+    snapGrid = null,
+    showEdgePoints = false,
+    edgePoints = [],
   },
   ref
 ) {
@@ -66,6 +89,10 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   const pathDragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [pathDragOffset, setPathDragOffset] = useState<{ dx: number; dy: number } | null>(null);
   const pathDraggedRef = useRef(false);
+
+  // Capture de trait libre (mode "draw").
+  const isDrawingRef = useRef(false);
+  const [currentPoints, setCurrentPoints] = useState<Point[]>([]);
 
   useImperativeHandle(ref, () => ({
     getSelectionBBox(ids) {
@@ -104,8 +131,13 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     return { x: transformed.x, y: transformed.y };
   }
 
+  function maybeSnap(p: Point): Point {
+    if (!snapEnabled || !snapGrid) return p;
+    return snapToNearest(p, snapGrid, SNAP_CELL_SIZE, SNAP_MAX_DISTANCE);
+  }
+
   function handlePathPointerDown(pathId: string, e: React.PointerEvent<SVGPathElement>) {
-    if (!onDragCommit || !selectedPathIds?.includes(pathId)) return;
+    if (mode === "draw" || !onDragCommit || !selectedPathIds?.includes(pathId)) return;
     e.stopPropagation();
     const p = toSvgPoint(e.clientX, e.clientY);
     pathDragStartRef.current = p;
@@ -115,6 +147,13 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   }
 
   function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
+    if (mode === "draw") {
+      isDrawingRef.current = true;
+      setCurrentPoints([maybeSnap(toSvgPoint(e.clientX, e.clientY))]);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      return;
+    }
+
     if (!onMarqueeSelect || e.target !== e.currentTarget) return;
     const p = toSvgPoint(e.clientX, e.clientY);
     dragStartRef.current = p;
@@ -125,6 +164,12 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   }
 
   function handlePointerMove(e: React.PointerEvent<SVGSVGElement>) {
+    if (mode === "draw") {
+      if (!isDrawingRef.current) return;
+      setCurrentPoints((prev) => [...prev, maybeSnap(toSvgPoint(e.clientX, e.clientY))]);
+      return;
+    }
+
     if (pathDragStartRef.current) {
       const p = toSvgPoint(e.clientX, e.clientY);
       const start = pathDragStartRef.current;
@@ -146,6 +191,15 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   }
 
   function handlePointerUp(e: React.PointerEvent<SVGSVGElement>) {
+    if (mode === "draw") {
+      if (isDrawingRef.current) {
+        isDrawingRef.current = false;
+        if (currentPoints.length >= 2) onStrokeComplete?.(currentPoints);
+        setCurrentPoints([]);
+      }
+      return;
+    }
+
     if (pathDragStartRef.current) {
       if (pathDraggedRef.current && pathDragOffset && selectedPathIds) {
         onDragCommit?.(selectedPathIds, pathDragOffset.dx, pathDragOffset.dy);
@@ -176,6 +230,10 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     setMarquee(null);
   }
 
+  const currentStrokeD =
+    currentPoints.length >= 2 ? "M " + currentPoints.map((p) => `${p.x} ${p.y}`).join(" L ") : "";
+  const displayedEdgePoints = showEdgePoints ? edgePoints.filter((_, i) => i % 3 === 0) : [];
+
   return (
     <div
       className={cn(
@@ -183,6 +241,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
         background === "night"
           ? "bg-[oklch(0.13_0.025_272)] ring-foreground/15"
           : "bg-[oklch(0.96_0.006_84)] ring-[oklch(0.25_0.02_264/0.12)]",
+        mode === "draw" && "touch-none",
         className
       )}
     >
@@ -194,6 +253,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onPointerLeave={mode === "draw" ? handlePointerUp : undefined}
       >
         <defs>
           {distinctIntensities.map((intensity) => (
@@ -214,6 +274,20 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
             </g>
           ))}
         </defs>
+
+        {referenceImageUrl && (
+          <image
+            href={referenceImageUrl}
+            width={workspaceWidthPx}
+            height={workspaceHeightPx}
+            opacity={0.3}
+            preserveAspectRatio="xMidYMid slice"
+          />
+        )}
+
+        {displayedEdgePoints.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={1} fill="#FF00FF" opacity={0.6} />
+        ))}
 
         {paths.map((path) => {
           const isSelected = selectedPathIds?.includes(path.id) ?? false;
@@ -250,7 +324,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
                 onClick={(e) => onPathClick?.(path.id, e)}
                 onPointerDown={(e) => handlePathPointerDown(path.id, e)}
                 className={cn(
-                  onPathClick && "cursor-pointer",
+                  mode === "select" && onPathClick && "cursor-pointer",
                   isSelected && "opacity-100",
                   isSelected && onDragCommit && "cursor-move",
                   path.blink && "animate-neon-blink"
@@ -260,6 +334,10 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
             </g>
           );
         })}
+
+        {currentStrokeD && (
+          <path d={currentStrokeD} stroke={strokeColor} strokeWidth={3} fill="none" strokeLinecap="round" />
+        )}
 
         {marquee && dragged && (
           <rect
@@ -275,7 +353,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
         )}
       </svg>
 
-      {paths.length === 0 && (
+      {paths.length === 0 && !currentStrokeD && (
         <p className="absolute text-sm text-muted-foreground">Aucun tracé à afficher pour le moment.</p>
       )}
     </div>

@@ -1,9 +1,10 @@
 /**
  * Détection de contours (filtre de Sobel) et accroche magnétique — utilisé
- * par le mode "dessin libre" du configurateur (DrawCanvas.tsx) pour aider à
- * tracer un néon en suivant les contours d'une image de référence. 100%
- * client (ImageData du navigateur) : cette image de référence n'est jamais
- * envoyée au serveur, contrairement au mode "upload + vectorisation auto".
+ * par le mode "dessin" du canvas unifié (Step1Create.tsx / NeonCanvasPreview.tsx)
+ * pour aider à tracer un néon en suivant les contours d'une image de
+ * référence. 100% client (ImageData du navigateur) : cette image de
+ * référence n'est jamais envoyée au serveur, contrairement à l'ajout d'image
+ * (vectorisation via /api/customize/vectorize).
  */
 
 export interface Point {

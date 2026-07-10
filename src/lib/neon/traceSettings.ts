@@ -1,8 +1,8 @@
 /**
- * Réglages internes du traçage (vectorisation image / conversion texte).
- * Module framework-agnostic (pas de "use client", pas de dépendance à
- * Zustand) car importé à la fois côté client (store) et côté serveur
- * (lib/neon/autoResolve.ts, route /api/customize/auto-trace).
+ * Valeurs par défaut des réglages de traçage (seuil/inversion/flou pour la
+ * vectorisation d'image, espacement pour le texte) — utilisées comme point
+ * de départ par le canvas unifié (Step1Create.tsx) avant "Ajouter une image"
+ * ou "Revectoriser". Module framework-agnostic (pas de "use client").
  */
 export interface TraceSettings {
   /** Image : seuil noir/blanc 0-255 (potrace) */

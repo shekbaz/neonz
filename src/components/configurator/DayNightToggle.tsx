@@ -11,7 +11,7 @@ export function DayNightToggle({
   value: "day" | "night";
   onChange: (value: "day" | "night") => void;
 }) {
-  const t = useTranslations("Configurator.step2");
+  const t = useTranslations("Configurator.stepCreate");
 
   return (
     <div className="inline-flex rounded-full border border-border bg-muted/60 p-1">

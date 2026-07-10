@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useConfiguratorStore, type SupportType } from "@/store/configuratorStore";
+import { deriveSourceType } from "@/lib/neon/deriveSourceType";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,8 @@ const SUPPORT_OPTIONS: { value: SupportType; labelKey: string }[] = [
   { value: "silhouette-cut", labelKey: "supportSilhouette" },
 ];
 
-export function Step3Finalize() {
-  const t = useTranslations("Configurator.step3");
+export function StepFinalize() {
+  const t = useTranslations("Configurator.stepFinalize");
   const tCommon = useTranslations("Common");
   const router = useRouter();
 
@@ -32,10 +33,6 @@ export function Step3Finalize() {
     support,
     hasRemote,
     priceBreakdown,
-    sourceType,
-    sourceImageUrl,
-    sourceText,
-    fontId,
     pxToCm,
     setSupport,
     setHasRemote,
@@ -75,14 +72,12 @@ export function Step3Finalize() {
   async function handleOrder() {
     setSubmitting(true);
     try {
+      const sourceType = deriveSourceType(paths);
       const res = await fetch("/api/customize/designs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sourceType,
-          sourceImageUrl: sourceType === "image" ? sourceImageUrl : undefined,
-          sourceText: sourceType === "text" ? sourceText : undefined,
-          fontFamily: sourceType === "text" ? fontId : undefined,
           paths,
           dimensions: { widthCm, heightCm },
           pxToCmRatio: pxToCm,
@@ -97,13 +92,12 @@ export function Step3Finalize() {
       }
 
       const design = await res.json();
-      const name = sourceType === "text" ? sourceText : "Enseigne personnalisée";
       const price = priceBreakdown?.total ?? 0;
 
       reset();
       router.push({
         pathname: "/checkout",
-        query: { type: "custom", id: design._id, name, price: String(price) },
+        query: { type: "custom", id: design._id, name: "Enseigne personnalisée", price: String(price) },
       });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");

@@ -10,9 +10,8 @@ export function WizardStepper({ current }: { current: ConfiguratorStep }) {
   const { furthestStepReached, setStep } = useConfiguratorStore();
 
   const steps: { key: ConfiguratorStep; label: string }[] = [
-    { key: 1, label: t("content") },
-    { key: 2, label: t("style") },
-    { key: 3, label: t("finalize") },
+    { key: 1, label: t("create") },
+    { key: 2, label: t("finalize") },
   ];
 
   return (

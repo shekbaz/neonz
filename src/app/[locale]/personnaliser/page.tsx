@@ -3,17 +3,13 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { WizardStepper } from "@/components/configurator/WizardStepper";
-import { Step1Content } from "@/components/configurator/steps/Step1Content";
-import { Step2Style } from "@/components/configurator/steps/Step2Style";
-import { Step3Finalize } from "@/components/configurator/steps/Step3Finalize";
+import { Step1Create } from "@/components/configurator/steps/Step1Create";
+import { StepFinalize } from "@/components/configurator/steps/StepFinalize";
 import { useConfiguratorStore } from "@/store/configuratorStore";
-import { useAutoResolveDesign } from "@/hooks/useAutoResolveDesign";
 
 export default function ConfiguratorPage() {
   const t = useTranslations("Configurator");
   const { step, goNext, goBack, canProceedFromCurrentStep } = useConfiguratorStore();
-
-  useAutoResolveDesign();
 
   const canProceed = canProceedFromCurrentStep();
 
@@ -28,16 +24,15 @@ export default function ConfiguratorPage() {
       <WizardStepper current={step} />
 
       <div className="min-h-[400px]">
-        {step === 1 && <Step1Content />}
-        {step === 2 && <Step2Style />}
-        {step === 3 && <Step3Finalize />}
+        {step === 1 && <Step1Create />}
+        {step === 2 && <StepFinalize />}
       </div>
 
       <div className="mt-10 flex items-center justify-between">
         <Button variant="ghost" onClick={goBack} disabled={step === 1}>
           {t("back")}
         </Button>
-        {step < 3 && (
+        {step < 2 && (
           <Button onClick={goNext} disabled={!canProceed} className="glow-primary px-6">
             {t("next")}
           </Button>

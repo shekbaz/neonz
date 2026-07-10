@@ -104,9 +104,9 @@ export default async function AdminOrderDetailPage({
                     className="h-48"
                   />
                   <p className="text-xs text-muted-foreground">
-                    {item.snapshot.sourceType === "text" && item.snapshot.sourceText
-                      ? `Texte : "${item.snapshot.sourceText}"`
-                      : "À partir d'une image importée"}
+                    {item.snapshot.sourceType === "image"
+                      ? "À partir d'une image importée"
+                      : "Design personnalisé"}
                     {" — "}
                     Dimensions : {item.snapshot.dimensions?.widthCm}cm x {item.snapshot.dimensions?.heightCm}cm —
                     Support : {item.snapshot.support}

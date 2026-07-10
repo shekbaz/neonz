@@ -166,3 +166,27 @@ export function scaleSvgPathD(d: string, factor: number, cx: number, cy: number)
     (vx, vy) => [vx * factor, vy * factor]
   );
 }
+
+/**
+ * Met à l'échelle (uniforme, préserve le ratio) un lot de tracés fraîchement
+ * générés (texte/image, dont les coordonnées démarrent près de l'origine)
+ * pour tenir dans une boîte cible, puis les positionne à (targetX, targetY) —
+ * utilisé pour "ajouter" un élément sur le canvas unifié du configurateur
+ * (Step1Create.tsx) et pour repositionner une revectorisation à l'identique.
+ */
+export function fitAndPlacePaths<T extends { d: string }>(
+  paths: T[],
+  sourceWidth: number,
+  sourceHeight: number,
+  targetX: number,
+  targetY: number,
+  targetWidth: number,
+  targetHeight: number
+): T[] {
+  if (sourceWidth <= 0 || sourceHeight <= 0) return paths;
+  const scale = Math.min(targetWidth / sourceWidth, targetHeight / sourceHeight);
+  return paths.map((p) => ({
+    ...p,
+    d: translateSvgPathD(scaleSvgPathD(p.d, scale, 0, 0), targetX, targetY),
+  }));
+}
