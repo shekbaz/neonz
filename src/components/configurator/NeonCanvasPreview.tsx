@@ -29,6 +29,8 @@ interface NeonCanvasPreviewProps {
   onMarqueeSelect?: (ids: string[], additive: boolean) => void;
   /** Active le glisser-déposer d'une sélection déjà active ; appelé une seule fois au relâchement. */
   onDragCommit?: (ids: string[], dxPx: number, dyPx: number) => void;
+  /** Active les poignées de redimensionnement aux coins de la sélection ; appelé une seule fois au relâchement. */
+  onResizeCommit?: (ids: string[], factor: number, cx: number, cy: number) => void;
   /** Estompe les tracés non sélectionnés (mode "isoler"). */
   dimUnselected?: boolean;
   /** Grille de repère visuelle en fond de canvas (n'affecte pas les données). */
@@ -68,6 +70,7 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     onPathClick,
     onMarqueeSelect,
     onDragCommit,
+    onResizeCommit,
     dimUnselected = false,
     showGrid = false,
     className,
@@ -96,6 +99,17 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   const pathDragStartRef = useRef<{ x: number; y: number } | null>(null);
   const [pathDragOffset, setPathDragOffset] = useState<{ dx: number; dy: number } | null>(null);
   const pathDraggedRef = useRef(false);
+
+  // Redimensionnement de la sélection via les poignées d'angle, armé depuis une poignée.
+  const resizeStartRef = useRef<{
+    pivot: Point;
+    startDist: number;
+    originalBBox: { x: number; y: number; width: number; height: number };
+  } | null>(null);
+  const [resizeLive, setResizeLive] = useState<{ pivot: Point; factor: number } | null>(null);
+  const [selectionBBox, setSelectionBBox] = useState<{ x: number; y: number; width: number; height: number } | null>(
+    null
+  );
 
   // Capture de trait libre (mode "draw").
   const isDrawingRef = useRef(false);
@@ -165,6 +179,30 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     return Array.from(set);
   }, [paths]);
 
+  useEffect(() => {
+    if (mode !== "select" || !onResizeCommit || !selectedPathIds || selectedPathIds.length === 0) {
+      setSelectionBBox(null);
+      return;
+    }
+    let box: { x: number; y: number; width: number; height: number } | null = null;
+    for (const id of selectedPathIds) {
+      const el = pathElRefs.current.get(id);
+      if (!el) continue;
+      const b = el.getBBox();
+      if (!box) {
+        box = { x: b.x, y: b.y, width: b.width, height: b.height };
+      } else {
+        const minX = Math.min(box.x, b.x);
+        const minY = Math.min(box.y, b.y);
+        const maxX = Math.max(box.x + box.width, b.x + b.width);
+        const maxY = Math.max(box.y + box.height, b.y + b.height);
+        box = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+      }
+    }
+    setSelectionBBox(box);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPathIds, paths, mode, onResizeCommit]);
+
   function toSvgPoint(clientX: number, clientY: number) {
     const svg = svgRef.current;
     const ctm = svg?.getScreenCTM();
@@ -179,6 +217,34 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
   function maybeSnap(p: Point): Point {
     if (!snapEnabled || !snapGrid) return p;
     return snapToNearest(p, snapGrid, SNAP_CELL_SIZE, SNAP_MAX_DISTANCE);
+  }
+
+  const RESIZE_CORNERS = ["tl", "tr", "br", "bl"] as const;
+  type ResizeCorner = (typeof RESIZE_CORNERS)[number];
+
+  function bboxCorner(box: { x: number; y: number; width: number; height: number }, corner: ResizeCorner): Point {
+    switch (corner) {
+      case "tl":
+        return { x: box.x, y: box.y };
+      case "tr":
+        return { x: box.x + box.width, y: box.y };
+      case "br":
+        return { x: box.x + box.width, y: box.y + box.height };
+      case "bl":
+        return { x: box.x, y: box.y + box.height };
+    }
+  }
+  const OPPOSITE_CORNER: Record<ResizeCorner, ResizeCorner> = { tl: "br", tr: "bl", br: "tl", bl: "tr" };
+
+  function handleResizeHandlePointerDown(corner: ResizeCorner, e: React.PointerEvent<SVGRectElement>) {
+    if (!selectionBBox) return;
+    e.stopPropagation();
+    const p = toSvgPoint(e.clientX, e.clientY);
+    const pivot = bboxCorner(selectionBBox, OPPOSITE_CORNER[corner]);
+    const startDist = Math.max(1, Math.hypot(p.x - pivot.x, p.y - pivot.y));
+    resizeStartRef.current = { pivot, startDist, originalBBox: selectionBBox };
+    setResizeLive({ pivot, factor: 1 });
+    e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function handlePathPointerDown(pathId: string, e: React.PointerEvent<SVGPathElement>) {
@@ -234,6 +300,15 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
       return;
     }
 
+    if (resizeStartRef.current) {
+      const p = toSvgPoint(e.clientX, e.clientY);
+      const { pivot, startDist } = resizeStartRef.current;
+      const dist = Math.hypot(p.x - pivot.x, p.y - pivot.y);
+      const factor = Math.min(20, Math.max(0.05, dist / startDist));
+      setResizeLive({ pivot, factor });
+      return;
+    }
+
     if (pathDragStartRef.current) {
       const p = toSvgPoint(e.clientX, e.clientY);
       const start = pathDragStartRef.current;
@@ -265,6 +340,15 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
     }
 
     if (mode === "line") return;
+
+    if (resizeStartRef.current) {
+      if (resizeLive && Math.abs(resizeLive.factor - 1) > 0.01 && selectedPathIds) {
+        onResizeCommit?.(selectedPathIds, resizeLive.factor, resizeStartRef.current.pivot.x, resizeStartRef.current.pivot.y);
+      }
+      resizeStartRef.current = null;
+      setResizeLive(null);
+      return;
+    }
 
     if (pathDragStartRef.current) {
       if (pathDraggedRef.current && pathDragOffset && selectedPathIds) {
@@ -380,7 +464,11 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
           const intensity = path.glowIntensity ?? DEFAULT_GLOW_INTENSITY;
           const dimmed = dimUnselected && !isSelected;
           const liveTransform =
-            isSelected && pathDragOffset ? `translate(${pathDragOffset.dx} ${pathDragOffset.dy})` : undefined;
+            isSelected && pathDragOffset
+              ? `translate(${pathDragOffset.dx} ${pathDragOffset.dy})`
+              : isSelected && resizeLive
+                ? `translate(${resizeLive.pivot.x} ${resizeLive.pivot.y}) scale(${resizeLive.factor}) translate(${-resizeLive.pivot.x} ${-resizeLive.pivot.y})`
+                : undefined;
 
           return (
             <g key={path.id} opacity={dimmed ? 0.15 : 1} transform={liveTransform}>
@@ -448,6 +536,77 @@ export const NeonCanvasPreview = forwardRef<NeonCanvasHandle, NeonCanvasPreviewP
             strokeWidth={1}
             strokeDasharray="4 3"
           />
+        )}
+
+        {selectionBBox && onResizeCommit && (
+          <g pointerEvents={resizeStartRef.current ? "none" : "auto"}>
+            {(() => {
+              const box = resizeLive
+                ? {
+                    corners: RESIZE_CORNERS.map((c) => {
+                      const original = bboxCorner(resizeStartRef.current!.originalBBox, c);
+                      return {
+                        corner: c,
+                        x: resizeLive.pivot.x + (original.x - resizeLive.pivot.x) * resizeLive.factor,
+                        y: resizeLive.pivot.y + (original.y - resizeLive.pivot.y) * resizeLive.factor,
+                      };
+                    }),
+                  }
+                : { corners: RESIZE_CORNERS.map((c) => ({ corner: c, ...bboxCorner(selectionBBox, c) })) };
+
+              const outline = resizeLive
+                ? (() => {
+                    const xs = box.corners.map((c) => c.x);
+                    const ys = box.corners.map((c) => c.y);
+                    return {
+                      x: Math.min(...xs),
+                      y: Math.min(...ys),
+                      width: Math.max(...xs) - Math.min(...xs),
+                      height: Math.max(...ys) - Math.min(...ys),
+                    };
+                  })()
+                : selectionBBox;
+
+              const cursorFor: Record<ResizeCorner, string> = {
+                tl: "nwse-resize",
+                br: "nwse-resize",
+                tr: "nesw-resize",
+                bl: "nesw-resize",
+              };
+
+              return (
+                <>
+                  <rect
+                    x={outline.x - 6}
+                    y={outline.y - 6}
+                    width={outline.width + 12}
+                    height={outline.height + 12}
+                    fill="none"
+                    stroke="white"
+                    strokeWidth={1}
+                    strokeDasharray="4 3"
+                    opacity={0.7}
+                    pointerEvents="none"
+                  />
+                  {box.corners.map(({ corner, x, y }) => (
+                    <rect
+                      key={corner}
+                      x={x - 5}
+                      y={y - 5}
+                      width={10}
+                      height={10}
+                      rx={2}
+                      fill="oklch(0.7 0.15 250)"
+                      stroke="white"
+                      strokeWidth={1}
+                      style={{ cursor: cursorFor[corner] }}
+                      onPointerDown={(e) => handleResizeHandlePointerDown(corner, e)}
+                    />
+                  ))}
+                </>
+              );
+            })()}
+          </g>
         )}
       </svg>
 

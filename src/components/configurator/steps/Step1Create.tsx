@@ -404,6 +404,11 @@ export function Step1Create() {
     nudgePaths(ids, dxPx, dyPx);
     recheckCollision();
   }
+  function handleResizeCommit(ids: string[], factor: number, cx: number, cy: number) {
+    if (ids.length === 0 || factor === 1) return;
+    scalePaths(ids, factor, cx, cy);
+    recheckCollision();
+  }
   function handleUndo() {
     undo();
     recheckCollision();
@@ -592,6 +597,7 @@ export function Step1Create() {
         onPathClick={canvasMode === "select" ? handlePathClick : undefined}
         onMarqueeSelect={canvasMode === "select" ? handleMarqueeSelect : undefined}
         onDragCommit={canvasMode === "select" ? handleDragCommit : undefined}
+        onResizeCommit={canvasMode === "select" ? handleResizeCommit : undefined}
         dimUnselected={canvasMode === "select" && soloMode}
         mode={canvasMode}
         strokeColor={drawColor}
