@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
-  Loader2,
   Trash2,
   Copy,
   Eye,
@@ -14,7 +14,6 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  AlertCircle,
   Undo2,
   Redo2,
   RotateCcw,
@@ -31,96 +30,69 @@ import {
   Download,
   Trash,
 } from "lucide-react";
-import { toast } from "sonner";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { NeonCanvasPreview, type NeonCanvasHandle } from "@/components/configurator/NeonCanvasPreview";
+import { NeonCanvasEditor, type NeonCanvasHandle } from "@/components/configurator/NeonCanvasEditor";
 import { ColorPicker } from "@/components/configurator/ColorPicker";
 import { DayNightToggle } from "@/components/configurator/DayNightToggle";
 import { useConfiguratorStore } from "@/store/configuratorStore";
-import { useCollisionRecheck } from "@/hooks/useCollisionRecheck";
 import { MAX_DIMENSION_CM, DEFAULT_GLOW_INTENSITY, NEON_FONTS, NEON_COLORS, type NeonFontId } from "@/types/neon";
-import { CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
-import { fitAndPlacePaths } from "@/lib/neon/pathTransform";
-import { rectPathD, circlePathD } from "@/lib/neon/shapePaths";
-import { DEFAULT_TRACE_SETTINGS } from "@/lib/neon/traceSettings";
-import { detectEdges, buildSpatialGrid, type Point, type SpatialGrid } from "@/lib/neon/edgeDetection";
-import type { NeonPath } from "@/types/neon";
+import type { NeonElement, Point } from "@/types/neon";
+import { calculateDesignPrice, CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
+import { detectEdges, buildSpatialGrid, type SpatialGrid } from "@/lib/neon/edgeDetection";
 
 function sliderValue(v: number | readonly number[]): number {
   return Array.isArray(v) ? v[0] : (v as number);
 }
 
 const NUDGE_STEP_PX = 6;
-const DROP_BOX_RATIO = 0.4; // taille cible d'un élément ajouté, en fraction du workspace
 const SNAP_CELL_SIZE = 20;
 
 export function Step1Create() {
   const t = useTranslations("Configurator.stepCreate");
   const tCommon = useTranslations("Common");
   const {
-    paths,
+    elements,
     workspaceWidthPx,
     workspaceHeightPx,
     widthCm,
     heightCm,
-    support,
-    hasRemote,
-    resolutionStatus,
-    resolutionFailureReason,
-    priceBreakdown,
-    setAllPathColors,
-    setPathColor,
+    setAllElementColors,
+    setElementColor,
     setDimensions,
     setPriceBreakdown,
-    setPaths,
-    addPathsGroup,
-    addDrawnPath,
-    removePaths,
-    duplicatePaths,
-    nudgePaths,
-    rotatePaths,
-    scalePaths,
-    replaceGroup,
-    setPathsGlow,
-    setPathsBlink,
+    priceBreakdown,
+    setElements,
+    addElement,
+    removeElements,
+    duplicateElements,
+    nudgeElements,
+    rotateElements,
+    scaleElements,
+    setElementsGlow,
+    setElementsBlink,
     undo,
     redo,
     canUndo,
     canRedo,
   } = useConfiguratorStore();
-  const recheckCollision = useCollisionRecheck();
 
   const [localWidth, setLocalWidth] = useState(widthCm);
   const [localHeight, setLocalHeight] = useState(heightCm);
   const [linked, setLinked] = useState(true);
-  const [selectedPathIds, setSelectedPathIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [soloMode, setSoloMode] = useState(false);
   const [background, setBackground] = useState<"day" | "night">("night");
-  const [loadingPrice, setLoadingPrice] = useState(false);
   const canvasRef = useRef<NeonCanvasHandle>(null);
-  const dropCounterRef = useRef(0);
 
-  // --- Ajout de contenu (texte / image / dessin / ligne / formes) ---
   const [canvasMode, setCanvasMode] = useState<"select" | "draw" | "line">("select");
   const [addingText, setAddingText] = useState(false);
   const [textValue, setTextValue] = useState("");
   const [textFontId, setTextFontId] = useState<NeonFontId>(NEON_FONTS[0].id);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const [imageTraceSettings, setImageTraceSettings] = useState({
-    threshold: DEFAULT_TRACE_SETTINGS.threshold,
-    invert: DEFAULT_TRACE_SETTINGS.invert,
-    blurSigma: DEFAULT_TRACE_SETTINGS.blurSigma,
-  });
-  // groupId -> URL de l'image source, pour permettre la revectorisation d'un groupe déjà posé.
-  const [groupImageUrls, setGroupImageUrls] = useState<Record<string, string>>({});
-  const [revectorizing, setRevectorizing] = useState(false);
 
   const [drawColor, setDrawColor] = useState<string>(NEON_COLORS[0].hex);
   const [referenceImageUrl, setReferenceImageUrl] = useState<string | null>(null);
@@ -155,134 +127,38 @@ export function Step1Create() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [localWidth, localHeight]);
 
-  const priceDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pxToCm = workspaceWidthPx > 0 ? widthCm / workspaceWidthPx : 1;
   useEffect(() => {
-    if (paths.length === 0) {
+    if (elements.length === 0) {
       setPriceBreakdown(null);
       return;
     }
-    if (priceDebounceRef.current) clearTimeout(priceDebounceRef.current);
-    priceDebounceRef.current = setTimeout(async () => {
-      setLoadingPrice(true);
-      try {
-        const res = await fetch("/api/customize/price", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paths, workspaceWidthPx, workspaceHeightPx, widthCm, heightCm, support, hasRemote }),
-        });
-        if (res.ok) setPriceBreakdown(await res.json());
-      } finally {
-        setLoadingPrice(false);
-      }
-    }, 400);
-    return () => {
-      if (priceDebounceRef.current) clearTimeout(priceDebounceRef.current);
-    };
+    setPriceBreakdown(calculateDesignPrice({ elements, pxToCm }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paths, widthCm, heightCm, support, hasRemote]);
+  }, [elements, pxToCm]);
 
-  function nextDropPosition(targetWidth: number, targetHeight: number) {
-    const cascade = (dropCounterRef.current % 5) * 18;
-    dropCounterRef.current += 1;
-    return {
-      x: (workspaceWidthPx - targetWidth) / 2 + cascade,
-      y: (workspaceHeightPx - targetHeight) / 2 + cascade,
-    };
+  function nextDropPosition() {
+    return { x: workspaceWidthPx / 2, y: workspaceHeightPx / 2 };
   }
 
-  async function handleAddText() {
+  function handleAddText() {
     if (!textValue.trim()) return;
-    try {
-      const res = await fetch("/api/customize/text-to-path", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: textValue, fontId: textFontId }),
-      });
-      if (!res.ok) throw new Error(t("addTextError"));
-      const data = await res.json();
-      const targetWidth = workspaceWidthPx * DROP_BOX_RATIO;
-      const targetHeight = workspaceHeightPx * DROP_BOX_RATIO;
-      const { x, y } = nextDropPosition(targetWidth, targetHeight);
-      const groupId = `text-${crypto.randomUUID()}`;
-      const placed = fitAndPlacePaths<NeonPath>(data.paths, data.workspaceWidthPx, data.workspaceHeightPx, x, y, targetWidth, targetHeight).map(
-        (p) => ({ ...p, groupId })
-      );
-      addPathsGroup(placed);
-      setSelectedPathIds(placed.map((p) => p.id));
-      setTextValue("");
-      setAddingText(false);
-      await recheckCollision();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("addTextError"));
-    }
-  }
-
-  async function vectorizeAndPlace(imageUrl: string, settings: typeof imageTraceSettings, targetBox?: { x: number; y: number; width: number; height: number }) {
-    const res = await fetch("/api/customize/vectorize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageUrl, ...settings }),
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error ?? t("addImageError"));
-    }
-    const data = await res.json();
-    const box = targetBox ?? {
-      ...nextDropPosition(workspaceWidthPx * DROP_BOX_RATIO, workspaceHeightPx * DROP_BOX_RATIO),
-      width: workspaceWidthPx * DROP_BOX_RATIO,
-      height: workspaceHeightPx * DROP_BOX_RATIO,
+    const { x, y } = nextDropPosition();
+    const el: NeonElement = {
+      id: crypto.randomUUID(),
+      type: "text",
+      x,
+      y,
+      content: textValue,
+      color: drawColor,
+      fontSize: workspaceWidthPx * 0.09,
+      fontId: textFontId,
+      rotation: 0,
     };
-    return fitAndPlacePaths<NeonPath>(data.paths, data.workspaceWidthPx, data.workspaceHeightPx, box.x, box.y, box.width, box.height);
-  }
-
-  async function handleImageFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingImage(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!uploadRes.ok) {
-        const data = await uploadRes.json().catch(() => ({}));
-        throw new Error(data.error ?? t("addImageError"));
-      }
-      const { url } = await uploadRes.json();
-      const groupId = `image-${crypto.randomUUID()}`;
-      const placed = (await vectorizeAndPlace(url, imageTraceSettings)).map((p) => ({ ...p, groupId }));
-      addPathsGroup(placed);
-      setGroupImageUrls((prev) => ({ ...prev, [groupId]: url }));
-      setSelectedPathIds(placed.map((p) => p.id));
-      await recheckCollision();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("addImageError"));
-    } finally {
-      setUploadingImage(false);
-      if (imageInputRef.current) imageInputRef.current.value = "";
-    }
-  }
-
-  async function handleRevectorize(groupId: string) {
-    const imageUrl = groupImageUrls[groupId];
-    if (!imageUrl) return;
-    const groupIds = paths.filter((p) => p.groupId === groupId).map((p) => p.id);
-    const box = canvasRef.current?.getSelectionBBox(groupIds);
-    setRevectorizing(true);
-    try {
-      const placed = await vectorizeAndPlace(
-        imageUrl,
-        imageTraceSettings,
-        box ? { x: box.x, y: box.y, width: box.width, height: box.height } : undefined
-      );
-      replaceGroup(groupId, placed);
-      setSelectedPathIds(placed.map((p) => p.id));
-      await recheckCollision();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("addImageError"));
-    } finally {
-      setRevectorizing(false);
-    }
+    addElement(el);
+    setSelectedIds([el.id]);
+    setTextValue("");
+    setAddingText(false);
   }
 
   function runEdgeDetection(threshold: number) {
@@ -315,6 +191,7 @@ export function Step1Create() {
       img.src = url;
     };
     reader.readAsDataURL(file);
+    if (referenceFileInputRef.current) referenceFileInputRef.current.value = "";
   }
 
   function handleThresholdChange(value: number) {
@@ -322,100 +199,87 @@ export function Step1Create() {
     runEdgeDetection(value);
   }
 
-  async function handleStrokeComplete(points: Point[]) {
-    const groupId = `draw-${crypto.randomUUID()}`;
-    addDrawnPath(points, drawColor, groupId);
-    await recheckCollision();
+  function handleStrokeComplete(points: Point[]) {
+    addElement({ id: crypto.randomUUID(), type: "draw", points, color: drawColor });
+  }
+  function handleLineComplete(a: Point, b: Point) {
+    addElement({ id: crypto.randomUUID(), type: "line", x1: a.x, y1: a.y, x2: b.x, y2: b.y, color: drawColor });
   }
 
-  async function handleAddShape(shape: "rect" | "circle") {
+  function handleAddShape(shape: "rect" | "circle") {
     const size = Math.min(workspaceWidthPx, workspaceHeightPx) * 0.3;
-    const { x, y } = nextDropPosition(size, size);
-    const d =
-      shape === "rect" ? rectPathD(x, y, size, size) : circlePathD(x + size / 2, y + size / 2, size / 2);
-    const groupId = `draw-shape-${crypto.randomUUID()}`;
-    const newPath: NeonPath = { id: crypto.randomUUID(), d, color: drawColor, order: 0, groupId };
-    addPathsGroup([newPath]);
-    setSelectedPathIds([newPath.id]);
-    await recheckCollision();
+    const { x, y } = nextDropPosition();
+    const el: NeonElement =
+      shape === "rect"
+        ? { id: crypto.randomUUID(), type: "rect", x: x - size / 2, y: y - size / 2, width: size, height: size, color: drawColor, rotation: 0 }
+        : { id: crypto.randomUUID(), type: "circle", x, y, radius: size / 2, color: drawColor, rotation: 0 };
+    addElement(el);
+    setSelectedIds([el.id]);
   }
 
   function handleClearAll() {
-    if (paths.length === 0) return;
+    if (elements.length === 0) return;
     if (!window.confirm(t("confirmClearAll"))) return;
-    setPaths([], workspaceWidthPx, workspaceHeightPx);
-    setSelectedPathIds([]);
-    setGroupImageUrls({});
+    setElements([], workspaceWidthPx, workspaceHeightPx);
+    setSelectedIds([]);
   }
 
-  async function handleExport() {
-    await canvasRef.current?.exportAsPNG(`neonz-${Date.now()}.png`);
+  function handleExport() {
+    canvasRef.current?.exportAsPNG(`neonz-${Date.now()}.png`);
   }
 
-  function handlePathClick(pathId: string, e: React.MouseEvent) {
-    setSelectedPathIds((prev) => {
-      if (e.shiftKey) return prev.includes(pathId) ? prev.filter((id) => id !== pathId) : [...prev, pathId];
-      return [pathId];
+  function handleElementClick(id: string, additive: boolean) {
+    setSelectedIds((prev) => {
+      if (additive) return prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id];
+      return [id];
     });
   }
   function handleMarqueeSelect(ids: string[], additive: boolean) {
-    if (ids.length === 0 && !additive) return;
-    setSelectedPathIds((prev) => (additive ? Array.from(new Set([...prev, ...ids])) : ids));
+    if (ids.length === 0 && !additive) {
+      setSelectedIds([]);
+      return;
+    }
+    setSelectedIds((prev) => (additive ? Array.from(new Set([...prev, ...ids])) : ids));
   }
 
   function handleDelete() {
-    const ok = removePaths(selectedPathIds);
+    const ok = removeElements(selectedIds);
     if (!ok) {
       toast.error(t("cannotDeleteAll"));
       return;
     }
-    setSelectedPathIds([]);
-    recheckCollision();
+    setSelectedIds([]);
   }
   function handleDuplicate() {
-    if (selectedPathIds.length === 0) return;
-    setSelectedPathIds(duplicatePaths(selectedPathIds));
-    recheckCollision();
+    if (selectedIds.length === 0) return;
+    setSelectedIds(duplicateElements(selectedIds));
   }
   function handleNudge(dx: number, dy: number) {
-    if (selectedPathIds.length === 0) return;
-    nudgePaths(selectedPathIds, dx, dy);
-    recheckCollision();
+    if (selectedIds.length === 0) return;
+    nudgeElements(selectedIds, dx, dy);
   }
   function getPivot() {
-    const box = canvasRef.current?.getSelectionBBox(selectedPathIds);
+    const box = canvasRef.current?.getSelectionBBox(selectedIds);
     if (box) return { cx: box.x + box.width / 2, cy: box.y + box.height / 2 };
     return { cx: workspaceWidthPx / 2, cy: workspaceHeightPx / 2 };
   }
   function handleRotate(deltaDeg: number) {
-    if (selectedPathIds.length === 0) return;
+    if (selectedIds.length === 0) return;
     const { cx, cy } = getPivot();
-    rotatePaths(selectedPathIds, deltaDeg, cx, cy);
-    recheckCollision();
+    rotateElements(selectedIds, deltaDeg, cx, cy);
   }
   function handleScale(factor: number) {
-    if (selectedPathIds.length === 0) return;
+    if (selectedIds.length === 0) return;
     const { cx, cy } = getPivot();
-    scalePaths(selectedPathIds, factor, cx, cy);
-    recheckCollision();
+    scaleElements(selectedIds, factor, cx, cy);
   }
   function handleDragCommit(ids: string[], dxPx: number, dyPx: number) {
     if (dxPx === 0 && dyPx === 0) return;
-    nudgePaths(ids, dxPx, dyPx);
-    recheckCollision();
+    nudgeElements(ids, dxPx, dyPx);
   }
   function handleResizeCommit(ids: string[], factor: number, cx: number, cy: number) {
     if (ids.length === 0 || factor === 1) return;
-    scalePaths(ids, factor, cx, cy);
-    recheckCollision();
-  }
-  function handleUndo() {
-    undo();
-    recheckCollision();
-  }
-  function handleRedo() {
-    redo();
-    recheckCollision();
+    scaleElements(ids, factor, cx, cy);
   }
 
   useEffect(() => {
@@ -426,39 +290,30 @@ export function Step1Create() {
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
-        if (e.shiftKey) handleRedo();
-        else handleUndo();
+        if (e.shiftKey) redo();
+        else undo();
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
         e.preventDefault();
-        handleRedo();
-      } else if ((e.key === "Delete" || e.key === "Backspace") && selectedPathIds.length > 0) {
+        redo();
+      } else if ((e.key === "Delete" || e.key === "Backspace") && selectedIds.length > 0) {
         e.preventDefault();
         handleDelete();
       } else if (e.key === "Escape") {
-        setSelectedPathIds([]);
+        setSelectedIds([]);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPathIds, canvasMode]);
+  }, [selectedIds, canvasMode]);
 
-  const selectedPaths = paths.filter((p) => selectedPathIds.includes(p.id));
-  const anchor = selectedPaths[0];
-  const anchorGroupSiblings = anchor?.groupId ? paths.filter((p) => p.groupId === anchor.groupId) : [];
-  const canApplyToGroup = anchor?.groupId != null && anchorGroupSiblings.length > selectedPaths.length;
-  const selectedIsWholeImageGroup =
-    anchor?.groupId?.startsWith("image-") &&
-    selectedPathIds.length === anchorGroupSiblings.length &&
-    anchorGroupSiblings.every((p) => selectedPathIds.includes(p.id));
+  const selectedElements = elements.filter((e) => selectedIds.includes(e.id));
+  const anchor = selectedElements[0];
 
-  function applyToGroup() {
-    if (!anchor?.groupId) return;
-    const groupIds = anchorGroupSiblings.map((p) => p.id);
-    setPathsGlow(groupIds, anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY);
-    setPathsBlink(groupIds, anchor.blink ?? false);
-    setSelectedPathIds(groupIds);
-  }
+  const totalLengthLabel = useMemo(() => {
+    if (!priceBreakdown) return null;
+    return `${priceBreakdown.totalTubeLengthCm.toLocaleString()} cm`;
+  }, [priceBreakdown]);
 
   return (
     <div className="space-y-8">
@@ -476,9 +331,9 @@ export function Step1Create() {
           <Type className="h-3.5 w-3.5" /> {t("addText")}
         </Button>
         <label className="block">
-          <input ref={imageInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={handleImageFileChange} />
-          <Button type="button" size="sm" variant="outline" onClick={() => imageInputRef.current?.click()} disabled={uploadingImage}>
-            {uploadingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />} {t("addImage")}
+          <input ref={referenceFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleReferenceUpload} />
+          <Button type="button" size="sm" variant="outline" onClick={() => referenceFileInputRef.current?.click()}>
+            <UploadCloud className="h-3.5 w-3.5" /> {t("addImage")}
           </Button>
         </label>
         <Button
@@ -512,7 +367,7 @@ export function Step1Create() {
           <CircleIcon className="h-3.5 w-3.5" /> {t("addCircle")}
         </Button>
         <span className="mx-1 h-4 w-px bg-border" aria-hidden />
-        <Button type="button" size="sm" variant="outline" onClick={handleExport} disabled={paths.length === 0}>
+        <Button type="button" size="sm" variant="outline" onClick={handleExport} disabled={elements.length === 0}>
           <Download className="h-3.5 w-3.5" /> {t("export")}
         </Button>
         <Button
@@ -520,7 +375,7 @@ export function Step1Create() {
           size="sm"
           variant="outline"
           onClick={handleClearAll}
-          disabled={paths.length === 0}
+          disabled={elements.length === 0}
           className="text-destructive hover:text-destructive"
         >
           <Trash className="h-3.5 w-3.5" /> {t("clearAll")}
@@ -548,6 +403,10 @@ export function Step1Create() {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <Label className="mb-2 block">{t("strokeColorLabel")}</Label>
+            <ColorPicker value={drawColor} onChange={setDrawColor} />
+          </div>
           <Button type="button" size="sm" onClick={handleAddText} disabled={!textValue.trim()}>
             {t("confirmAddText")}
           </Button>
@@ -560,12 +419,6 @@ export function Step1Create() {
             <Label className="mb-2 block">{t("strokeColorLabel")}</Label>
             <ColorPicker value={drawColor} onChange={setDrawColor} />
           </div>
-          <label className="block">
-            <input ref={referenceFileInputRef} type="file" accept="image/*" className="hidden" onChange={handleReferenceUpload} />
-            <Button type="button" size="sm" variant="outline" onClick={() => referenceFileInputRef.current?.click()}>
-              <UploadCloud className="h-3.5 w-3.5" /> {t("referenceImageLabel")}
-            </Button>
-          </label>
           {referenceImageUrl && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -587,14 +440,14 @@ export function Step1Create() {
         </div>
       )}
 
-      <NeonCanvasPreview
+      <NeonCanvasEditor
         ref={canvasRef}
-        paths={paths}
+        elements={elements}
         workspaceWidthPx={workspaceWidthPx}
         workspaceHeightPx={workspaceHeightPx}
         background={background}
-        selectedPathIds={canvasMode === "select" ? selectedPathIds : undefined}
-        onPathClick={canvasMode === "select" ? handlePathClick : undefined}
+        selectedIds={canvasMode === "select" ? selectedIds : []}
+        onElementClick={canvasMode === "select" ? handleElementClick : undefined}
         onMarqueeSelect={canvasMode === "select" ? handleMarqueeSelect : undefined}
         onDragCommit={canvasMode === "select" ? handleDragCommit : undefined}
         onResizeCommit={canvasMode === "select" ? handleResizeCommit : undefined}
@@ -602,6 +455,7 @@ export function Step1Create() {
         mode={canvasMode}
         strokeColor={drawColor}
         onStrokeComplete={handleStrokeComplete}
+        onLineComplete={handleLineComplete}
         referenceImageUrl={canvasMode === "draw" || canvasMode === "line" ? referenceImageUrl : undefined}
         snapEnabled={(canvasMode === "draw" || canvasMode === "line") && snapEnabled}
         snapGrid={spatialGrid}
@@ -611,17 +465,10 @@ export function Step1Create() {
         className="h-72"
       />
 
-      {resolutionStatus === "unresolved" && resolutionFailureReason === "editCausedCollision" && (
-        <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>{t("editCausedCollision")}</p>
-        </div>
-      )}
-
-      {canvasMode === "select" && paths.length > 0 && (
+      {canvasMode === "select" && elements.length > 0 && (
         <div>
           <Label className="mb-3 block">{t("globalColorLabel")}</Label>
-          <ColorPicker value={paths[0].color} onChange={setAllPathColors} />
+          <ColorPicker value={elements[0].color} onChange={setAllElementColors} />
         </div>
       )}
 
@@ -633,30 +480,30 @@ export function Step1Create() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={handleUndo} disabled={!canUndo()}>
+            <Button type="button" variant="outline" size="sm" onClick={undo} disabled={!canUndo()}>
               <Undo2 className="h-3.5 w-3.5" /> {t("undo")}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={handleRedo} disabled={!canRedo()}>
+            <Button type="button" variant="outline" size="sm" onClick={redo} disabled={!canRedo()}>
               <Redo2 className="h-3.5 w-3.5" /> {t("redo")}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setSelectedPathIds(paths.map((p) => p.id))}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setSelectedIds(elements.map((e) => e.id))}>
               <CheckSquare className="h-3.5 w-3.5" /> {t("selectAll")}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => setSelectedPathIds([])}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setSelectedIds([])}>
               <Square className="h-3.5 w-3.5" /> {t("deselectAll")}
             </Button>
-            <Button type="button" variant={soloMode ? "default" : "outline"} size="sm" onClick={() => setSoloMode((v) => !v)} disabled={selectedPathIds.length === 0}>
+            <Button type="button" variant={soloMode ? "default" : "outline"} size="sm" onClick={() => setSoloMode((v) => !v)} disabled={selectedIds.length === 0}>
               {soloMode ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />} {t("isolate")}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={handleDuplicate} disabled={selectedPathIds.length === 0}>
+            <Button type="button" variant="outline" size="sm" onClick={handleDuplicate} disabled={selectedIds.length === 0}>
               <Copy className="h-3.5 w-3.5" /> {t("duplicate")}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={handleDelete} disabled={selectedPathIds.length === 0} className="text-destructive hover:text-destructive">
+            <Button type="button" variant="outline" size="sm" onClick={handleDelete} disabled={selectedIds.length === 0} className="text-destructive hover:text-destructive">
               <Trash2 className="h-3.5 w-3.5" /> {t("delete")}
             </Button>
           </div>
 
-          {selectedPathIds.length > 0 && (
+          {selectedIds.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="me-1 text-xs text-muted-foreground">{t("nudgeLabel")}</span>
               <Button type="button" variant="outline" size="icon" className="h-7 w-7" onClick={() => handleNudge(0, -NUDGE_STEP_PX)}>
@@ -690,80 +537,29 @@ export function Step1Create() {
           {anchor && (
             <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {t("selectionCountLabel", { count: selectedPaths.length })}
+                {t("selectionCountLabel", { count: selectedElements.length })}
               </p>
-              <ColorPicker value={anchor.color} onChange={(hex) => selectedPathIds.forEach((id) => setPathColor(id, hex))} />
+              <ColorPicker value={anchor.color} onChange={(hex) => selectedIds.forEach((id) => setElementColor(id, hex))} />
 
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between">
                   <Label>{t("glowLabel")}</Label>
                   <span className="text-xs text-muted-foreground">{anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY}</span>
                 </div>
-                <Slider min={0} max={100} step={1} value={[anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY]} onValueChange={(v) => setPathsGlow(selectedPathIds, sliderValue(v))} />
+                <Slider min={0} max={100} step={1} value={[anchor.glowIntensity ?? DEFAULT_GLOW_INTENSITY]} onValueChange={(v) => setElementsGlow(selectedIds, sliderValue(v))} />
               </div>
 
               <div className="mt-4 flex items-center justify-between">
                 <div>
                   <Label htmlFor="blink-switch">{t("blinkLabel")}</Label>
-                  {anchor.blink && <p className="text-xs text-muted-foreground">{t("blinkControllerHint", { price: CONTROLLER_OPTION_PRICE.toLocaleString() })}</p>}
+                  {anchor.blink && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("blinkControllerHint", { price: CONTROLLER_OPTION_PRICE.toLocaleString() })}
+                    </p>
+                  )}
                 </div>
-                <Switch id="blink-switch" checked={anchor.blink ?? false} onCheckedChange={(v) => setPathsBlink(selectedPathIds, v)} />
+                <Switch id="blink-switch" checked={anchor.blink ?? false} onCheckedChange={(v) => setElementsBlink(selectedIds, v)} />
               </div>
-
-              {canApplyToGroup && (
-                <button type="button" onClick={applyToGroup} className="mt-3 text-xs font-medium text-primary hover:underline">
-                  {t("applyToGroup")}
-                </button>
-              )}
-
-              {selectedIsWholeImageGroup && anchor.groupId && groupImageUrls[anchor.groupId] && (
-                <Accordion className="mt-4">
-                  <AccordionItem value="image-settings">
-                    <AccordionTrigger>{t("advancedTraceToggle")}</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="mb-2 flex items-center justify-between">
-                            <Label>{t("thresholdLabel")}</Label>
-                            <span className="text-xs text-muted-foreground">{imageTraceSettings.threshold}</span>
-                          </div>
-                          <Slider
-                            min={0}
-                            max={255}
-                            step={1}
-                            value={[imageTraceSettings.threshold]}
-                            onValueChange={(v) => setImageTraceSettings((s) => ({ ...s, threshold: sliderValue(v) }))}
-                          />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Label htmlFor="trace-invert">{t("invertLabel")}</Label>
-                          <Switch
-                            id="trace-invert"
-                            checked={imageTraceSettings.invert}
-                            onCheckedChange={(v) => setImageTraceSettings((s) => ({ ...s, invert: v }))}
-                          />
-                        </div>
-                        <div>
-                          <div className="mb-2 flex items-center justify-between">
-                            <Label>{t("blurLabel")}</Label>
-                            <span className="text-xs text-muted-foreground">{imageTraceSettings.blurSigma}</span>
-                          </div>
-                          <Slider
-                            min={0}
-                            max={10}
-                            step={1}
-                            value={[imageTraceSettings.blurSigma]}
-                            onValueChange={(v) => setImageTraceSettings((s) => ({ ...s, blurSigma: sliderValue(v) }))}
-                          />
-                        </div>
-                        <Button type="button" size="sm" onClick={() => handleRevectorize(anchor.groupId!)} disabled={revectorizing}>
-                          {revectorizing && <Loader2 className="h-3.5 w-3.5 animate-spin" />} {t("revectorize")}
-                        </Button>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              )}
             </div>
           )}
         </>
@@ -798,52 +594,13 @@ export function Step1Create() {
       <div className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold">{t("priceBreakdownTitle")}</p>
-          {loadingPrice && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
         </div>
         {priceBreakdown ? (
           <dl className="space-y-1.5 text-sm">
             <div className="flex justify-between text-muted-foreground">
-              <dt>{t("lineBase")}</dt>
-              <dd className="tabular-nums">
-                {priceBreakdown.fixedFee.toLocaleString()} {tCommon("currency")}
-              </dd>
+              <dt>{t("lineLength")}</dt>
+              <dd className="tabular-nums">{totalLengthLabel}</dd>
             </div>
-            <div className="flex justify-between text-muted-foreground">
-              <dt>{t("lineTube")}</dt>
-              <dd className="tabular-nums">
-                {priceBreakdown.tubePrice.toLocaleString()} {tCommon("currency")}
-              </dd>
-            </div>
-            {priceBreakdown.colorSurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineColors")}</dt>
-                <dd className="tabular-nums">
-                  {priceBreakdown.colorSurcharge.toLocaleString()} {tCommon("currency")}
-                </dd>
-              </div>
-            )}
-            <div className="flex justify-between text-muted-foreground">
-              <dt>{t("lineSize")}</dt>
-              <dd className="tabular-nums">
-                {priceBreakdown.sizeSurcharge.toLocaleString()} {tCommon("currency")}
-              </dd>
-            </div>
-            {priceBreakdown.complexitySurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineComplexity")}</dt>
-                <dd className="tabular-nums">
-                  {priceBreakdown.complexitySurcharge.toLocaleString()} {tCommon("currency")}
-                </dd>
-              </div>
-            )}
-            {priceBreakdown.controllerSurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineController")}</dt>
-                <dd className="tabular-nums">
-                  {priceBreakdown.controllerSurcharge.toLocaleString()} {tCommon("currency")}
-                </dd>
-              </div>
-            )}
             <div className="flex justify-between border-t border-border pt-1.5 font-semibold text-foreground">
               <dt>{t("lineTotal")}</dt>
               <dd className="tabular-nums">

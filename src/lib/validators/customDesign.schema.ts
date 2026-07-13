@@ -3,49 +3,59 @@ import { MAX_DIMENSION_CM, NEON_FONTS } from "@/types/neon";
 
 const fontIds = NEON_FONTS.map((f) => f.id) as [string, ...string[]];
 
-export const textToPathInputSchema = z.object({
-  text: z.string().min(1).max(60),
-  fontId: z.enum(fontIds),
-  fontSizePx: z.number().min(80).max(400).optional(),
-  extraLetterSpacingPx: z.number().min(0).max(200).optional(),
-});
+const pointSchema = z.object({ x: z.number(), y: z.number() });
 
-export const vectorizeInputSchema = z.object({
-  imageUrl: z.string().url(),
-  turdSize: z.number().min(2).max(200).optional(),
-  threshold: z.number().min(0).max(255).optional(),
-  /** 1 = seuil noir/blanc simple, 2-5 = posterize multi-niveaux (plus de détail) */
-  steps: z.number().int().min(1).max(5).optional(),
-  invert: z.boolean().optional(),
-  blurSigma: z.number().min(0).max(20).optional(),
-});
-
-const neonPathSchema = z.object({
+const neonElementBaseSchema = z.object({
   id: z.string(),
-  d: z.string().min(1),
   color: z.string(),
-  order: z.number().int(),
-  groupId: z.string().optional(),
   glowIntensity: z.number().min(0).max(100).default(60),
   blink: z.boolean().default(false),
 });
 
-export const collisionCheckInputSchema = z.object({
-  paths: z.array(neonPathSchema).min(1),
-  workspaceWidthPx: z.number().positive(),
-  workspaceHeightPx: z.number().positive(),
-  widthCm: z.number().positive().max(MAX_DIMENSION_CM),
-  heightCm: z.number().positive().max(MAX_DIMENSION_CM),
+const textElementSchema = neonElementBaseSchema.extend({
+  type: z.literal("text"),
+  x: z.number(),
+  y: z.number(),
+  content: z.string().min(1).max(60),
+  fontSize: z.number().positive(),
+  fontId: z.enum(fontIds),
+  rotation: z.number().default(0),
 });
 
-export const priceInputSchema = collisionCheckInputSchema.extend({
-  support: z.enum(["acrylic-transparent", "acrylic-black", "silhouette-cut"]),
-  hasRemote: z.boolean().default(false),
+const drawElementSchema = neonElementBaseSchema.extend({
+  type: z.literal("draw"),
+  points: z.array(pointSchema).min(2),
 });
+
+const lineElementSchema = neonElementBaseSchema.extend({
+  type: z.literal("line"),
+  x1: z.number(),
+  y1: z.number(),
+  x2: z.number(),
+  y2: z.number(),
+});
+
+const shapeElementSchema = neonElementBaseSchema.extend({
+  type: z.enum(["rect", "circle"]),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().positive().optional(),
+  height: z.number().positive().optional(),
+  radius: z.number().positive().optional(),
+  rotation: z.number().default(0),
+});
+
+const neonElementSchema = z.discriminatedUnion("type", [
+  textElementSchema,
+  drawElementSchema,
+  lineElementSchema,
+  shapeElementSchema,
+]);
 
 export const customDesignCreateSchema = z.object({
   sourceType: z.enum(["image", "text", "draw", "mixed"]),
-  paths: z.array(neonPathSchema).min(1),
+  elements: z.array(neonElementSchema).min(1),
+  previewImageUrl: z.string().min(1),
   dimensions: z.object({
     widthCm: z.number().positive().max(MAX_DIMENSION_CM),
     heightCm: z.number().positive().max(MAX_DIMENSION_CM),
@@ -55,6 +65,4 @@ export const customDesignCreateSchema = z.object({
   hasRemote: z.boolean().default(false),
 });
 
-export type TextToPathInput = z.infer<typeof textToPathInputSchema>;
-export type CollisionCheckInput = z.infer<typeof collisionCheckInputSchema>;
 export type CustomDesignCreateInput = z.infer<typeof customDesignCreateSchema>;

@@ -1,6 +1,8 @@
 /**
- * Types partagés pour le moteur de configuration néon
- * (vectorisation, conversion d'unités, détection de collision, pricing)
+ * Types partagés pour l'atelier de personnalisation néon : un canvas raster
+ * unique où l'on ajoute librement texte, dessin, lignes et formes — chaque
+ * élément a une couleur, un glow, un clignotement optionnel, et une longueur
+ * de tube calculée (voir lib/neon/elementGeometry.ts) pour le prix.
  */
 
 export interface Point {
@@ -8,38 +10,47 @@ export interface Point {
   y: number;
 }
 
-/** Un tracé néon individuel (une lettre, un segment de logo, etc.) */
-export interface NeonPath {
+export const DEFAULT_GLOW_INTENSITY = 60;
+
+interface NeonElementBase {
   id: string;
-  /** Attribut SVG "d" — coordonnées en pixels dans l'espace de travail du design */
-  d: string;
   color: string;
-  order: number;
-  /** Regroupement optionnel (ex: toutes les lettres d'un même mot) */
-  groupId?: string;
   /** Intensité du halo lumineux (0-100), défaut 60 */
   glowIntensity?: number;
   /** Clignotement — implique un contrôleur multi-zone physique, voir pricing.ts */
   blink?: boolean;
 }
 
-export const DEFAULT_GLOW_INTENSITY = 60;
-
-export interface CollisionZone {
-  pathIds: [string, string];
-  /** Distance minimale réelle mesurée entre les deux tracés, en cm */
-  minDistanceCm: number;
-  /** Point approximatif (en px, espace de travail) où la collision est la plus sévère */
-  atPoint: Point;
+export interface TextElement extends NeonElementBase, Point {
+  type: "text";
+  content: string;
+  fontSize: number;
+  fontId: NeonFontId;
+  rotation: number;
 }
 
-export interface CollisionResult {
-  hasCollision: boolean;
-  zones: CollisionZone[];
-  /** Distance minimale requise entre deux tracés, en cm (contrainte tube néon) */
-  minAllowedDistanceCm: number;
-  checkedAt: string;
+export interface DrawElement extends NeonElementBase {
+  type: "draw";
+  points: Point[];
 }
+
+export interface LineElement extends NeonElementBase {
+  type: "line";
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export interface ShapeElement extends NeonElementBase, Point {
+  type: "rect" | "circle";
+  width?: number;
+  height?: number;
+  radius?: number;
+  rotation: number;
+}
+
+export type NeonElement = TextElement | DrawElement | LineElement | ShapeElement;
 
 export interface WorkspaceDimensions {
   /** Largeur/hauteur de l'espace de travail en pixels (avant mise à l'échelle finale) */
@@ -87,3 +98,23 @@ export const NEON_FONTS = [
 ] as const;
 
 export type NeonFontId = (typeof NEON_FONTS)[number]["id"];
+
+/** id CSS font-family utilisable directement par le canvas (`font: bold 32px "<family>"`), une police web déjà chargée par l'app (voir globals.css @font-face). */
+export const NEON_FONT_FAMILIES: Record<NeonFontId, string> = {
+  pacifico: "Pacifico",
+  "dancing-script": "Dancing Script",
+  tangerine: "Tangerine",
+  sacramento: "Sacramento",
+  "great-vibes": "Great Vibes",
+  lobster: "Lobster",
+  "alex-brush": "Alex Brush",
+  allura: "Allura",
+  "kaushan-script": "Kaushan Script",
+  "poppins-bold": "Poppins",
+  "bebas-neue": "Bebas Neue",
+  anton: "Anton",
+  righteous: "Righteous",
+  "pathway-gothic": "Pathway Gothic One",
+  bangers: "Bangers",
+  monoton: "Monoton",
+};

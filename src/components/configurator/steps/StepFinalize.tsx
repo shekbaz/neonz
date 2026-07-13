@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2 } from "lucide-react";
-import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
+import { NeonCanvasEditor, type NeonCanvasHandle } from "@/components/configurator/NeonCanvasEditor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useConfiguratorStore, type SupportType } from "@/store/configuratorStore";
-import { deriveSourceType } from "@/lib/neon/deriveSourceType";
+import { calculateDesignPrice, applyFinalOptions } from "@/lib/neon/pricing";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -19,66 +18,46 @@ const SUPPORT_OPTIONS: { value: SupportType; labelKey: string }[] = [
   { value: "silhouette-cut", labelKey: "supportSilhouette" },
 ];
 
+function deriveSourceType(elements: { type: string }[]): "image" | "text" | "draw" | "mixed" {
+  const types = new Set(elements.map((e) => e.type));
+  if (types.size === 1 && types.has("text")) return "text";
+  if (types.size === 1 && types.has("draw")) return "draw";
+  return "mixed";
+}
+
 export function StepFinalize() {
   const t = useTranslations("Configurator.stepFinalize");
   const tCommon = useTranslations("Common");
   const router = useRouter();
 
-  const {
-    paths,
-    workspaceWidthPx,
-    workspaceHeightPx,
-    widthCm,
-    heightCm,
-    support,
-    hasRemote,
-    priceBreakdown,
-    pxToCm,
-    setSupport,
-    setHasRemote,
-    setPriceBreakdown,
-    reset,
-  } = useConfiguratorStore();
+  const { elements, workspaceWidthPx, workspaceHeightPx, widthCm, heightCm, support, hasRemote, pxToCm, setSupport, setHasRemote, reset } =
+    useConfiguratorStore();
 
-  const [loadingPrice, setLoadingPrice] = useState(false);
+  const canvasRef = useRef<NeonCanvasHandle>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    async function fetchPrice() {
-      setLoadingPrice(true);
-      try {
-        const res = await fetch("/api/customize/price", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            paths,
-            workspaceWidthPx,
-            workspaceHeightPx,
-            widthCm,
-            heightCm,
-            support,
-            hasRemote,
-          }),
-        });
-        if (res.ok) setPriceBreakdown(await res.json());
-      } finally {
-        setLoadingPrice(false);
-      }
-    }
-    fetchPrice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [support, hasRemote]);
+  const breakdown = useMemo(
+    () =>
+      applyFinalOptions(calculateDesignPrice({ elements, pxToCm }), {
+        support,
+        hasRemote,
+        hasController: elements.some((e) => e.blink),
+      }),
+    [elements, pxToCm, support, hasRemote]
+  );
 
   async function handleOrder() {
     setSubmitting(true);
     try {
-      const sourceType = deriveSourceType(paths);
+      const previewImageUrl = canvasRef.current?.exportDataURL();
+      if (!previewImageUrl) throw new Error("Impossible d'exporter l'aperçu du design.");
+
       const res = await fetch("/api/customize/designs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sourceType,
-          paths,
+          sourceType: deriveSourceType(elements),
+          elements,
+          previewImageUrl,
           dimensions: { widthCm, heightCm },
           pxToCmRatio: pxToCm,
           support,
@@ -92,7 +71,7 @@ export function StepFinalize() {
       }
 
       const design = await res.json();
-      const price = priceBreakdown?.total ?? 0;
+      const price = breakdown.total;
 
       reset();
       router.push({
@@ -108,8 +87,9 @@ export function StepFinalize() {
 
   return (
     <div className="space-y-8">
-      <NeonCanvasPreview
-        paths={paths}
+      <NeonCanvasEditor
+        ref={canvasRef}
+        elements={elements}
         workspaceWidthPx={workspaceWidthPx}
         workspaceHeightPx={workspaceHeightPx}
         className="h-72"
@@ -140,74 +120,52 @@ export function StepFinalize() {
         <Switch id="remote" checked={hasRemote} onCheckedChange={setHasRemote} />
       </div>
 
-      {paths.some((p) => p.blink) && (
-        <p className="text-xs text-muted-foreground">{t("controllerIncludedHint")}</p>
-      )}
+      {elements.some((e) => e.blink) && <p className="text-xs text-muted-foreground">{t("controllerIncludedHint")}</p>}
 
       <div className="rounded-xl bg-card p-5 ring-1 ring-foreground/10">
         <p className="mb-3 text-sm font-semibold">{t("priceBreakdownTitle")}</p>
-        {priceBreakdown ? (
-          <dl className="space-y-1.5 text-sm">
+        <dl className="space-y-1.5 text-sm">
+          <div className="flex justify-between text-muted-foreground">
+            <dt>{t("lineTube")}</dt>
+            <dd className="tabular-nums">
+              {breakdown.tubePrice.toLocaleString()} {tCommon("currency")}
+            </dd>
+          </div>
+          {breakdown.supportSurcharge > 0 && (
             <div className="flex justify-between text-muted-foreground">
-              <dt>{t("lineBase")}</dt>
-              <dd className="tabular-nums">{priceBreakdown.fixedFee.toLocaleString()} {tCommon("currency")}</dd>
+              <dt>{t("lineSupport")}</dt>
+              <dd className="tabular-nums">
+                {breakdown.supportSurcharge.toLocaleString()} {tCommon("currency")}
+              </dd>
             </div>
+          )}
+          {breakdown.remoteSurcharge > 0 && (
             <div className="flex justify-between text-muted-foreground">
-              <dt>{t("lineTube")}</dt>
-              <dd className="tabular-nums">{priceBreakdown.tubePrice.toLocaleString()} {tCommon("currency")}</dd>
+              <dt>{t("lineRemote")}</dt>
+              <dd className="tabular-nums">
+                {breakdown.remoteSurcharge.toLocaleString()} {tCommon("currency")}
+              </dd>
             </div>
-            {priceBreakdown.colorSurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineColors")}</dt>
-                <dd className="tabular-nums">{priceBreakdown.colorSurcharge.toLocaleString()} {tCommon("currency")}</dd>
-              </div>
-            )}
+          )}
+          {breakdown.controllerSurcharge > 0 && (
             <div className="flex justify-between text-muted-foreground">
-              <dt>{t("lineSize")}</dt>
-              <dd className="tabular-nums">{priceBreakdown.sizeSurcharge.toLocaleString()} {tCommon("currency")}</dd>
+              <dt>{t("lineController")}</dt>
+              <dd className="tabular-nums">
+                {breakdown.controllerSurcharge.toLocaleString()} {tCommon("currency")}
+              </dd>
             </div>
-            {priceBreakdown.complexitySurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineComplexity")}</dt>
-                <dd className="tabular-nums">{priceBreakdown.complexitySurcharge.toLocaleString()} {tCommon("currency")}</dd>
-              </div>
-            )}
-            {priceBreakdown.supportSurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineSupport")}</dt>
-                <dd className="tabular-nums">{priceBreakdown.supportSurcharge.toLocaleString()} {tCommon("currency")}</dd>
-              </div>
-            )}
-            {priceBreakdown.remoteSurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineRemote")}</dt>
-                <dd className="tabular-nums">{priceBreakdown.remoteSurcharge.toLocaleString()} {tCommon("currency")}</dd>
-              </div>
-            )}
-            {priceBreakdown.controllerSurcharge > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <dt>{t("lineController")}</dt>
-                <dd className="tabular-nums">{priceBreakdown.controllerSurcharge.toLocaleString()} {tCommon("currency")}</dd>
-              </div>
-            )}
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground">—</p>
-        )}
+          )}
+        </dl>
       </div>
 
       <div className="flex items-center justify-between border-t border-border pt-6">
         <span className="text-lg font-semibold">{t("totalPrice")}</span>
-        {loadingPrice ? (
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-        ) : (
-          <span className="font-display text-4xl font-bold tracking-[0.02em] text-primary">
-            {priceBreakdown?.total.toLocaleString() ?? "—"} <span className="text-xl">{tCommon("currency")}</span>
-          </span>
-        )}
+        <span className="font-display text-4xl font-bold tracking-[0.02em] text-primary">
+          {breakdown.total.toLocaleString()} <span className="text-xl">{tCommon("currency")}</span>
+        </span>
       </div>
 
-      <Button size="lg" className="glow-primary h-12 w-full text-base" disabled={submitting || loadingPrice} onClick={handleOrder}>
+      <Button size="lg" className="glow-primary h-12 w-full text-base" disabled={submitting} onClick={handleOrder}>
         {t("addToCart")}
       </Button>
     </div>

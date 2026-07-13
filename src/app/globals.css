@@ -129,6 +129,96 @@
  * var(--font-manrope)}), donc redéfinir ces variables ne suffit plus — il faut
  * réécrire directement la propriété font-family utilisée.
  */
+/*
+ * Polices néon manuscrites/display du configurateur (src/types/neon.ts,
+ * NEON_FONT_FAMILIES) — chargées ici pour que le canvas 2D du configurateur
+ * (NeonCanvasEditor) puisse les utiliser via `ctx.font`, en plus des aperçus
+ * DOM classiques.
+ */
+@font-face {
+  font-family: "Pacifico";
+  src: url("/fonts/Pacifico-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dancing Script";
+  src: url("/fonts/DancingScript-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Tangerine";
+  src: url("/fonts/Tangerine-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sacramento";
+  src: url("/fonts/Sacramento-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Great Vibes";
+  src: url("/fonts/GreatVibes-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lobster";
+  src: url("/fonts/Lobster-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Alex Brush";
+  src: url("/fonts/AlexBrush-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Allura";
+  src: url("/fonts/Allura-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Kaushan Script";
+  src: url("/fonts/KaushanScript-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/Poppins-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/fonts/BebasNeue-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Anton";
+  src: url("/fonts/Anton-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Righteous";
+  src: url("/fonts/Righteous-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pathway Gothic One";
+  src: url("/fonts/PathwayGothicOne-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bangers";
+  src: url("/fonts/Bangers-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Monoton";
+  src: url("/fonts/Monoton-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
 :lang(ar) body {
   font-family: var(--font-cairo);
 }

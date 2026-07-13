@@ -1,26 +1,36 @@
 import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
 
-const neonPathSchema = new Schema(
+const neonElementSchema = new Schema(
   {
     id: { type: String, required: true },
-    d: { type: String, required: true },
+    type: { type: String, enum: ["text", "draw", "line", "rect", "circle"], required: true },
     color: { type: String, required: true },
-    order: { type: Number, required: true },
-    groupId: { type: String },
     glowIntensity: { type: Number, default: 60 },
     blink: { type: Boolean, default: false },
-  },
-  { _id: false }
-);
 
-const collisionZoneSchema = new Schema(
-  {
-    pathIds: { type: [String], required: true },
-    minDistanceCm: { type: Number, required: true },
-    atPoint: {
-      x: { type: Number, required: true },
-      y: { type: Number, required: true },
-    },
+    // text / rect / circle
+    x: { type: Number },
+    y: { type: Number },
+    rotation: { type: Number },
+
+    // text
+    content: { type: String },
+    fontSize: { type: Number },
+    fontId: { type: String },
+
+    // draw
+    points: { type: [{ x: Number, y: Number }], _id: false },
+
+    // line
+    x1: { type: Number },
+    y1: { type: Number },
+    x2: { type: Number },
+    y2: { type: Number },
+
+    // rect / circle
+    width: { type: Number },
+    height: { type: Number },
+    radius: { type: Number },
   },
   { _id: false }
 );
@@ -32,11 +42,9 @@ const customDesignSchema = new Schema(
     status: { type: String, enum: ["draft", "valid", "ordered"], default: "draft" },
     sourceType: { type: String, enum: ["image", "text", "draw", "mixed"], required: true },
 
-    sourceImageUrl: { type: String },
-    sourceText: { type: String },
-    fontFamily: { type: String },
-
-    paths: { type: [neonPathSchema], default: [] },
+    elements: { type: [neonElementSchema], default: [] },
+    /** Export PNG du canvas au moment de la commande — affiché tel quel côté admin pour la fabrication. */
+    previewImageUrl: { type: String, required: true },
 
     dimensions: {
       widthCm: { type: Number, required: true, max: 90 },
@@ -44,35 +52,23 @@ const customDesignSchema = new Schema(
     },
     pxToCmRatio: { type: Number, required: true },
 
-    collision: {
-      hasCollision: { type: Boolean, default: false },
-      zones: { type: [collisionZoneSchema], default: [] },
-      lastCheckedAt: { type: Date },
-    },
-
     support: {
       type: String,
       enum: ["acrylic-transparent", "acrylic-black", "silhouette-cut"],
       default: "acrylic-transparent",
     },
     hasRemote: { type: Boolean, default: false },
-    // Dérivé server-side de `paths.some(p => p.blink)` — jamais fourni par le client.
+    // Dérivé server-side de `elements.some(e => e.blink)` — jamais fourni par le client.
     hasController: { type: Boolean, default: false },
 
     price: {
-      base: { type: Number, required: true },
-      fixedFee: { type: Number },
-      tubePrice: { type: Number },
-      colorSurcharge: { type: Number, required: true },
-      sizeSurcharge: { type: Number, required: true },
-      complexitySurcharge: { type: Number, required: true },
+      tubePrice: { type: Number, required: true },
+      totalTubeLengthCm: { type: Number, required: true },
       supportSurcharge: { type: Number },
       remoteSurcharge: { type: Number },
       controllerSurcharge: { type: Number },
       total: { type: Number, required: true },
     },
-
-    previewImageUrl: { type: String },
   },
   { timestamps: true }
 );

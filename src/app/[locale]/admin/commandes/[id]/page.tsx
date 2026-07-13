@@ -3,7 +3,6 @@ import { Phone } from "lucide-react";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { OrderStatusUpdater } from "@/components/admin/OrderStatusUpdater";
-import { NeonCanvasPreview } from "@/components/configurator/NeonCanvasPreview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -95,18 +94,16 @@ export default async function AdminOrderDetailPage({
                 </div>
               )}
 
-              {item.type === "custom" && item.snapshot?.paths && (
+              {item.type === "custom" && item.snapshot?.previewImageUrl && (
                 <div className="space-y-2">
-                  <NeonCanvasPreview
-                    paths={item.snapshot.paths}
-                    workspaceWidthPx={item.snapshot.dimensions.widthCm / item.snapshot.pxToCmRatio}
-                    workspaceHeightPx={item.snapshot.dimensions.heightCm / item.snapshot.pxToCmRatio}
-                    className="h-48"
+                  {/* eslint-disable-next-line @next/next/no-img-element -- export PNG figé (base64 ou Cloudinary), pas une image Next optimisable */}
+                  <img
+                    src={item.snapshot.previewImageUrl}
+                    alt="Aperçu du design néon"
+                    className="h-48 w-full rounded-lg border border-border object-contain bg-black"
                   />
                   <p className="text-xs text-muted-foreground">
-                    {item.snapshot.sourceType === "image"
-                      ? "À partir d'une image importée"
-                      : "Design personnalisé"}
+                    Design personnalisé
                     {" — "}
                     Dimensions : {item.snapshot.dimensions?.widthCm}cm x {item.snapshot.dimensions?.heightCm}cm —
                     Support : {item.snapshot.support}
