@@ -44,10 +44,27 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   await connectDB();
+  const existing = await Order.findById(id);
+  if (!existing) {
+    return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
+  }
+
+  const depositReceived = parsed.data.depositReceived ?? existing.payment?.depositReceived ?? false;
+  // Un acompte est requis dès qu'un article personnalisé compose la commande : la
+  // fabrication ne peut démarrer avant sa confirmation (voir Order.payment.depositRequired).
+  if (
+    parsed.data.status === "in_production" &&
+    (existing.payment?.depositRequired ?? 0) > 0 &&
+    !depositReceived
+  ) {
+    return NextResponse.json({ error: "DEPOSIT_REQUIRED" }, { status: 400 });
+  }
+
   const order = await Order.findByIdAndUpdate(
     id,
     {
       status: parsed.data.status,
+      ...(parsed.data.depositReceived !== undefined && { "payment.depositReceived": parsed.data.depositReceived }),
       $push: { statusHistory: { status: parsed.data.status, date: new Date(), note: parsed.data.note } },
     },
     { returnDocument: "after" }

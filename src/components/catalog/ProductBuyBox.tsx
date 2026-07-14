@@ -70,6 +70,7 @@ export function ProductBuyBox({ product, locale }: { product: ProductPlain; loca
           {t("addToCart")}
         </Button>
       </Link>
+      <p className="mt-3 text-center text-xs text-muted-foreground">{t("codNote")}</p>
     </div>
   );
 }

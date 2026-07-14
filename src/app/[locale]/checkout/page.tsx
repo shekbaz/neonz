@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@/i18n/navigation";
+import { calculateDeposit } from "@/lib/neon/pricing";
 import { toast } from "sonner";
 
 interface CreatedOrder {
@@ -31,10 +32,17 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<CreatedOrder | null>(null);
 
-  const [guest, setGuest] = useState({ name: "", phone: "", email: "" });
-  const [address, setAddress] = useState({ line1: "", city: "", wilaya: "" });
+  const [contact, setContact] = useState({ name: "", phone: "" });
+  const [address, setAddress] = useState({ city: "", wilaya: "" });
+
+  useEffect(() => {
+    if (session?.user?.name) {
+      setContact((c) => (c.name ? c : { ...c, name: session.user.name ?? "" }));
+    }
+  }, [session]);
 
   const total = unitPrice * quantity;
+  const depositAmount = itemType === "custom" ? calculateDeposit(total) : 0;
   const hasValidItem = (itemType === "catalog" || itemType === "custom") && !!itemId;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -55,7 +63,8 @@ export default function CheckoutPage() {
             },
           ],
           shippingAddress: { ...address, country: "Algérie" },
-          guestInfo: session?.user ? undefined : guest,
+          contactName: contact.name,
+          contactPhone: contact.phone,
         }),
       });
 
@@ -139,42 +148,47 @@ export default function CheckoutPage() {
           />
         </div>
 
-        {!session?.user && (
-          <div>
-            <h2 className="mb-4 font-semibold">{t("yourDetails")}</h2>
-            <div className="grid gap-4">
-              <div>
-                <Label htmlFor="name">{t("fullName")}</Label>
-                <Input id="name" required value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} />
-              </div>
-              <div>
-                <Label htmlFor="phone">{t("phone")}</Label>
-                <Input id="phone" type="tel" required placeholder={t("phonePlaceholder")} value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
-              </div>
-              <div>
-                <Label htmlFor="email">{t("emailOptional")}</Label>
-                <Input id="email" type="email" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} />
-              </div>
-            </div>
+        {itemType === "custom" ? (
+          <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm">
+            <p className="font-semibold text-foreground">{t("depositNoticeTitle")}</p>
+            <p className="mt-1 text-muted-foreground">
+              {t("depositNotice", {
+                deposit: depositAmount.toLocaleString(),
+                balance: (total - depositAmount).toLocaleString(),
+                currency: tCommon("currency"),
+              })}
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
+            {t("codNotice")}
           </div>
         )}
 
         <div>
-          <h2 className="mb-4 font-semibold">{t("shippingAddress")}</h2>
+          <h2 className="mb-4 font-semibold">{t("yourDetails")}</h2>
           <div className="grid gap-4">
             <div>
-              <Label htmlFor="line1">{t("address")}</Label>
-              <Input id="line1" required value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
+              <Label htmlFor="name">{t("fullName")}</Label>
+              <Input id="name" required value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="city">{t("city")}</Label>
-                <Input id="city" required value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-              </div>
-              <div>
-                <Label htmlFor="wilaya">{t("wilaya")}</Label>
-                <Input id="wilaya" value={address.wilaya} onChange={(e) => setAddress({ ...address, wilaya: e.target.value })} />
-              </div>
+            <div>
+              <Label htmlFor="phone">{t("phone")}</Label>
+              <Input id="phone" type="tel" required placeholder={t("phonePlaceholder")} value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="mb-4 font-semibold">{t("shippingAddress")}</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">{t("city")}</Label>
+              <Input id="city" required value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="wilaya">{t("wilaya")}</Label>
+              <Input id="wilaya" required value={address.wilaya} onChange={(e) => setAddress({ ...address, wilaya: e.target.value })} />
             </div>
           </div>
         </div>

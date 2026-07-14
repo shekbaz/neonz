@@ -49,7 +49,8 @@
     "colors": "Couleurs disponibles",
     "stock": "Stock",
     "inStock": "En stock",
-    "outOfStock": "Rupture de stock"
+    "outOfStock": "Rupture de stock",
+    "codNote": "Paiement à la livraison — réglez en espèces à la réception, aucun acompte requis."
   },
   "Configurator": {
     "title": "Personnalisez votre enseigne néon",
@@ -126,6 +127,7 @@
       "lineRemote": "Télécommande / variateur",
       "lineController": "Contrôleur multi-zone",
       "totalPrice": "Prix total",
+      "depositNote": "Acompte de {amount} DZD (30%) à régler avant fabrication — le solde est réglé à la livraison.",
       "addToCart": "Commander"
     },
     "next": "Suivant",
@@ -147,10 +149,11 @@
     "fullName": "Nom complet",
     "phone": "Téléphone",
     "phonePlaceholder": "05XX XX XX XX",
-    "emailOptional": "E-mail (optionnel)",
-    "address": "Adresse",
     "city": "Ville",
     "wilaya": "Wilaya",
+    "codNotice": "Paiement à la livraison : vous réglez le montant total en espèces à la réception de votre commande.",
+    "depositNoticeTitle": "Acompte requis avant fabrication",
+    "depositNotice": "Un acompte de {deposit} {currency} (30%) est à régler avant le lancement en fabrication. Le solde de {balance} {currency} est réglé à la livraison. Notre équipe vous appelle pour organiser le versement.",
     "submitOrder": "Envoyer ma commande",
     "errorSubmit": "Erreur lors de l'envoi de la commande.",
     "errorGeneric": "Une erreur est survenue."
@@ -214,6 +217,7 @@
       "colStatus": "Statut",
       "colTotal": "Total",
       "toCall": "À appeler",
+      "depositPending": "Acompte en attente",
       "empty": "Aucune commande."
     },
     "orderShared": {
@@ -232,7 +236,10 @@
       "dimensionsLabel": "Dimensions : {width}cm x {height}cm",
       "supportLabel": "Support : {support}",
       "withRemote": "Avec télécommande",
-      "total": "Total"
+      "total": "Total",
+      "paymentTitle": "Paiement",
+      "codInfo": "Paiement à la livraison (COD) — aucun acompte requis.",
+      "depositInfo": "Acompte requis : {amount} DZD (30%) avant fabrication."
     },
     "customersPage": {
       "colName": "Nom",
@@ -335,7 +342,10 @@
       "uploadFailed": "Échec de l'upload."
     },
     "orderStatusUpdater": {
-      "update": "Mettre à jour"
+      "update": "Mettre à jour",
+      "depositReceivedLabel": "Acompte reçu ({amount} DZD)",
+      "depositUpdated": "Statut de l'acompte mis à jour.",
+      "depositRequiredWarning": "Acompte non reçu : impossible de passer en fabrication tant qu'il n'est pas confirmé."
     },
     "revenueChart": {
       "notEnoughData": "Pas encore assez de données pour afficher un graphique."
@@ -356,7 +366,7 @@
     "ordersHeading": "2. Commandes personnalisées",
     "ordersText": "Toute commande personnalisée est soumise à la validation préalable du design par le client via le configurateur en ligne. Aucune fabrication ne débute avant confirmation explicite du rendu final.",
     "paymentHeading": "3. Paiement",
-    "paymentText": "Le paiement s'effectue en ligne via les moyens proposés au moment de la commande (carte bancaire internationale, CIB, EDAHABIA).",
+    "paymentText": "Aucun paiement en ligne n'est requis pour passer commande. Pour les enseignes du catalogue, le règlement s'effectue intégralement en espèces à la livraison. Pour les enseignes personnalisées, un acompte de 30% du prix total doit être réglé avant le lancement en fabrication ; le solde est réglé à la livraison.",
     "deliveryHeading": "4. Livraison",
     "deliveryText": "Les délais de livraison sont communiqués à titre indicatif et peuvent varier selon la destination et la complexité de fabrication.",
     "withdrawalHeading": "5. Rétractation",
@@ -397,7 +407,11 @@
     "noOrders": "Vous n'avez pas encore de commande."
   },
   "OrderTracking": {
-    "title": "Commande {orderNumber}"
+    "title": "Commande {orderNumber}",
+    "codInfo": "Paiement à la livraison (COD) — aucun acompte requis.",
+    "depositInfo": "Acompte de {amount} DZD (30%) requis avant fabrication — {status}.",
+    "depositReceived": "reçu",
+    "depositPending": "en attente"
   },
   "Theme": {
     "activateLight": "Activer le thème clair",

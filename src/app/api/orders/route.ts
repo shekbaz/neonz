@@ -6,6 +6,7 @@ import { CustomDesign } from "@/models/CustomDesign";
 import { auth } from "@/lib/auth";
 import { orderCreateSchema } from "@/lib/validators/order.schema";
 import { generateOrderNumber } from "@/lib/orderNumber";
+import { calculateDeposit } from "@/lib/neon/pricing";
 
 export async function GET() {
   const session = await auth();
@@ -25,19 +26,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  // Aucun compte requis : soit le client est connecté (session), soit il a rempli
-  // ses coordonnées en tant qu'invité (guestInfo) — l'un des deux doit être présent.
   const session = await auth();
-  if (!session?.user && !parsed.data.guestInfo) {
-    return NextResponse.json(
-      { error: "Veuillez renseigner vos coordonnées (nom et téléphone)." },
-      { status: 400 }
-    );
-  }
 
   await connectDB();
 
   let subtotal = 0;
+  let customSubtotal = 0;
   const items = [];
 
   for (const item of parsed.data.items) {
@@ -65,6 +59,7 @@ export async function POST(request: NextRequest) {
       }
       const designTotal = design.price?.total ?? 0;
       subtotal += designTotal * item.quantity;
+      customSubtotal += designTotal * item.quantity;
       items.push({
         type: "custom" as const,
         customDesign: design._id,
@@ -80,14 +75,18 @@ export async function POST(request: NextRequest) {
   const shippingCost = subtotal >= 15000 ? 0 : 800;
   const total = subtotal + shippingCost;
   const orderNumber = await generateOrderNumber();
+  // Articles catalogue : payés à la livraison (COD). Articles personnalisés : acompte
+  // requis avant lancement en fabrication, voir PRICING_CONFIG.depositRate.
+  const depositRequired = calculateDeposit(customSubtotal);
 
   const order = await Order.create({
     orderNumber,
     user: session?.user?.id,
-    guestInfo: session?.user ? undefined : parsed.data.guestInfo,
+    contactName: parsed.data.contactName,
+    contactPhone: parsed.data.contactPhone,
     items,
     shippingAddress: parsed.data.shippingAddress,
-    payment: { status: "unpaid" },
+    payment: { status: "unpaid", depositRequired, depositReceived: false },
     subtotal,
     shippingCost,
     total,

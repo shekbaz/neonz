@@ -46,6 +46,14 @@ export default async function OrderTrackingPage({
           <span>{tCommon("total")}</span>
           <span className="text-primary">{order.total.toLocaleString()} DZD</span>
         </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {(order.payment?.depositRequired ?? 0) > 0
+            ? t("depositInfo", {
+                amount: (order.payment?.depositRequired ?? 0).toLocaleString(),
+                status: order.payment?.depositReceived ? t("depositReceived") : t("depositPending"),
+              })
+            : t("codInfo")}
+        </p>
       </div>
     </div>
   );

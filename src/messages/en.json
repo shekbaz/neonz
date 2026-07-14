@@ -49,7 +49,8 @@
     "colors": "Available colors",
     "stock": "Stock",
     "inStock": "In stock",
-    "outOfStock": "Out of stock"
+    "outOfStock": "Out of stock",
+    "codNote": "Cash on delivery — pay in cash when your order arrives, no deposit required."
   },
   "Configurator": {
     "title": "Customize your neon sign",
@@ -126,6 +127,7 @@
       "lineRemote": "Remote / dimmer",
       "lineController": "Multi-zone controller",
       "totalPrice": "Total price",
+      "depositNote": "Deposit of {amount} DZD (30%) due before production — the remaining balance is paid on delivery.",
       "addToCart": "Order now"
     },
     "next": "Next",
@@ -147,10 +149,11 @@
     "fullName": "Full name",
     "phone": "Phone",
     "phonePlaceholder": "05XX XX XX XX",
-    "emailOptional": "Email (optional)",
-    "address": "Address",
     "city": "City",
     "wilaya": "Wilaya",
+    "codNotice": "Cash on delivery: you pay the full amount in cash when your order arrives.",
+    "depositNoticeTitle": "Deposit required before production",
+    "depositNotice": "A deposit of {deposit} {currency} (30%) is due before production starts. The remaining {balance} {currency} is paid on delivery. Our team will call you to arrange the deposit.",
     "submitOrder": "Place my order",
     "errorSubmit": "Error sending the order.",
     "errorGeneric": "Something went wrong."
@@ -214,6 +217,7 @@
       "colStatus": "Status",
       "colTotal": "Total",
       "toCall": "To call",
+      "depositPending": "Deposit pending",
       "empty": "No orders."
     },
     "orderShared": {
@@ -232,7 +236,10 @@
       "dimensionsLabel": "Dimensions: {width}cm x {height}cm",
       "supportLabel": "Backing: {support}",
       "withRemote": "With remote",
-      "total": "Total"
+      "total": "Total",
+      "paymentTitle": "Payment",
+      "codInfo": "Cash on delivery (COD) — no deposit required.",
+      "depositInfo": "Deposit required: {amount} DZD (30%) before production."
     },
     "customersPage": {
       "colName": "Name",
@@ -335,7 +342,10 @@
       "uploadFailed": "Upload failed."
     },
     "orderStatusUpdater": {
-      "update": "Update"
+      "update": "Update",
+      "depositReceivedLabel": "Deposit received ({amount} DZD)",
+      "depositUpdated": "Deposit status updated.",
+      "depositRequiredWarning": "Deposit not received: production cannot start until it's confirmed."
     },
     "revenueChart": {
       "notEnoughData": "Not enough data yet to display a chart."
@@ -356,7 +366,7 @@
     "ordersHeading": "2. Custom orders",
     "ordersText": "Any custom order is subject to prior validation of the design by the customer via the online configurator. No production begins before explicit confirmation of the final rendering.",
     "paymentHeading": "3. Payment",
-    "paymentText": "Payment is made online via the methods offered at the time of order (international bank card, CIB, EDAHABIA).",
+    "paymentText": "No online payment is required to place an order. For catalog signs, payment is made in full, in cash, on delivery. For custom signs, a 30% deposit of the total price must be paid before production starts; the remaining balance is paid on delivery.",
     "deliveryHeading": "4. Delivery",
     "deliveryText": "Delivery times are given for information purposes and may vary depending on destination and manufacturing complexity.",
     "withdrawalHeading": "5. Right of withdrawal",
@@ -397,7 +407,11 @@
     "noOrders": "You don't have any orders yet."
   },
   "OrderTracking": {
-    "title": "Order {orderNumber}"
+    "title": "Order {orderNumber}",
+    "codInfo": "Cash on delivery (COD) — no deposit required.",
+    "depositInfo": "Deposit of {amount} DZD (30%) required before production — {status}.",
+    "depositReceived": "received",
+    "depositPending": "pending"
   },
   "Theme": {
     "activateLight": "Switch to light theme",

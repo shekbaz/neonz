@@ -13,7 +13,14 @@ import { totalLengthCm } from "@/lib/neon/elementGeometry";
 export const PRICING_CONFIG = {
   currency: "DZD",
   pricePerCmOfTube: 180, // prix au cm linéaire de tube néon LED
+  /** Part du prix des articles personnalisés à régler avant le lancement en fabrication. */
+  depositRate: 0.3,
 };
+
+/** Acompte requis sur un montant d'articles personnalisés (arrondi au DZD). */
+export function calculateDeposit(customItemsTotal: number): number {
+  return Math.round(customItemsTotal * PRICING_CONFIG.depositRate);
+}
 
 export interface DesignPriceBreakdown {
   tubePrice: number;

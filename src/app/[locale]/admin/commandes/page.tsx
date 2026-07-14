@@ -64,9 +64,10 @@ export default async function AdminOrdersPage({
         </TableHeader>
         <TableBody>
           {orders.map((order) => {
-            const clientName = order.guestInfo?.name ?? (order.user as unknown as { name?: string })?.name ?? "—";
-            const clientPhone = order.guestInfo?.phone ?? "—";
+            const clientName = order.contactName ?? (order.user as unknown as { name?: string })?.name ?? "—";
+            const clientPhone = order.contactPhone ?? "—";
             const isNew = order.status === "pending";
+            const depositPending = (order.payment?.depositRequired ?? 0) > 0 && !order.payment?.depositReceived;
             const firstItem = order.items[0];
             const extraCount = order.items.length - 1;
             const firstItemLabel =
@@ -114,7 +115,14 @@ export default async function AdminOrdersPage({
                 </TableCell>
                 <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{tStatus(order.status as never)}</Badge>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="secondary">{tStatus(order.status as never)}</Badge>
+                    {depositPending && (
+                      <Badge className="bg-destructive/15 text-destructive hover:bg-destructive/15">
+                        {t("ordersPage.depositPending")}
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-end">{order.total.toLocaleString()} DZD</TableCell>
               </TableRow>

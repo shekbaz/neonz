@@ -25,7 +25,12 @@ export default async function AdminOrderDetailPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("title", { orderNumber: order.orderNumber })}</h1>
-        <OrderStatusUpdater orderId={String(order._id)} currentStatus={order.status} />
+        <OrderStatusUpdater
+          orderId={String(order._id)}
+          currentStatus={order.status}
+          depositRequired={order.payment?.depositRequired ?? 0}
+          depositReceived={order.payment?.depositReceived ?? false}
+        />
       </div>
 
       <Card>
@@ -33,24 +38,31 @@ export default async function AdminOrderDetailPage({
           <CardTitle>{t("client")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm">
-          <p className="font-medium text-base">
-            {order.guestInfo?.name ?? (order.user as unknown as { name?: string })?.name}
-          </p>
-          <p className="text-muted-foreground">
-            {order.guestInfo?.email ?? (order.user as unknown as { email?: string })?.email}
-          </p>
+          <p className="font-medium text-base">{order.contactName}</p>
+          {(order.user as unknown as { email?: string })?.email && (
+            <p className="text-muted-foreground">{(order.user as unknown as { email?: string }).email}</p>
+          )}
           <p className="mt-2">
-            {order.shippingAddress.line1}, {order.shippingAddress.city} {order.shippingAddress.wilaya ?? ""}
+            {order.shippingAddress.city} {order.shippingAddress.wilaya ?? ""}
           </p>
 
-          {order.guestInfo?.phone && (
-            <a href={`tel:${order.guestInfo.phone}`} className="mt-4 inline-block">
-              <Button size="sm" className="gap-2">
-                <Phone className="h-4 w-4" />
-                {t("call", { phone: order.guestInfo.phone })}
-              </Button>
-            </a>
-          )}
+          <a href={`tel:${order.contactPhone}`} className="mt-4 inline-block">
+            <Button size="sm" className="gap-2">
+              <Phone className="h-4 w-4" />
+              {t("call", { phone: order.contactPhone })}
+            </Button>
+          </a>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("paymentTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          {(order.payment?.depositRequired ?? 0) > 0
+            ? t("depositInfo", { amount: (order.payment?.depositRequired ?? 0).toLocaleString() })
+            : t("codInfo")}
         </CardContent>
       </Card>
 

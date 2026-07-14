@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useConfiguratorStore, type SupportType } from "@/store/configuratorStore";
-import { calculateDesignPrice, applyFinalOptions } from "@/lib/neon/pricing";
+import { calculateDesignPrice, applyFinalOptions, calculateDeposit } from "@/lib/neon/pricing";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -165,6 +165,10 @@ export function StepFinalize() {
           {breakdown.total.toLocaleString()} <span className="text-xl">{tCommon("currency")}</span>
         </span>
       </div>
+
+      <p className="text-xs text-muted-foreground">
+        {t("depositNote", { amount: calculateDeposit(breakdown.total).toLocaleString() })}
+      </p>
 
       <Button size="lg" className="glow-primary h-12 w-full text-base" disabled={submitting} onClick={handleOrder}>
         {t("addToCart")}

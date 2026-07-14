@@ -15,7 +15,9 @@ const orderItemSchema = new Schema(
 const addressSnapshotSchema = new Schema(
   {
     label: { type: String },
-    line1: { type: String, required: true },
+    // Pas d'adresse précise collectée au checkout (seulement ville + wilaya) : l'admin
+    // confirme l'adresse exacte par téléphone avant expédition.
+    line1: { type: String },
     city: { type: String, required: true },
     wilaya: { type: String },
     postalCode: { type: String },
@@ -24,22 +26,15 @@ const addressSnapshotSchema = new Schema(
   { _id: false }
 );
 
-const guestInfoSchema = new Schema(
-  {
-    name: { type: String, required: true },
-    phone: { type: String, required: true },
-    email: { type: String },
-  },
-  { _id: false }
-);
-
 const orderSchema = new Schema(
   {
     orderNumber: { type: String, required: true, unique: true },
-    // Aucun compte requis pour commander : soit `user` (client connecté), soit `guestInfo`
-    // (nom + téléphone saisis au checkout) est renseigné — jamais aucun des deux.
+    // Aucun compte requis pour commander : `user` est renseigné si le client est connecté,
+    // mais contactName/contactPhone sont toujours saisis au checkout (compte ou invité) car
+    // le contact de livraison est confirmé par téléphone dans tous les cas.
     user: { type: Schema.Types.ObjectId, ref: "User" },
-    guestInfo: { type: guestInfoSchema },
+    contactName: { type: String, required: true },
+    contactPhone: { type: String, required: true },
     items: { type: [orderItemSchema], required: true, validate: (v: unknown[]) => v.length > 0 },
     status: {
       type: String,
@@ -47,11 +42,15 @@ const orderSchema = new Schema(
       default: "pending",
     },
     shippingAddress: { type: addressSnapshotSchema, required: true },
-    // Pas de paiement en ligne : le client passe la commande, l'admin appelle pour confirmer
-    // et convient du paiement (livraison/COD) hors système.
+    // Pas de paiement en ligne : les articles catalogue sont payés à la livraison (COD).
+    // Les articles personnalisés nécessitent un acompte (depositRequired, PRICING_CONFIG.depositRate)
+    // réglé hors système (virement, Baridimob...) avant le passage en fabrication — l'admin coche
+    // depositReceived une fois l'acompte confirmé ; le solde est réglé à la livraison.
     payment: {
       status: { type: String, enum: ["unpaid", "paid"], default: "unpaid" },
       confirmedByAdmin: { type: Boolean, default: false },
+      depositRequired: { type: Number, default: 0 },
+      depositReceived: { type: Boolean, default: false },
     },
     subtotal: { type: Number, required: true },
     shippingCost: { type: Number, required: true, default: 0 },
@@ -71,13 +70,9 @@ const orderSchema = new Schema(
   { timestamps: true }
 );
 
-// La règle "user OU guestInfo requis" est appliquée en amont par le schéma Zod
-// (orderCreateSchema) au niveau de la route API /api/orders — évite les soucis de
-// typage Mongoose sur `this` dans un hook pre-validate générique.
-
 orderSchema.index({ user: 1, createdAt: -1 });
 orderSchema.index({ status: 1 });
-orderSchema.index({ "guestInfo.phone": 1 });
+orderSchema.index({ contactPhone: 1 });
 
 export type IOrder = InferSchemaType<typeof orderSchema>;
 
