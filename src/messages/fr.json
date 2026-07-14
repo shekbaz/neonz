@@ -59,6 +59,9 @@
     "saveError": "Impossible d'enregistrer le design.",
     "genericError": "Une erreur est survenue.",
     "customSignName": "Enseigne personnalisée",
+    "comingSoonBadge": "En cours d'allumage",
+    "comingSoon": "Notre configurateur d'enseignes néon personnalisées arrive très prochainement. Revenez bientôt !",
+    "comingSoonCta": "Voir le catalogue en attendant",
     "steps": {
       "create": "Créer",
       "finalize": "Finaliser"

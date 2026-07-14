@@ -59,6 +59,9 @@
     "saveError": "Could not save the design.",
     "genericError": "Something went wrong.",
     "customSignName": "Custom neon sign",
+    "comingSoonBadge": "Warming up",
+    "comingSoon": "Our custom neon sign configurator is launching very soon. Check back shortly!",
+    "comingSoonCta": "Browse the catalog in the meantime",
     "steps": {
       "create": "Create",
       "finalize": "Finalize"

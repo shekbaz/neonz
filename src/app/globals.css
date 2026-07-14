@@ -288,6 +288,12 @@
     box-shadow: 0 0 24px -6px color-mix(in oklab, var(--primary) 75%, transparent);
   }
 
+  /* Tube pas encore raccordé : trait éteint le jour, tentatives d'allumage
+     irrégulières la nuit (page "bientôt disponible" du configurateur). */
+  .dark .flicker-unlit {
+    animation: flicker-unlit 5s ease-in-out infinite;
+  }
+
   /* Clignotement d'un tracé néon dans l'aperçu du configurateur — implique un
      contrôleur multi-zone réel, voir pricing.ts (CONTROLLER_OPTION_PRICE). */
   .animate-neon-blink {
@@ -304,6 +310,42 @@
     .animate-neon-blink {
       animation: none;
     }
+    .flicker-unlit {
+      animation: none;
+    }
+  }
+}
+
+@keyframes flicker-unlit {
+  0%,
+  100% {
+    opacity: 0.35;
+    filter: none;
+  }
+  3% {
+    opacity: 0.9;
+    filter: drop-shadow(0 0 8px color-mix(in oklab, var(--primary) 65%, transparent));
+  }
+  6% {
+    opacity: 0.3;
+    filter: none;
+  }
+  9% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--primary) 55%, transparent));
+  }
+  13%,
+  48% {
+    opacity: 0.35;
+    filter: none;
+  }
+  51% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 7px color-mix(in oklab, var(--primary) 60%, transparent));
+  }
+  55% {
+    opacity: 0.35;
+    filter: none;
   }
 }
 
