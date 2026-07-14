@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { Product } from "@/models/Product";
@@ -6,6 +7,7 @@ import { RevenueChart } from "@/components/admin/RevenueChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function AdminDashboardPage() {
+  const t = await getTranslations("Admin");
   await connectDB();
 
   const [totalRevenueAgg, orderCount, customerCount, productCount, revenueByMonth] = await Promise.all([
@@ -31,10 +33,10 @@ export default async function AdminDashboardPage() {
   ]);
 
   const stats = [
-    { label: "Chiffre d'affaires", value: `${(totalRevenueAgg[0]?.total ?? 0).toLocaleString()} DZD` },
-    { label: "Commandes", value: orderCount },
-    { label: "Clients", value: customerCount },
-    { label: "Produits", value: productCount },
+    { label: t("revenue"), value: `${(totalRevenueAgg[0]?.total ?? 0).toLocaleString()} DZD` },
+    { label: t("orders"), value: orderCount },
+    { label: t("customers"), value: customerCount },
+    { label: t("products"), value: productCount },
   ];
 
   const chartData = revenueByMonth.map((r) => ({
@@ -45,7 +47,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Tableau de bord</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("dashboard")}</h1>
 
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
@@ -62,7 +64,7 @@ export default async function AdminDashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Revenu mensuel</CardTitle>
+          <CardTitle>{t("dashboardPage.monthlyRevenueCard")}</CardTitle>
         </CardHeader>
         <CardContent>
           <RevenueChart data={chartData} />

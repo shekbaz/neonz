@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Category } from "@/models/Category";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -7,25 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 
 export default async function AdminCategoriesPage() {
+  const t = await getTranslations("Admin");
   await connectDB();
   const categories = await Category.find().sort({ order: 1 }).lean();
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">Catégories</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("categories")}</h1>
         <Link href="/admin/categories/nouveau">
-          <Button size="sm">Ajouter une catégorie</Button>
+          <Button size="sm">{t("categoriesPage.addCategory")}</Button>
         </Link>
       </div>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nom</TableHead>
-            <TableHead>Slug</TableHead>
-            <TableHead>Ordre</TableHead>
-            <TableHead className="text-end">Actions</TableHead>
+            <TableHead>{t("categoriesPage.colName")}</TableHead>
+            <TableHead>{t("categoriesPage.colSlug")}</TableHead>
+            <TableHead>{t("categoriesPage.colOrder")}</TableHead>
+            <TableHead className="text-end">{t("categoriesPage.colActions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -47,7 +49,7 @@ export default async function AdminCategoriesPage() {
         </TableBody>
       </Table>
 
-      {categories.length === 0 && <p className="mt-6 text-sm text-muted-foreground">Aucune catégorie.</p>}
+      {categories.length === 0 && <p className="mt-6 text-sm text-muted-foreground">{t("categoriesPage.empty")}</p>}
     </div>
   );
 }

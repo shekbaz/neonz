@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { NeonElement, Point } from "@/types/neon";
 import { DEFAULT_GLOW_INTENSITY, NEON_FONT_FAMILIES } from "@/types/neon";
 import type { SpatialGrid } from "@/lib/neon/edgeDetection";
@@ -98,6 +99,7 @@ export const NeonCanvasEditor = forwardRef<NeonCanvasHandle, NeonCanvasEditorPro
   },
   ref
 ) {
+  const t = useTranslations("Configurator");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const referenceImgRef = useRef<HTMLImageElement | null>(null);
   const [referenceImgLoaded, setReferenceImgLoaded] = useState(0);
@@ -620,7 +622,7 @@ export const NeonCanvasEditor = forwardRef<NeonCanvasHandle, NeonCanvasEditorPro
         }}
       />
       {elements.length === 0 && currentDrawPoints.length === 0 && (
-        <p className="pointer-events-none absolute text-sm text-muted-foreground">Aucun élément à afficher pour le moment.</p>
+        <p className="pointer-events-none absolute text-sm text-muted-foreground">{t("canvasEmptyState")}</p>
       )}
     </div>
   );

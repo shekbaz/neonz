@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import {
   Select,
@@ -12,19 +13,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const STATUSES = [
-  { value: "pending", label: "En attente" },
-  { value: "confirmed", label: "Confirmée" },
-  { value: "in_production", label: "En fabrication" },
-  { value: "shipped", label: "Expédiée" },
-  { value: "delivered", label: "Livrée" },
-  { value: "cancelled", label: "Annulée" },
-];
+const STATUS_KEYS = ["pending", "confirmed", "in_production", "shipped", "delivered", "cancelled"] as const;
 
 export function OrderStatusUpdater({ orderId, currentStatus }: { orderId: string; currentStatus: string }) {
+  const t = useTranslations("Admin");
+  const tStatus = useTranslations("OrderStatus");
   const router = useRouter();
   const [status, setStatus] = useState(currentStatus);
   const [loading, setLoading] = useState(false);
+
+  const STATUSES = STATUS_KEYS.map((value) => ({ value, label: tStatus(value) }));
 
   async function handleUpdate() {
     setLoading(true);
@@ -34,11 +32,11 @@ export function OrderStatusUpdater({ orderId, currentStatus }: { orderId: string
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error("Échec de la mise à jour.");
-      toast.success("Statut mis à jour.");
+      if (!res.ok) throw new Error(t("toast.updateFailed"));
+      toast.success(t("toast.statusUpdated"));
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : t("toast.genericError"));
     } finally {
       setLoading(false);
     }
@@ -59,7 +57,7 @@ export function OrderStatusUpdater({ orderId, currentStatus }: { orderId: string
         </SelectContent>
       </Select>
       <Button size="sm" onClick={handleUpdate} disabled={loading || status === currentStatus}>
-        Mettre à jour
+        {t("orderStatusUpdater.update")}
       </Button>
     </div>
   );

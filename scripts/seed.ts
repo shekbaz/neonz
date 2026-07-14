@@ -114,7 +114,7 @@ async function seed() {
   const existingAdmin = await User.findOne({ email: adminEmail });
   if (!existingAdmin) {
     await User.create({
-      name: "Admin NEONZ",
+      name: "Admin NEONZART",
       email: adminEmail,
       password: hashedPassword,
       role: "admin",

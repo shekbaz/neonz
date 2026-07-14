@@ -17,7 +17,7 @@ export default function ConfiguratorPage() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
         <span className="tube-dash" aria-hidden />
-        Atelier
+        {t("workshopEyebrow")}
       </p>
       <h1 className="mb-10 font-display text-5xl font-bold uppercase tracking-[0.03em] sm:text-6xl">{t("title")}</h1>
 

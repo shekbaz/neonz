@@ -2,24 +2,26 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 
 export function TestimonialDeleteButton({ reviewId }: { reviewId: string }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function handleDelete() {
-    if (!confirm("Supprimer ce témoignage ?")) return;
+    if (!confirm(t("confirm.deleteTestimonial"))) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/reviews/${reviewId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Échec de la suppression.");
-      toast.success("Témoignage supprimé.");
+      if (!res.ok) throw new Error(t("toast.deleteFailed"));
+      toast.success(t("toast.testimonialDeleted"));
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : t("toast.genericError"));
     } finally {
       setLoading(false);
     }

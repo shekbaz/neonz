@@ -7,16 +7,29 @@
     "contact": "اتصل بنا",
     "faq": "الأسئلة الشائعة",
     "logout": "تسجيل الخروج",
-    "admin": "الإدارة"
+    "admin": "الإدارة",
+    "menuLabel": "القائمة"
+  },
+  "Metadata": {
+    "title": "NEONZART — لافتات نيون LED مخصصة",
+    "description": "لافتات نيون LED جاهزة للشراء أو مصممة بالكامل حسب شعارك أو نصك."
   },
   "Home": {
     "heroTitle": "أضئ مساحتك بلافتة نيون فريدة",
     "heroSubtitle": "لافتات LED جاهزة للشراء أو مصممة بالكامل حسب شعارك أو نصك.",
     "heroCtaCatalog": "تصفح الكتالوج",
     "heroCtaCustomize": "أنشئ لافتتي",
+    "heroEyebrow": "لافتات نيون LED مصممة حسب الطلب",
     "categoriesTitle": "تصنيفاتنا",
     "popularTitle": "المنتجات الأكثر رواجًا",
-    "reviewsTitle": "آراء عملائنا"
+    "reviewsTitle": "آراء عملائنا",
+    "eyebrowExplore": "استكشف",
+    "eyebrowSelection": "تشكيلة مختارة",
+    "eyebrowReviews": "الشهادات",
+    "noFeaturedProducts": "لا توجد منتجات مميزة حاليًا.",
+    "emptyCategories": "لا توجد تصنيفات متاحة حاليًا.",
+    "emptyReviews": "لا توجد آراء حتى الآن.",
+    "defaultReviewAuthor": "عميل NEONZART"
   },
   "Catalog": {
     "title": "كتالوج لافتات النيون",
@@ -25,7 +38,9 @@
     "colorLabel": "اللون",
     "categoryLabel": "التصنيف",
     "resetFilters": "إعادة تعيين",
-    "noResults": "لا توجد منتجات مطابقة لبحثك."
+    "noResults": "لا توجد منتجات مطابقة لبحثك.",
+    "eyebrowShop": "المتجر",
+    "promoBadge": "تخفيض"
   },
   "Product": {
     "addToCart": "اطلب الآن",
@@ -38,6 +53,12 @@
   },
   "Configurator": {
     "title": "خصص لافتة النيون الخاصة بك",
+    "workshopEyebrow": "الورشة",
+    "canvasEmptyState": "لا يوجد أي عنصر لعرضه حاليًا.",
+    "exportError": "تعذّر تصدير معاينة التصميم.",
+    "saveError": "تعذّر حفظ التصميم.",
+    "genericError": "حدث خطأ ما.",
+    "customSignName": "لافتة مخصصة",
     "steps": {
       "create": "إنشاء",
       "finalize": "الإنهاء"
@@ -111,13 +132,33 @@
     "title": "إتمام الطلب",
     "shippingAddress": "عنوان التوصيل",
     "paymentMethod": "طريقة الدفع",
-    "placeOrder": "تأكيد الطلب"
+    "placeOrder": "تأكيد الطلب",
+    "orderSentTitle": "تم إرسال الطلب!",
+    "orderReceivedText": "تم استلام طلبك <bold>{orderNumber}</bold> بنجاح.",
+    "willCallText": "سنتصل بك قريبًا لتأكيد طلبك.",
+    "noItemText": "لا يوجد عنصر لطلبه. اختر منتجًا من الكتالوج أو أنشئ لافتة النيون الخاصة بك.",
+    "viewCatalog": "تصفح الكتالوج",
+    "createNeon": "أنشئ لافتتي",
+    "fillDetailsText": "أدخل بياناتك، سنتصل بك لتأكيد الطلب — لا حاجة للدفع عبر الإنترنت.",
+    "yourDetails": "بياناتك",
+    "fullName": "الاسم الكامل",
+    "phone": "الهاتف",
+    "phonePlaceholder": "05XX XX XX XX",
+    "emailOptional": "البريد الإلكتروني (اختياري)",
+    "address": "العنوان",
+    "city": "المدينة",
+    "wilaya": "الولاية",
+    "submitOrder": "إرسال طلبي",
+    "errorSubmit": "خطأ أثناء إرسال الطلب.",
+    "errorGeneric": "حدث خطأ ما."
   },
   "Auth": {
     "loginTitle": "تسجيل الدخول",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
-    "submit": "تأكيد"
+    "submit": "تأكيد",
+    "errorInvalidCredentials": "بيانات الدخول غير صحيحة.",
+    "errorGeneric": "حدث خطأ ما. حاول مجددًا."
   },
   "Admin": {
     "dashboard": "لوحة التحكم",
@@ -127,7 +168,237 @@
     "reviews": "التقييمات",
     "stats": "الإحصائيات",
     "revenue": "رقم الأعمال",
-    "newOrder": "تم استلام طلب جديد"
+    "newOrder": "تم استلام طلب جديد",
+    "categories": "التصنيفات",
+    "colors": "الألوان",
+    "sidebarEyebrow": "الورشة",
+    "dashboardPage": {
+      "monthlyRevenueCard": "الإيرادات الشهرية"
+    },
+    "productsPage": {
+      "addProduct": "إضافة منتج",
+      "newProduct": "منتج جديد",
+      "editProduct": "تعديل المنتج",
+      "colName": "الاسم",
+      "colPrice": "السعر",
+      "colStock": "المخزون",
+      "colStatus": "الحالة",
+      "colActions": "إجراءات",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "empty": "لا يوجد أي منتج."
+    },
+    "categoriesPage": {
+      "addCategory": "إضافة تصنيف",
+      "newCategory": "تصنيف جديد",
+      "editCategory": "تعديل التصنيف",
+      "colName": "الاسم",
+      "colSlug": "الرابط المختصر",
+      "colOrder": "الترتيب",
+      "colActions": "إجراءات",
+      "empty": "لا يوجد أي تصنيف."
+    },
+    "colorsPage": {
+      "title": "لوحة الألوان"
+    },
+    "ordersPage": {
+      "all": "الكل",
+      "colOrderNumber": "رقم الطلب",
+      "colItem": "العنصر",
+      "colClient": "العميل",
+      "colPhone": "الهاتف",
+      "colDate": "التاريخ",
+      "colStatus": "الحالة",
+      "colTotal": "المجموع",
+      "toCall": "بانتظار الاتصال",
+      "empty": "لا توجد أي طلبات."
+    },
+    "orderShared": {
+      "customSign": "لافتة مخصصة",
+      "catalogProduct": "منتج من الكتالوج"
+    },
+    "orderDetail": {
+      "title": "الطلب {orderNumber}",
+      "client": "العميل",
+      "call": "اتصال بـ {phone}",
+      "items": "العناصر",
+      "viewProduct": "عرض صفحة المنتج",
+      "ref": "المرجع: {slug}",
+      "customDesign": "تصميم مخصص",
+      "previewAlt": "معاينة تصميم النيون",
+      "dimensionsLabel": "الأبعاد: {width} سم × {height} سم",
+      "supportLabel": "القاعدة: {support}",
+      "withRemote": "مع جهاز تحكم عن بعد",
+      "total": "المجموع"
+    },
+    "customersPage": {
+      "colName": "الاسم",
+      "colEmail": "البريد الإلكتروني",
+      "colOrders": "الطلبات",
+      "colTotalSpent": "إجمالي الإنفاق",
+      "empty": "لا يوجد أي عميل."
+    },
+    "reviewsPage": {
+      "addTestimonial": "إضافة شهادة",
+      "newTestimonial": "شهادة جديدة",
+      "editTestimonial": "تعديل الشهادة",
+      "colClient": "العميل",
+      "colRating": "التقييم",
+      "colComment": "التعليق",
+      "colStatus": "الحالة",
+      "colActions": "إجراءات",
+      "empty": "لا توجد أي شهادة."
+    },
+    "reviewStatus": {
+      "approved": "منشور",
+      "pending": "قيد الانتظار",
+      "rejected": "مرفوض"
+    },
+    "statsPage": {
+      "monthlyRevenue": "رقم الأعمال الشهري",
+      "topProducts": "المنتجات الأكثر مبيعًا",
+      "colProduct": "المنتج",
+      "colUnitsSold": "الوحدات المباعة",
+      "colRevenue": "الإيرادات",
+      "empty": "لا توجد مبيعات حتى الآن."
+    },
+    "form": {
+      "slug": "الرابط المختصر",
+      "name": "الاسم",
+      "description": "الوصف",
+      "image": "الصورة",
+      "images": "الصور",
+      "colorsLabel": "الألوان",
+      "category": "التصنيف",
+      "price": "السعر (دج)",
+      "stock": "المخزون",
+      "width": "العرض (سم)",
+      "height": "الارتفاع (سم)",
+      "order": "ترتيب العرض",
+      "active": "نشط (ظاهر في الموقع)",
+      "featured": "مميز",
+      "customizable": "قابل للتخصيص",
+      "noColorsInPalette": "لا توجد ألوان في اللوحة — أضف ألوانًا من صفحة الألوان.",
+      "saveChanges": "حفظ التعديلات",
+      "createProduct": "إنشاء المنتج",
+      "createCategory": "إنشاء التصنيف",
+      "createTestimonial": "إنشاء الشهادة",
+      "tabFr": "Français",
+      "tabEn": "English",
+      "tabAr": "العربية",
+      "authorName": "اسم العميل",
+      "comment": "التعليق",
+      "rating": "التقييم",
+      "status": "الحالة"
+    },
+    "toast": {
+      "categoryModified": "تم تعديل التصنيف.",
+      "categoryCreated": "تم إنشاء التصنيف.",
+      "categoryDeleted": "تم حذف التصنيف.",
+      "productModified": "تم تعديل المنتج.",
+      "productCreated": "تم إنشاء المنتج.",
+      "productDeleted": "تم حذف المنتج.",
+      "testimonialModified": "تم تعديل الشهادة.",
+      "testimonialCreated": "تم إنشاء الشهادة.",
+      "testimonialDeleted": "تم حذف الشهادة.",
+      "colorAdded": "تمت إضافة اللون.",
+      "colorDeleted": "تم حذف اللون.",
+      "statusUpdated": "تم تحديث الحالة.",
+      "genericError": "حدث خطأ ما.",
+      "deleteFailed": "فشل الحذف.",
+      "addFailed": "فشلت الإضافة.",
+      "updateFailed": "فشل التحديث.",
+      "uploadFailed": "فشل الرفع.",
+      "editFailed": "فشل التعديل.",
+      "createFailed": "فشل الإنشاء."
+    },
+    "confirm": {
+      "deleteCategory": "هل تريد حذف هذا التصنيف؟",
+      "deleteProduct": "هل تريد حذف هذا المنتج؟",
+      "deleteTestimonial": "هل تريد حذف هذه الشهادة؟",
+      "deleteColor": "هل تريد إزالة هذا اللون من اللوحة؟"
+    },
+    "colorPalette": {
+      "namePlaceholder": "وردي نيون",
+      "colorField": "اللون",
+      "addToPalette": "إضافة إلى اللوحة",
+      "empty": "اللوحة فارغة."
+    },
+    "imageUploader": {
+      "removeImage": "إزالة الصورة",
+      "add": "إضافة",
+      "chooseImage": "اختيار صورة",
+      "uploading": "جارٍ الرفع...",
+      "uploadFailed": "فشل الرفع."
+    },
+    "orderStatusUpdater": {
+      "update": "تحديث"
+    },
+    "revenueChart": {
+      "notEnoughData": "لا توجد بيانات كافية حتى الآن لعرض الرسم البياني."
+    }
+  },
+  "OrderStatus": {
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكدة",
+    "in_production": "قيد التصنيع",
+    "shipped": "تم الشحن",
+    "delivered": "تم التسليم",
+    "cancelled": "ملغاة"
+  },
+  "Cgv": {
+    "title": "الشروط والأحكام العامة للبيع",
+    "objHeading": "1. الموضوع",
+    "objText": "تحكم هذه الشروط والأحكام العامة للبيع العلاقة التعاقدية بين NEONZART وعملائها فيما يخص شراء لافتات النيون LED، الجاهزة للشراء أو المخصصة.",
+    "ordersHeading": "2. الطلبات المخصصة",
+    "ordersText": "يخضع كل طلب مخصص للتحقق المسبق من التصميم من طرف العميل عبر أداة التخصيص عبر الإنترنت. لا يبدأ التصنيع قبل التأكيد الصريح للتصميم النهائي.",
+    "paymentHeading": "3. الدفع",
+    "paymentText": "يتم الدفع عبر الإنترنت باستخدام الوسائل المتاحة عند إتمام الطلب (بطاقة بنكية دولية، CIB، EDAHABIA).",
+    "deliveryHeading": "4. التوصيل",
+    "deliveryText": "يتم تحديد آجال التوصيل على سبيل الإشارة وقد تختلف حسب الوجهة وتعقيد التصنيع.",
+    "withdrawalHeading": "5. حق التراجع",
+    "withdrawalText": "وفقًا للتنظيم المعمول به، لا ينطبق حق التراجع على المنتجات المخصصة المصنوعة حسب الطلب."
+  },
+  "Faq": {
+    "title": "الأسئلة الشائعة",
+    "items": [
+      {
+        "question": "ما هي مدة التصنيع للافتة مخصصة؟",
+        "answer": "احسب عادةً من 7 إلى 14 يوم عمل بين التحقق من تصميمك والشحن."
+      },
+      {
+        "question": "ما هو الحجم الأقصى للافتة مخصصة؟",
+        "answer": "تقتصر اللافتات المخصصة على 90 سم عرضًا و90 سم ارتفاعًا."
+      },
+      {
+        "question": "ماذا يحدث إذا كان تصميمي يحتوي على تداخلات؟",
+        "answer": "تكتشف أداة التخصيص تلقائيًا المناطق التي قد يكون فيها أنبوبا نيون قريبين جدًا من بعضهما وتقترح عليك تعديلات قبل تأكيد الطلب."
+      },
+      {
+        "question": "هل توصلون خارج الجزائر؟",
+        "answer": "نعم، التوصيل الدولي متاح عبر شركة نقل، وتختلف الآجال حسب الوجهة."
+      }
+    ]
+  },
+  "Contact": {
+    "title": "اتصل بنا",
+    "nameLabel": "الاسم",
+    "emailLabel": "البريد الإلكتروني",
+    "messageLabel": "الرسالة",
+    "submit": "إرسال",
+    "sentText": "شكرًا لك، تم إرسال رسالتك بنجاح!",
+    "toastSuccess": "تم إرسال رسالتك، سنرد عليك في أقرب وقت."
+  },
+  "Compte": {
+    "ordersTitle": "طلباتي",
+    "noOrders": "ليس لديك أي طلب حتى الآن."
+  },
+  "OrderTracking": {
+    "title": "الطلب {orderNumber}"
+  },
+  "Theme": {
+    "activateLight": "تفعيل الوضع الفاتح",
+    "activateDark": "تفعيل الوضع الداكن"
   },
   "Footer": {
     "tagline": "ورشة لافتات نيون LED — جاهزة للشراء أو مصممة بالكامل حسب شعارك أو نصك.",
@@ -144,6 +415,7 @@
     "back": "رجوع",
     "loading": "جارٍ التحميل...",
     "currency": "دج",
-    "search": "بحث"
+    "search": "بحث",
+    "total": "المجموع"
   }
 }

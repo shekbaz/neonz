@@ -1,27 +1,31 @@
-export default function CgvPage() {
+import { getTranslations } from "next-intl/server";
+
+export default async function CgvPage() {
+  const t = await getTranslations("Cgv");
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="mb-8 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">Conditions générales de vente</h1>
+      <h1 className="mb-8 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("title")}</h1>
       <div className="space-y-6 text-sm text-muted-foreground">
         <section>
-          <h2 className="mb-2 text-lg font-semibold text-foreground">1. Objet</h2>
-          <p>Les présentes conditions générales de vente régissent les relations contractuelles entre NEONZ et ses clients pour l&apos;achat d&apos;enseignes lumineuses néon LED, prêtes à l&apos;achat ou personnalisées.</p>
+          <h2 className="mb-2 text-lg font-semibold text-foreground">{t("objHeading")}</h2>
+          <p>{t("objText")}</p>
         </section>
         <section>
-          <h2 className="mb-2 text-lg font-semibold text-foreground">2. Commandes personnalisées</h2>
-          <p>Toute commande personnalisée est soumise à la validation préalable du design par le client via le configurateur en ligne. Aucune fabrication ne débute avant confirmation explicite du rendu final.</p>
+          <h2 className="mb-2 text-lg font-semibold text-foreground">{t("ordersHeading")}</h2>
+          <p>{t("ordersText")}</p>
         </section>
         <section>
-          <h2 className="mb-2 text-lg font-semibold text-foreground">3. Paiement</h2>
-          <p>Le paiement s&apos;effectue en ligne via les moyens proposés au moment de la commande (carte bancaire internationale, CIB, EDAHABIA).</p>
+          <h2 className="mb-2 text-lg font-semibold text-foreground">{t("paymentHeading")}</h2>
+          <p>{t("paymentText")}</p>
         </section>
         <section>
-          <h2 className="mb-2 text-lg font-semibold text-foreground">4. Livraison</h2>
-          <p>Les délais de livraison sont communiqués à titre indicatif et peuvent varier selon la destination et la complexité de fabrication.</p>
+          <h2 className="mb-2 text-lg font-semibold text-foreground">{t("deliveryHeading")}</h2>
+          <p>{t("deliveryText")}</p>
         </section>
         <section>
-          <h2 className="mb-2 text-lg font-semibold text-foreground">5. Rétractation</h2>
-          <p>Conformément à la réglementation applicable, le droit de rétractation ne s&apos;applique pas aux produits personnalisés fabriqués sur mesure.</p>
+          <h2 className="mb-2 text-lg font-semibold text-foreground">{t("withdrawalHeading")}</h2>
+          <p>{t("withdrawalText")}</p>
         </section>
       </div>
     </div>

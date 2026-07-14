@@ -28,8 +28,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="flex items-baseline gap-0.5 font-display text-[1.75rem] font-bold leading-none tracking-[0.06em]">
-          NEON<span className="tube">Z</span>
+        <Link href="/" className="brand-mark flex items-baseline gap-0.5 font-display text-[1.75rem] font-bold leading-none tracking-[0.06em]">
+          NEON<span className="tube">Z</span>ART
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -69,7 +69,7 @@ export function Header() {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted md:hidden"
-              aria-label="Menu"
+              aria-label={t("menuLabel")}
             >
               <Menu className="h-5 w-5" />
             </SheetTrigger>

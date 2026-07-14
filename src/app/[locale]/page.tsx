@@ -31,7 +31,7 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl border-t border-border/70 px-4 py-24 sm:px-6">
         <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
           <span className="tube-dash" aria-hidden />
-          Explorer
+          {t("eyebrowExplore")}
         </p>
         <h2 className="mb-10 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("categoriesTitle")}</h2>
         <CategoryGrid categories={JSON.parse(JSON.stringify(categories))} locale={locale} />
@@ -40,11 +40,11 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl border-t border-border/70 px-4 py-24 sm:px-6">
         <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
           <span className="tube-dash" aria-hidden />
-          Sélection
+          {t("eyebrowSelection")}
         </p>
         <h2 className="mb-10 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("popularTitle")}</h2>
         {featuredProducts.length === 0 ? (
-          <p className="text-muted-foreground">Aucun produit en vedette pour le moment.</p>
+          <p className="text-muted-foreground">{t("noFeaturedProducts")}</p>
         ) : (
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {featuredProducts.map((p) => (
@@ -57,7 +57,7 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl border-t border-border/70 px-4 py-24 sm:px-6">
         <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
           <span className="tube-dash" aria-hidden />
-          Témoignages
+          {t("eyebrowReviews")}
         </p>
         <h2 className="mb-10 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("reviewsTitle")}</h2>
         <ReviewsSection reviews={JSON.parse(JSON.stringify(reviews))} />

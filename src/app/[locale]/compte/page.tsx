@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { auth } from "@/lib/auth";
@@ -9,6 +10,9 @@ export default async function AccountPage() {
   const session = await auth();
   if (!session?.user) redirect("/connexion");
 
+  const t = await getTranslations("Compte");
+  const tStatus = await getTranslations("OrderStatus");
+
   await connectDB();
   const orders = await Order.find({ user: session.user.id }).sort({ createdAt: -1 }).lean();
 
@@ -17,9 +21,9 @@ export default async function AccountPage() {
       <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{session.user.name}</h1>
       <p className="mb-8 text-muted-foreground">{session.user.email}</p>
 
-      <h2 className="mb-4 text-xl font-semibold">Mes commandes</h2>
+      <h2 className="mb-4 text-xl font-semibold">{t("ordersTitle")}</h2>
       {orders.length === 0 ? (
-        <p className="text-muted-foreground">Vous n&apos;avez pas encore de commande.</p>
+        <p className="text-muted-foreground">{t("noOrders")}</p>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => (
@@ -36,7 +40,7 @@ export default async function AccountPage() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-primary">{order.total.toLocaleString()} DZD</span>
-                <Badge variant="secondary">{order.status}</Badge>
+                <Badge variant="secondary">{tStatus(order.status as never)}</Badge>
               </div>
             </Link>
           ))}

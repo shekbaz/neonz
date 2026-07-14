@@ -229,6 +229,13 @@
   font-family: var(--font-cairo);
 }
 
+/* Le nom de marque NEONZART garde la même police (Big Shoulders) que la
+   version française, même en arabe : sélecteur volontairement plus
+   spécifique que la règle :lang(ar) .font-display ci-dessus. */
+:lang(ar) .font-display.brand-mark {
+  font-family: var(--font-big-shoulders);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

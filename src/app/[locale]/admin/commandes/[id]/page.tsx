@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Phone } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { OrderStatusUpdater } from "@/components/admin/OrderStatusUpdater";
@@ -13,6 +14,8 @@ export default async function AdminOrderDetailPage({
   params: Promise<{ id: string; locale: string }>;
 }) {
   const { id, locale } = await params;
+  const t = await getTranslations("Admin.orderDetail");
+  const tShared = await getTranslations("Admin.orderShared");
 
   await connectDB();
   const order = await Order.findById(id).populate("user", "name email").lean();
@@ -21,13 +24,13 @@ export default async function AdminOrderDetailPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">Commande {order.orderNumber}</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("title", { orderNumber: order.orderNumber })}</h1>
         <OrderStatusUpdater orderId={String(order._id)} currentStatus={order.status} />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Client</CardTitle>
+          <CardTitle>{t("client")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm">
           <p className="font-medium text-base">
@@ -44,7 +47,7 @@ export default async function AdminOrderDetailPage({
             <a href={`tel:${order.guestInfo.phone}`} className="mt-4 inline-block">
               <Button size="sm" className="gap-2">
                 <Phone className="h-4 w-4" />
-                Appeler {order.guestInfo.phone}
+                {t("call", { phone: order.guestInfo.phone })}
               </Button>
             </a>
           )}
@@ -53,7 +56,7 @@ export default async function AdminOrderDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Articles</CardTitle>
+          <CardTitle>{t("items")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {order.items.map((item, i) => (
@@ -61,10 +64,10 @@ export default async function AdminOrderDetailPage({
               <div className="mb-2 flex items-center justify-between text-sm">
                 <span className="font-medium">
                   {item.type === "custom"
-                    ? "Enseigne personnalisée"
+                    ? tShared("customSign")
                     : (item.snapshot?.translations?.[locale]?.name ??
                       item.snapshot?.translations?.fr?.name ??
-                      "Produit catalogue")}{" "}
+                      tShared("catalogProduct"))}{" "}
                   × {item.quantity}
                 </span>
                 <span className="font-semibold text-primary">{item.unitPrice.toLocaleString()} DZD</span>
@@ -86,10 +89,10 @@ export default async function AdminOrderDetailPage({
                         href={`/admin/produits/${String(item.product)}`}
                         className="text-primary hover:underline"
                       >
-                        Voir la fiche produit
+                        {t("viewProduct")}
                       </Link>
                     )}
-                    {item.snapshot?.slug && <p className="mt-1">Réf. : {item.snapshot.slug}</p>}
+                    {item.snapshot?.slug && <p className="mt-1">{t("ref", { slug: item.snapshot.slug })}</p>}
                   </div>
                 </div>
               )}
@@ -99,15 +102,15 @@ export default async function AdminOrderDetailPage({
                   {/* eslint-disable-next-line @next/next/no-img-element -- export PNG figé (base64 ou Cloudinary), pas une image Next optimisable */}
                   <img
                     src={item.snapshot.previewImageUrl}
-                    alt="Aperçu du design néon"
+                    alt={t("previewAlt")}
                     className="h-48 w-full rounded-lg border border-border object-contain bg-black"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Design personnalisé
+                    {t("customDesign")}
                     {" — "}
-                    Dimensions : {item.snapshot.dimensions?.widthCm}cm x {item.snapshot.dimensions?.heightCm}cm —
-                    Support : {item.snapshot.support}
-                    {item.snapshot.hasRemote ? " — Avec télécommande" : ""}
+                    {t("dimensionsLabel", { width: item.snapshot.dimensions?.widthCm, height: item.snapshot.dimensions?.heightCm })} —{" "}
+                    {t("supportLabel", { support: item.snapshot.support })}
+                    {item.snapshot.hasRemote ? ` — ${t("withRemote")}` : ""}
                   </p>
                 </div>
               )}
@@ -117,7 +120,7 @@ export default async function AdminOrderDetailPage({
       </Card>
 
       <div className="flex items-center justify-between rounded-xl border border-border bg-muted/50 p-4">
-        <span className="font-semibold">Total</span>
+        <span className="font-semibold">{t("total")}</span>
         <span className="text-xl font-bold text-primary">{order.total.toLocaleString()} DZD</span>
       </div>
     </div>

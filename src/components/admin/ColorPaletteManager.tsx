@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ interface ColorItem {
 }
 
 export function ColorPaletteManager({ initialColors }: { initialColors: ColorItem[] }) {
+  const t = useTranslations("Admin");
   const router = useRouter();
   const [colors, setColors] = useState(initialColors);
   const [name, setName] = useState("");
@@ -32,29 +34,29 @@ export function ColorPaletteManager({ initialColors }: { initialColors: ColorIte
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(typeof data.error === "string" ? data.error : "Échec de l'ajout.");
+        throw new Error(typeof data.error === "string" ? data.error : t("toast.addFailed"));
       }
       setColors([...colors, data]);
       setName("");
-      toast.success("Couleur ajoutée.");
+      toast.success(t("toast.colorAdded"));
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : t("toast.genericError"));
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Supprimer cette couleur de la palette ?")) return;
+    if (!confirm(t("confirm.deleteColor"))) return;
     try {
       const res = await fetch(`/api/colors/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Échec de la suppression.");
+      if (!res.ok) throw new Error(t("toast.deleteFailed"));
       setColors(colors.filter((c) => c._id !== id));
-      toast.success("Couleur supprimée.");
+      toast.success(t("toast.colorDeleted"));
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : t("toast.genericError"));
     }
   }
 
@@ -62,11 +64,11 @@ export function ColorPaletteManager({ initialColors }: { initialColors: ColorIte
     <div className="space-y-8">
       <form onSubmit={handleAdd} className="flex flex-wrap items-end gap-4">
         <div>
-          <Label htmlFor="color-name">Nom</Label>
-          <Input id="color-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Rose néon" />
+          <Label htmlFor="color-name">{t("form.name")}</Label>
+          <Input id="color-name" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t("colorPalette.namePlaceholder")} />
         </div>
         <div>
-          <Label htmlFor="color-hex">Couleur</Label>
+          <Label htmlFor="color-hex">{t("colorPalette.colorField")}</Label>
           <div className="flex items-center gap-2">
             <input
               id="color-hex"
@@ -84,7 +86,7 @@ export function ColorPaletteManager({ initialColors }: { initialColors: ColorIte
           </div>
         </div>
         <Button type="submit" disabled={loading}>
-          Ajouter à la palette
+          {t("colorPalette.addToPalette")}
         </Button>
       </form>
 
@@ -101,7 +103,7 @@ export function ColorPaletteManager({ initialColors }: { initialColors: ColorIte
             </Button>
           </div>
         ))}
-        {colors.length === 0 && <p className="text-sm text-muted-foreground">Palette vide.</p>}
+        {colors.length === 0 && <p className="text-sm text-muted-foreground">{t("colorPalette.empty")}</p>}
       </div>
     </div>
   );

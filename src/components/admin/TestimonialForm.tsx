@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,11 +11,6 @@ import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 
 const RATING_OPTIONS = [1, 2, 3, 4, 5].map((n) => ({ value: String(n), label: `${n}/5` }));
-const STATUS_OPTIONS = [
-  { value: "approved", label: "Publié" },
-  { value: "pending", label: "En attente" },
-  { value: "rejected", label: "Rejeté" },
-];
 
 interface TestimonialInitialData {
   authorName: string;
@@ -30,6 +26,9 @@ export function TestimonialForm({
   reviewId?: string;
   initialData?: TestimonialInitialData;
 }) {
+  const t = useTranslations("Admin.form");
+  const tToast = useTranslations("Admin.toast");
+  const tStatus = useTranslations("Admin.reviewStatus");
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -38,6 +37,11 @@ export function TestimonialForm({
     comment: initialData?.comment ?? "",
     status: initialData?.status ?? "approved",
   });
+
+  const STATUS_OPTIONS = (["approved", "pending", "rejected"] as const).map((value) => ({
+    value,
+    label: tStatus(value),
+  }));
 
   const isEditing = Boolean(reviewId);
 
@@ -53,13 +57,13 @@ export function TestimonialForm({
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(typeof data.error === "string" ? data.error : `Échec de ${isEditing ? "la modification" : "la création"}.`);
+        throw new Error(typeof data.error === "string" ? data.error : tToast(isEditing ? "editFailed" : "createFailed"));
       }
 
-      toast.success(isEditing ? "Témoignage modifié." : "Témoignage créé.");
+      toast.success(isEditing ? tToast("testimonialModified") : tToast("testimonialCreated"));
       router.push("/admin/avis");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : tToast("genericError"));
     } finally {
       setLoading(false);
     }
@@ -68,7 +72,7 @@ export function TestimonialForm({
   return (
     <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
       <div>
-        <Label htmlFor="authorName">Nom du client</Label>
+        <Label htmlFor="authorName">{t("authorName")}</Label>
         <Input
           id="authorName"
           required
@@ -78,7 +82,7 @@ export function TestimonialForm({
       </div>
 
       <div>
-        <Label htmlFor="comment">Commentaire</Label>
+        <Label htmlFor="comment">{t("comment")}</Label>
         <Textarea
           id="comment"
           required
@@ -90,7 +94,7 @@ export function TestimonialForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Note</Label>
+          <Label>{t("rating")}</Label>
           <Select
             items={RATING_OPTIONS}
             value={String(form.rating)}
@@ -109,7 +113,7 @@ export function TestimonialForm({
           </Select>
         </div>
         <div>
-          <Label>Statut</Label>
+          <Label>{t("status")}</Label>
           <Select
             items={STATUS_OPTIONS}
             value={form.status}
@@ -130,7 +134,7 @@ export function TestimonialForm({
       </div>
 
       <Button type="submit" disabled={loading}>
-        {isEditing ? "Enregistrer les modifications" : "Créer le témoignage"}
+        {isEditing ? t("saveChanges") : t("createTestimonial")}
       </Button>
     </form>
   );

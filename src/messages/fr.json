@@ -7,16 +7,29 @@
     "contact": "Contact",
     "faq": "FAQ",
     "logout": "Déconnexion",
-    "admin": "Administration"
+    "admin": "Administration",
+    "menuLabel": "Menu"
+  },
+  "Metadata": {
+    "title": "NEONZART — Enseignes néon LED personnalisées",
+    "description": "Enseignes lumineuses néon LED prêtes à l'achat ou personnalisées à partir de votre logo ou texte."
   },
   "Home": {
     "heroTitle": "Illuminez votre espace avec un néon unique",
     "heroSubtitle": "Enseignes LED prêtes à l'achat ou entièrement personnalisées à partir de votre logo ou texte.",
     "heroCtaCatalog": "Voir le catalogue",
     "heroCtaCustomize": "Créer mon néon",
+    "heroEyebrow": "Enseignes néon LED sur-mesure",
     "categoriesTitle": "Nos catégories",
     "popularTitle": "Produits populaires",
-    "reviewsTitle": "Ce que disent nos clients"
+    "reviewsTitle": "Ce que disent nos clients",
+    "eyebrowExplore": "Explorer",
+    "eyebrowSelection": "Sélection",
+    "eyebrowReviews": "Témoignages",
+    "noFeaturedProducts": "Aucun produit en vedette pour le moment.",
+    "emptyCategories": "Aucune catégorie disponible pour le moment.",
+    "emptyReviews": "Aucun avis pour le moment.",
+    "defaultReviewAuthor": "Client NEONZART"
   },
   "Catalog": {
     "title": "Catalogue des enseignes néon",
@@ -25,7 +38,9 @@
     "colorLabel": "Couleur",
     "categoryLabel": "Catégorie",
     "resetFilters": "Réinitialiser",
-    "noResults": "Aucun produit ne correspond à votre recherche."
+    "noResults": "Aucun produit ne correspond à votre recherche.",
+    "eyebrowShop": "Boutique",
+    "promoBadge": "Promo"
   },
   "Product": {
     "addToCart": "Commander",
@@ -38,6 +53,12 @@
   },
   "Configurator": {
     "title": "Personnalisez votre enseigne néon",
+    "workshopEyebrow": "Atelier",
+    "canvasEmptyState": "Aucun élément à afficher pour le moment.",
+    "exportError": "Impossible d'exporter l'aperçu du design.",
+    "saveError": "Impossible d'enregistrer le design.",
+    "genericError": "Une erreur est survenue.",
+    "customSignName": "Enseigne personnalisée",
     "steps": {
       "create": "Créer",
       "finalize": "Finaliser"
@@ -111,13 +132,33 @@
     "title": "Finaliser la commande",
     "shippingAddress": "Adresse de livraison",
     "paymentMethod": "Moyen de paiement",
-    "placeOrder": "Confirmer la commande"
+    "placeOrder": "Confirmer la commande",
+    "orderSentTitle": "Commande envoyée !",
+    "orderReceivedText": "Votre commande <bold>{orderNumber}</bold> a bien été reçue.",
+    "willCallText": "Nous allons vous appeler très prochainement pour confirmer votre commande.",
+    "noItemText": "Aucun article à commander. Choisissez un produit dans le catalogue ou créez votre néon personnalisé.",
+    "viewCatalog": "Voir le catalogue",
+    "createNeon": "Créer mon néon",
+    "fillDetailsText": "Remplissez vos coordonnées, nous vous appelons pour confirmer la commande — aucun paiement en ligne requis.",
+    "yourDetails": "Vos coordonnées",
+    "fullName": "Nom complet",
+    "phone": "Téléphone",
+    "phonePlaceholder": "05XX XX XX XX",
+    "emailOptional": "E-mail (optionnel)",
+    "address": "Adresse",
+    "city": "Ville",
+    "wilaya": "Wilaya",
+    "submitOrder": "Envoyer ma commande",
+    "errorSubmit": "Erreur lors de l'envoi de la commande.",
+    "errorGeneric": "Une erreur est survenue."
   },
   "Auth": {
     "loginTitle": "Connexion",
     "email": "Adresse e-mail",
     "password": "Mot de passe",
-    "submit": "Valider"
+    "submit": "Valider",
+    "errorInvalidCredentials": "Identifiants incorrects.",
+    "errorGeneric": "Une erreur est survenue. Réessayez."
   },
   "Admin": {
     "dashboard": "Tableau de bord",
@@ -127,7 +168,237 @@
     "reviews": "Avis",
     "stats": "Statistiques",
     "revenue": "Chiffre d'affaires",
-    "newOrder": "Nouvelle commande reçue"
+    "newOrder": "Nouvelle commande reçue",
+    "categories": "Catégories",
+    "colors": "Couleurs",
+    "sidebarEyebrow": "Atelier",
+    "dashboardPage": {
+      "monthlyRevenueCard": "Revenu mensuel"
+    },
+    "productsPage": {
+      "addProduct": "Ajouter un produit",
+      "newProduct": "Nouveau produit",
+      "editProduct": "Modifier le produit",
+      "colName": "Nom",
+      "colPrice": "Prix",
+      "colStock": "Stock",
+      "colStatus": "Statut",
+      "colActions": "Actions",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "empty": "Aucun produit."
+    },
+    "categoriesPage": {
+      "addCategory": "Ajouter une catégorie",
+      "newCategory": "Nouvelle catégorie",
+      "editCategory": "Modifier la catégorie",
+      "colName": "Nom",
+      "colSlug": "Slug",
+      "colOrder": "Ordre",
+      "colActions": "Actions",
+      "empty": "Aucune catégorie."
+    },
+    "colorsPage": {
+      "title": "Palette de couleurs"
+    },
+    "ordersPage": {
+      "all": "Toutes",
+      "colOrderNumber": "N° commande",
+      "colItem": "Article",
+      "colClient": "Client",
+      "colPhone": "Téléphone",
+      "colDate": "Date",
+      "colStatus": "Statut",
+      "colTotal": "Total",
+      "toCall": "À appeler",
+      "empty": "Aucune commande."
+    },
+    "orderShared": {
+      "customSign": "Enseigne personnalisée",
+      "catalogProduct": "Produit catalogue"
+    },
+    "orderDetail": {
+      "title": "Commande {orderNumber}",
+      "client": "Client",
+      "call": "Appeler {phone}",
+      "items": "Articles",
+      "viewProduct": "Voir la fiche produit",
+      "ref": "Réf. : {slug}",
+      "customDesign": "Design personnalisé",
+      "previewAlt": "Aperçu du design néon",
+      "dimensionsLabel": "Dimensions : {width}cm x {height}cm",
+      "supportLabel": "Support : {support}",
+      "withRemote": "Avec télécommande",
+      "total": "Total"
+    },
+    "customersPage": {
+      "colName": "Nom",
+      "colEmail": "E-mail",
+      "colOrders": "Commandes",
+      "colTotalSpent": "Total dépensé",
+      "empty": "Aucun client."
+    },
+    "reviewsPage": {
+      "addTestimonial": "Ajouter un témoignage",
+      "newTestimonial": "Nouveau témoignage",
+      "editTestimonial": "Modifier le témoignage",
+      "colClient": "Client",
+      "colRating": "Note",
+      "colComment": "Commentaire",
+      "colStatus": "Statut",
+      "colActions": "Actions",
+      "empty": "Aucun témoignage."
+    },
+    "reviewStatus": {
+      "approved": "Publié",
+      "pending": "En attente",
+      "rejected": "Rejeté"
+    },
+    "statsPage": {
+      "monthlyRevenue": "Chiffre d'affaires mensuel",
+      "topProducts": "Produits les plus vendus",
+      "colProduct": "Produit",
+      "colUnitsSold": "Unités vendues",
+      "colRevenue": "Revenu",
+      "empty": "Pas encore de ventes."
+    },
+    "form": {
+      "slug": "Slug",
+      "name": "Nom",
+      "description": "Description",
+      "image": "Image",
+      "images": "Images",
+      "colorsLabel": "Couleurs",
+      "category": "Catégorie",
+      "price": "Prix (DZD)",
+      "stock": "Stock",
+      "width": "Largeur (cm)",
+      "height": "Hauteur (cm)",
+      "order": "Ordre d'affichage",
+      "active": "Actif (visible sur le site)",
+      "featured": "Mis en avant",
+      "customizable": "Personnalisable",
+      "noColorsInPalette": "Aucune couleur dans la palette — ajoutez-en depuis la page Couleurs.",
+      "saveChanges": "Enregistrer les modifications",
+      "createProduct": "Créer le produit",
+      "createCategory": "Créer la catégorie",
+      "createTestimonial": "Créer le témoignage",
+      "tabFr": "Français",
+      "tabEn": "English",
+      "tabAr": "العربية",
+      "authorName": "Nom du client",
+      "comment": "Commentaire",
+      "rating": "Note",
+      "status": "Statut"
+    },
+    "toast": {
+      "categoryModified": "Catégorie modifiée.",
+      "categoryCreated": "Catégorie créée.",
+      "categoryDeleted": "Catégorie supprimée.",
+      "productModified": "Produit modifié.",
+      "productCreated": "Produit créé.",
+      "productDeleted": "Produit supprimé.",
+      "testimonialModified": "Témoignage modifié.",
+      "testimonialCreated": "Témoignage créé.",
+      "testimonialDeleted": "Témoignage supprimé.",
+      "colorAdded": "Couleur ajoutée.",
+      "colorDeleted": "Couleur supprimée.",
+      "statusUpdated": "Statut mis à jour.",
+      "genericError": "Une erreur est survenue.",
+      "deleteFailed": "Échec de la suppression.",
+      "addFailed": "Échec de l'ajout.",
+      "updateFailed": "Échec de la mise à jour.",
+      "uploadFailed": "Échec de l'upload.",
+      "editFailed": "Échec de la modification.",
+      "createFailed": "Échec de la création."
+    },
+    "confirm": {
+      "deleteCategory": "Supprimer cette catégorie ?",
+      "deleteProduct": "Supprimer ce produit ?",
+      "deleteTestimonial": "Supprimer ce témoignage ?",
+      "deleteColor": "Supprimer cette couleur de la palette ?"
+    },
+    "colorPalette": {
+      "namePlaceholder": "Rose néon",
+      "colorField": "Couleur",
+      "addToPalette": "Ajouter à la palette",
+      "empty": "Palette vide."
+    },
+    "imageUploader": {
+      "removeImage": "Retirer l'image",
+      "add": "Ajouter",
+      "chooseImage": "Choisir une image",
+      "uploading": "Envoi en cours...",
+      "uploadFailed": "Échec de l'upload."
+    },
+    "orderStatusUpdater": {
+      "update": "Mettre à jour"
+    },
+    "revenueChart": {
+      "notEnoughData": "Pas encore assez de données pour afficher un graphique."
+    }
+  },
+  "OrderStatus": {
+    "pending": "En attente",
+    "confirmed": "Confirmée",
+    "in_production": "En fabrication",
+    "shipped": "Expédiée",
+    "delivered": "Livrée",
+    "cancelled": "Annulée"
+  },
+  "Cgv": {
+    "title": "Conditions générales de vente",
+    "objHeading": "1. Objet",
+    "objText": "Les présentes conditions générales de vente régissent les relations contractuelles entre NEONZART et ses clients pour l'achat d'enseignes lumineuses néon LED, prêtes à l'achat ou personnalisées.",
+    "ordersHeading": "2. Commandes personnalisées",
+    "ordersText": "Toute commande personnalisée est soumise à la validation préalable du design par le client via le configurateur en ligne. Aucune fabrication ne débute avant confirmation explicite du rendu final.",
+    "paymentHeading": "3. Paiement",
+    "paymentText": "Le paiement s'effectue en ligne via les moyens proposés au moment de la commande (carte bancaire internationale, CIB, EDAHABIA).",
+    "deliveryHeading": "4. Livraison",
+    "deliveryText": "Les délais de livraison sont communiqués à titre indicatif et peuvent varier selon la destination et la complexité de fabrication.",
+    "withdrawalHeading": "5. Rétractation",
+    "withdrawalText": "Conformément à la réglementation applicable, le droit de rétractation ne s'applique pas aux produits personnalisés fabriqués sur mesure."
+  },
+  "Faq": {
+    "title": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Quel est le délai de fabrication pour une enseigne personnalisée ?",
+        "answer": "Comptez généralement 7 à 14 jours ouvrés entre la validation de votre design et l'expédition."
+      },
+      {
+        "question": "Quelle taille maximale pour une enseigne personnalisée ?",
+        "answer": "Les enseignes personnalisées sont limitées à 90cm de largeur et 90cm de hauteur."
+      },
+      {
+        "question": "Que se passe-t-il si mon tracé contient des collisions ?",
+        "answer": "Le configurateur détecte automatiquement les zones où deux tubes néon seraient trop proches et vous propose des ajustements avant de valider la commande."
+      },
+      {
+        "question": "Livrez-vous en dehors de l'Algérie ?",
+        "answer": "Oui, la livraison internationale est disponible via transporteur, les délais varient selon la destination."
+      }
+    ]
+  },
+  "Contact": {
+    "title": "Contactez-nous",
+    "nameLabel": "Nom",
+    "emailLabel": "E-mail",
+    "messageLabel": "Message",
+    "submit": "Envoyer",
+    "sentText": "Merci, votre message a bien été envoyé !",
+    "toastSuccess": "Votre message a été envoyé, nous vous répondrons rapidement."
+  },
+  "Compte": {
+    "ordersTitle": "Mes commandes",
+    "noOrders": "Vous n'avez pas encore de commande."
+  },
+  "OrderTracking": {
+    "title": "Commande {orderNumber}"
+  },
+  "Theme": {
+    "activateLight": "Activer le thème clair",
+    "activateDark": "Activer le thème sombre"
   },
   "Footer": {
     "tagline": "Atelier d'enseignes lumineuses néon LED — prêtes à l'achat ou façonnées sur-mesure à partir de votre logo ou de votre texte.",
@@ -144,6 +415,7 @@
     "back": "Retour",
     "loading": "Chargement...",
     "currency": "DZD",
-    "search": "Rechercher"
+    "search": "Rechercher",
+    "total": "Total"
   }
 }

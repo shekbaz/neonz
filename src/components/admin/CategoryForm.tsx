@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,8 @@ export function CategoryForm({
   categoryId?: string;
   initialData?: CategoryInitialData;
 }) {
+  const t = useTranslations("Admin.form");
+  const tToast = useTranslations("Admin.toast");
   const router = useRouter();
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
@@ -65,10 +67,10 @@ export function CategoryForm({
         throw new Error(describeApiError(data.error, locale));
       }
 
-      toast.success(isEditing ? "Catégorie modifiée." : "Catégorie créée.");
+      toast.success(isEditing ? tToast("categoryModified") : tToast("categoryCreated"));
       router.push("/admin/categories");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : tToast("genericError"));
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ export function CategoryForm({
   return (
     <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
       <div>
-        <Label htmlFor="slug">Slug</Label>
+        <Label htmlFor="slug">{t("slug")}</Label>
         <Input
           id="slug"
           required
@@ -88,13 +90,13 @@ export function CategoryForm({
 
       <Tabs defaultValue="fr">
         <TabsList>
-          <TabsTrigger value="fr">Français</TabsTrigger>
-          <TabsTrigger value="en">English</TabsTrigger>
-          <TabsTrigger value="ar">العربية</TabsTrigger>
+          <TabsTrigger value="fr">{t("tabFr")}</TabsTrigger>
+          <TabsTrigger value="en">{t("tabEn")}</TabsTrigger>
+          <TabsTrigger value="ar">{t("tabAr")}</TabsTrigger>
         </TabsList>
         {(["fr", "en", "ar"] as const).map((locale) => (
           <TabsContent key={locale} value={locale}>
-            <Label>Nom</Label>
+            <Label>{t("name")}</Label>
             <Input
               required
               value={form.translations[locale].name}
@@ -110,12 +112,12 @@ export function CategoryForm({
       </Tabs>
 
       <div>
-        <Label>Image</Label>
+        <Label>{t("image")}</Label>
         <ImageUploader images={form.images} onChange={(images) => setForm({ ...form, images })} multiple={false} />
       </div>
 
       <div>
-        <Label htmlFor="order">Ordre d&apos;affichage</Label>
+        <Label htmlFor="order">{t("order")}</Label>
         <Input
           id="order"
           type="number"
@@ -125,7 +127,7 @@ export function CategoryForm({
       </div>
 
       <Button type="submit" disabled={loading}>
-        {isEditing ? "Enregistrer les modifications" : "Créer la catégorie"}
+        {isEditing ? t("saveChanges") : t("createCategory")}
       </Button>
     </form>
   );

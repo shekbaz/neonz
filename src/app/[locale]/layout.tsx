@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Geist_Mono, Big_Shoulders, Manrope, Cairo } from "next/font/google";
 import { routing, isRtl } from "@/i18n/routing";
@@ -24,10 +24,18 @@ const cairo = Cairo({
   adjustFontFallback: false,
 });
 
-export const metadata: Metadata = {
-  title: "NEONZ — Enseignes néon LED personnalisées",
-  description: "Enseignes lumineuses néon LED prêtes à l'achat ou personnalisées à partir de votre logo ou texte.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

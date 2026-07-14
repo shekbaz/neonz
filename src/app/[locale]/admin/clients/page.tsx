@@ -1,9 +1,11 @@
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { User } from "@/models/User";
 import { Order } from "@/models/Order";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 export default async function AdminCustomersPage() {
+  const t = await getTranslations("Admin");
   await connectDB();
   const customers = await User.find({ role: "client" }).sort({ createdAt: -1 }).lean();
 
@@ -14,15 +16,15 @@ export default async function AdminCustomersPage() {
 
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Clients</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("customers")}</h1>
 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Nom</TableHead>
-            <TableHead>E-mail</TableHead>
-            <TableHead>Commandes</TableHead>
-            <TableHead className="text-end">Total dépensé</TableHead>
+            <TableHead>{t("customersPage.colName")}</TableHead>
+            <TableHead>{t("customersPage.colEmail")}</TableHead>
+            <TableHead>{t("customersPage.colOrders")}</TableHead>
+            <TableHead className="text-end">{t("customersPage.colTotalSpent")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -40,7 +42,7 @@ export default async function AdminCustomersPage() {
         </TableBody>
       </Table>
 
-      {customers.length === 0 && <p className="mt-6 text-sm text-muted-foreground">Aucun client.</p>}
+      {customers.length === 0 && <p className="mt-6 text-sm text-muted-foreground">{t("customersPage.empty")}</p>}
     </div>
   );
 }

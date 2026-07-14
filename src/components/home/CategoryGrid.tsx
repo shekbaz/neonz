@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/types/locale";
 
@@ -9,9 +10,10 @@ interface CategoryDoc {
   translations: Record<Locale, { name: string }>;
 }
 
-export function CategoryGrid({ categories, locale }: { categories: CategoryDoc[]; locale: Locale }) {
+export async function CategoryGrid({ categories, locale }: { categories: CategoryDoc[]; locale: Locale }) {
   if (categories.length === 0) {
-    return <p className="text-muted-foreground">Aucune catégorie disponible pour le moment.</p>;
+    const t = await getTranslations("Home");
+    return <p className="text-muted-foreground">{t("emptyCategories")}</p>;
   }
 
   return (

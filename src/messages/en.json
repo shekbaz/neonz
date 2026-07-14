@@ -7,16 +7,29 @@
     "contact": "Contact",
     "faq": "FAQ",
     "logout": "Log out",
-    "admin": "Administration"
+    "admin": "Administration",
+    "menuLabel": "Menu"
+  },
+  "Metadata": {
+    "title": "NEONZART — Custom LED neon signs",
+    "description": "Ready-to-buy or fully custom LED neon signs made from your logo or text."
   },
   "Home": {
     "heroTitle": "Light up your space with a unique neon sign",
     "heroSubtitle": "Ready-to-buy LED signs or fully custom designs from your logo or text.",
     "heroCtaCatalog": "Browse the catalog",
     "heroCtaCustomize": "Create my neon",
+    "heroEyebrow": "Custom LED neon signs",
     "categoriesTitle": "Our categories",
     "popularTitle": "Popular products",
-    "reviewsTitle": "What our customers say"
+    "reviewsTitle": "What our customers say",
+    "eyebrowExplore": "Explore",
+    "eyebrowSelection": "Selection",
+    "eyebrowReviews": "Testimonials",
+    "noFeaturedProducts": "No featured products at the moment.",
+    "emptyCategories": "No categories available at the moment.",
+    "emptyReviews": "No reviews yet.",
+    "defaultReviewAuthor": "NEONZART customer"
   },
   "Catalog": {
     "title": "Neon sign catalog",
@@ -25,7 +38,9 @@
     "colorLabel": "Color",
     "categoryLabel": "Category",
     "resetFilters": "Reset",
-    "noResults": "No products match your search."
+    "noResults": "No products match your search.",
+    "eyebrowShop": "Shop",
+    "promoBadge": "Sale"
   },
   "Product": {
     "addToCart": "Order now",
@@ -38,6 +53,12 @@
   },
   "Configurator": {
     "title": "Customize your neon sign",
+    "workshopEyebrow": "Workshop",
+    "canvasEmptyState": "Nothing to display yet.",
+    "exportError": "Could not export the design preview.",
+    "saveError": "Could not save the design.",
+    "genericError": "Something went wrong.",
+    "customSignName": "Custom neon sign",
     "steps": {
       "create": "Create",
       "finalize": "Finalize"
@@ -111,13 +132,33 @@
     "title": "Complete your order",
     "shippingAddress": "Shipping address",
     "paymentMethod": "Payment method",
-    "placeOrder": "Place order"
+    "placeOrder": "Place order",
+    "orderSentTitle": "Order sent!",
+    "orderReceivedText": "Your order <bold>{orderNumber}</bold> has been received.",
+    "willCallText": "We will call you shortly to confirm your order.",
+    "noItemText": "No item to order. Choose a product from the catalog or create your custom neon.",
+    "viewCatalog": "Browse the catalog",
+    "createNeon": "Create my neon",
+    "fillDetailsText": "Fill in your details, we'll call you to confirm the order — no online payment required.",
+    "yourDetails": "Your details",
+    "fullName": "Full name",
+    "phone": "Phone",
+    "phonePlaceholder": "05XX XX XX XX",
+    "emailOptional": "Email (optional)",
+    "address": "Address",
+    "city": "City",
+    "wilaya": "Wilaya",
+    "submitOrder": "Place my order",
+    "errorSubmit": "Error sending the order.",
+    "errorGeneric": "Something went wrong."
   },
   "Auth": {
     "loginTitle": "Log in",
     "email": "Email address",
     "password": "Password",
-    "submit": "Submit"
+    "submit": "Submit",
+    "errorInvalidCredentials": "Incorrect credentials.",
+    "errorGeneric": "Something went wrong. Please try again."
   },
   "Admin": {
     "dashboard": "Dashboard",
@@ -127,7 +168,237 @@
     "reviews": "Reviews",
     "stats": "Statistics",
     "revenue": "Revenue",
-    "newOrder": "New order received"
+    "newOrder": "New order received",
+    "categories": "Categories",
+    "colors": "Colors",
+    "sidebarEyebrow": "Workshop",
+    "dashboardPage": {
+      "monthlyRevenueCard": "Monthly revenue"
+    },
+    "productsPage": {
+      "addProduct": "Add a product",
+      "newProduct": "New product",
+      "editProduct": "Edit product",
+      "colName": "Name",
+      "colPrice": "Price",
+      "colStock": "Stock",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "active": "Active",
+      "inactive": "Inactive",
+      "empty": "No products."
+    },
+    "categoriesPage": {
+      "addCategory": "Add a category",
+      "newCategory": "New category",
+      "editCategory": "Edit category",
+      "colName": "Name",
+      "colSlug": "Slug",
+      "colOrder": "Order",
+      "colActions": "Actions",
+      "empty": "No categories."
+    },
+    "colorsPage": {
+      "title": "Color palette"
+    },
+    "ordersPage": {
+      "all": "All",
+      "colOrderNumber": "Order #",
+      "colItem": "Item",
+      "colClient": "Customer",
+      "colPhone": "Phone",
+      "colDate": "Date",
+      "colStatus": "Status",
+      "colTotal": "Total",
+      "toCall": "To call",
+      "empty": "No orders."
+    },
+    "orderShared": {
+      "customSign": "Custom neon sign",
+      "catalogProduct": "Catalog product"
+    },
+    "orderDetail": {
+      "title": "Order {orderNumber}",
+      "client": "Customer",
+      "call": "Call {phone}",
+      "items": "Items",
+      "viewProduct": "View product page",
+      "ref": "Ref.: {slug}",
+      "customDesign": "Custom design",
+      "previewAlt": "Neon design preview",
+      "dimensionsLabel": "Dimensions: {width}cm x {height}cm",
+      "supportLabel": "Backing: {support}",
+      "withRemote": "With remote",
+      "total": "Total"
+    },
+    "customersPage": {
+      "colName": "Name",
+      "colEmail": "Email",
+      "colOrders": "Orders",
+      "colTotalSpent": "Total spent",
+      "empty": "No customers."
+    },
+    "reviewsPage": {
+      "addTestimonial": "Add a testimonial",
+      "newTestimonial": "New testimonial",
+      "editTestimonial": "Edit testimonial",
+      "colClient": "Customer",
+      "colRating": "Rating",
+      "colComment": "Comment",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "empty": "No testimonials."
+    },
+    "reviewStatus": {
+      "approved": "Published",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    },
+    "statsPage": {
+      "monthlyRevenue": "Monthly revenue",
+      "topProducts": "Best-selling products",
+      "colProduct": "Product",
+      "colUnitsSold": "Units sold",
+      "colRevenue": "Revenue",
+      "empty": "No sales yet."
+    },
+    "form": {
+      "slug": "Slug",
+      "name": "Name",
+      "description": "Description",
+      "image": "Image",
+      "images": "Images",
+      "colorsLabel": "Colors",
+      "category": "Category",
+      "price": "Price (DZD)",
+      "stock": "Stock",
+      "width": "Width (cm)",
+      "height": "Height (cm)",
+      "order": "Display order",
+      "active": "Active (visible on the site)",
+      "featured": "Featured",
+      "customizable": "Customizable",
+      "noColorsInPalette": "No colors in the palette — add some from the Colors page.",
+      "saveChanges": "Save changes",
+      "createProduct": "Create product",
+      "createCategory": "Create category",
+      "createTestimonial": "Create testimonial",
+      "tabFr": "Français",
+      "tabEn": "English",
+      "tabAr": "العربية",
+      "authorName": "Customer name",
+      "comment": "Comment",
+      "rating": "Rating",
+      "status": "Status"
+    },
+    "toast": {
+      "categoryModified": "Category updated.",
+      "categoryCreated": "Category created.",
+      "categoryDeleted": "Category deleted.",
+      "productModified": "Product updated.",
+      "productCreated": "Product created.",
+      "productDeleted": "Product deleted.",
+      "testimonialModified": "Testimonial updated.",
+      "testimonialCreated": "Testimonial created.",
+      "testimonialDeleted": "Testimonial deleted.",
+      "colorAdded": "Color added.",
+      "colorDeleted": "Color deleted.",
+      "statusUpdated": "Status updated.",
+      "genericError": "Something went wrong.",
+      "deleteFailed": "Deletion failed.",
+      "addFailed": "Failed to add.",
+      "updateFailed": "Update failed.",
+      "uploadFailed": "Upload failed.",
+      "editFailed": "Edit failed.",
+      "createFailed": "Creation failed."
+    },
+    "confirm": {
+      "deleteCategory": "Delete this category?",
+      "deleteProduct": "Delete this product?",
+      "deleteTestimonial": "Delete this testimonial?",
+      "deleteColor": "Remove this color from the palette?"
+    },
+    "colorPalette": {
+      "namePlaceholder": "Neon pink",
+      "colorField": "Color",
+      "addToPalette": "Add to palette",
+      "empty": "Palette is empty."
+    },
+    "imageUploader": {
+      "removeImage": "Remove image",
+      "add": "Add",
+      "chooseImage": "Choose an image",
+      "uploading": "Uploading...",
+      "uploadFailed": "Upload failed."
+    },
+    "orderStatusUpdater": {
+      "update": "Update"
+    },
+    "revenueChart": {
+      "notEnoughData": "Not enough data yet to display a chart."
+    }
+  },
+  "OrderStatus": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "in_production": "In production",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+  },
+  "Cgv": {
+    "title": "Terms and conditions of sale",
+    "objHeading": "1. Purpose",
+    "objText": "These general terms and conditions of sale govern the contractual relationship between NEONZART and its customers for the purchase of LED neon signs, ready-to-buy or custom-made.",
+    "ordersHeading": "2. Custom orders",
+    "ordersText": "Any custom order is subject to prior validation of the design by the customer via the online configurator. No production begins before explicit confirmation of the final rendering.",
+    "paymentHeading": "3. Payment",
+    "paymentText": "Payment is made online via the methods offered at the time of order (international bank card, CIB, EDAHABIA).",
+    "deliveryHeading": "4. Delivery",
+    "deliveryText": "Delivery times are given for information purposes and may vary depending on destination and manufacturing complexity.",
+    "withdrawalHeading": "5. Right of withdrawal",
+    "withdrawalText": "In accordance with applicable regulations, the right of withdrawal does not apply to custom-made products."
+  },
+  "Faq": {
+    "title": "Frequently asked questions",
+    "items": [
+      {
+        "question": "What is the manufacturing time for a custom sign?",
+        "answer": "Allow generally 7 to 14 business days between design validation and shipping."
+      },
+      {
+        "question": "What is the maximum size for a custom sign?",
+        "answer": "Custom signs are limited to 90cm in width and 90cm in height."
+      },
+      {
+        "question": "What happens if my design has collisions?",
+        "answer": "The configurator automatically detects areas where two neon tubes would be too close and suggests adjustments before you confirm the order."
+      },
+      {
+        "question": "Do you deliver outside Algeria?",
+        "answer": "Yes, international delivery is available via carrier; delivery times vary by destination."
+      }
+    ]
+  },
+  "Contact": {
+    "title": "Contact us",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "messageLabel": "Message",
+    "submit": "Send",
+    "sentText": "Thank you, your message has been sent!",
+    "toastSuccess": "Your message has been sent, we'll get back to you shortly."
+  },
+  "Compte": {
+    "ordersTitle": "My orders",
+    "noOrders": "You don't have any orders yet."
+  },
+  "OrderTracking": {
+    "title": "Order {orderNumber}"
+  },
+  "Theme": {
+    "activateLight": "Switch to light theme",
+    "activateDark": "Switch to dark theme"
   },
   "Footer": {
     "tagline": "LED neon sign workshop — ready to buy or fully custom-made from your logo or text.",
@@ -144,6 +415,7 @@
     "back": "Back",
     "loading": "Loading...",
     "currency": "DZD",
-    "search": "Search"
+    "search": "Search",
+    "total": "Total"
   }
 }

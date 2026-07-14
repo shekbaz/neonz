@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { RevenueChart } from "@/components/admin/RevenueChart";
@@ -6,6 +7,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 
 export default async function AdminStatsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  const t = await getTranslations("Admin");
   await connectDB();
 
   const [revenueByMonth, topProducts] = await Promise.all([
@@ -40,11 +42,11 @@ export default async function AdminStatsPage({ params }: { params: Promise<{ loc
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">Statistiques</h1>
+      <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("stats")}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Chiffre d&apos;affaires mensuel</CardTitle>
+          <CardTitle>{t("statsPage.monthlyRevenue")}</CardTitle>
         </CardHeader>
         <CardContent>
           <RevenueChart data={chartData} />
@@ -53,15 +55,15 @@ export default async function AdminStatsPage({ params }: { params: Promise<{ loc
 
       <Card>
         <CardHeader>
-          <CardTitle>Produits les plus vendus</CardTitle>
+          <CardTitle>{t("statsPage.topProducts")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Produit</TableHead>
-                <TableHead>Unités vendues</TableHead>
-                <TableHead className="text-end">Revenu</TableHead>
+                <TableHead>{t("statsPage.colProduct")}</TableHead>
+                <TableHead>{t("statsPage.colUnitsSold")}</TableHead>
+                <TableHead className="text-end">{t("statsPage.colRevenue")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -74,7 +76,7 @@ export default async function AdminStatsPage({ params }: { params: Promise<{ loc
               ))}
             </TableBody>
           </Table>
-          {topProducts.length === 0 && <p className="text-sm text-muted-foreground">Pas encore de ventes.</p>}
+          {topProducts.length === 0 && <p className="text-sm text-muted-foreground">{t("statsPage.empty")}</p>}
         </CardContent>
       </Card>
     </div>

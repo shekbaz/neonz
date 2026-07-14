@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 interface ReviewDoc {
   _id: string;
@@ -8,9 +9,11 @@ interface ReviewDoc {
   user?: { name: string };
 }
 
-export function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
+export async function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
+  const t = await getTranslations("Home");
+
   if (reviews.length === 0) {
-    return <p className="text-muted-foreground">Aucun avis pour le moment.</p>;
+    return <p className="text-muted-foreground">{t("emptyReviews")}</p>;
   }
 
   return (
@@ -25,7 +28,7 @@ export function ReviewsSection({ reviews }: { reviews: ReviewDoc[] }) {
           <blockquote className="flex-1 text-sm leading-relaxed text-muted-foreground">{review.comment}</blockquote>
           <figcaption className="mt-4 flex items-center gap-2 text-sm font-medium">
             <span className="tube-dash w-3!" aria-hidden />
-            {review.authorName ?? review.user?.name ?? "Client NEONZ"}
+            {review.authorName ?? review.user?.name ?? t("defaultReviewAuthor")}
           </figcaption>
         </figure>
       ))}

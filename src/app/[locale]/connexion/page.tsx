@@ -29,7 +29,7 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error("Identifiants incorrects.");
+        toast.error(t("errorInvalidCredentials"));
         return;
       }
 
@@ -38,7 +38,7 @@ export default function LoginPage() {
       // Sans ce filet, une erreur réseau/serveur sur signIn() laissait le
       // bouton bloqué en chargement sans aucun retour visible pour l'utilisateur.
       console.error("Échec de connexion:", error);
-      toast.error("Une erreur est survenue. Réessayez.");
+      toast.error(t("errorGeneric"));
     } finally {
       setLoading(false);
     }

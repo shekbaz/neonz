@@ -24,7 +24,7 @@ export function Hero() {
           className="mb-8 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-primary"
         >
           <span className="tube-dash" aria-hidden />
-          Enseignes néon LED sur-mesure
+          {t("heroEyebrow")}
           <span className="tube-dash" aria-hidden />
         </motion.span>
 

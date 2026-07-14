@@ -1,6 +1,7 @@
 "use client";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useTranslations } from "next-intl";
 
 interface RevenuePoint {
   period: string;
@@ -9,8 +10,10 @@ interface RevenuePoint {
 }
 
 export function RevenueChart({ data }: { data: RevenuePoint[] }) {
+  const t = useTranslations("Admin.revenueChart");
+
   if (data.length === 0) {
-    return <p className="text-sm text-muted-foreground">Pas encore assez de données pour afficher un graphique.</p>;
+    return <p className="text-sm text-muted-foreground">{t("notEnoughData")}</p>;
   }
 
   return (

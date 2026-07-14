@@ -2,16 +2,17 @@
 
 import { useRef, useState } from "react";
 import { X, Upload, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-async function uploadFile(file: File): Promise<string> {
+async function uploadFile(file: File, uploadFailedMessage: string): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body: formData });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.error ?? "Échec de l'upload.");
+    throw new Error(data.error ?? uploadFailedMessage);
   }
   const data = await res.json();
   return data.url as string;
@@ -26,6 +27,7 @@ export function ImageUploader({
   onChange: (images: string[]) => void;
   multiple?: boolean;
 }) {
+  const t = useTranslations("Admin.imageUploader");
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -33,10 +35,10 @@ export function ImageUploader({
     if (!files || files.length === 0) return;
     setUploading(true);
     try {
-      const uploaded = await Promise.all(Array.from(files).map(uploadFile));
+      const uploaded = await Promise.all(Array.from(files).map((file) => uploadFile(file, t("uploadFailed"))));
       onChange(multiple ? [...images, ...uploaded] : uploaded.slice(0, 1));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Échec de l'upload.");
+      toast.error(error instanceof Error ? error.message : t("uploadFailed"));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -58,7 +60,7 @@ export function ImageUploader({
               type="button"
               onClick={() => removeImage(url)}
               className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
-              aria-label="Retirer l'image"
+              aria-label={t("removeImage")}
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -73,7 +75,7 @@ export function ImageUploader({
             className="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary"
           >
             {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
-            <span className="text-[10px]">Ajouter</span>
+            <span className="text-[10px]">{t("add")}</span>
           </button>
         )}
       </div>
@@ -89,7 +91,7 @@ export function ImageUploader({
 
       {images.length === 0 && (
         <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={uploading}>
-          {uploading ? "Envoi en cours..." : "Choisir une image"}
+          {uploading ? t("uploading") : t("chooseImage")}
         </Button>
       )}
     </div>

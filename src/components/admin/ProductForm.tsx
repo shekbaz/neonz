@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +57,8 @@ export function ProductForm({
   productId?: string;
   initialData?: ProductInitialData;
 }) {
+  const t = useTranslations("Admin.form");
+  const tToast = useTranslations("Admin.toast");
   const router = useRouter();
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
@@ -95,7 +97,7 @@ export function ProductForm({
         throw new Error(describeApiError(data.error, locale));
       }
 
-      toast.success(isEditing ? "Produit modifié." : "Produit créé.");
+      toast.success(isEditing ? tToast("productModified") : tToast("productCreated"));
       router.push("/admin/produits");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : describeApiError(undefined, locale));
@@ -107,7 +109,7 @@ export function ProductForm({
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
       <div>
-        <Label htmlFor="slug">Slug</Label>
+        <Label htmlFor="slug">{t("slug")}</Label>
         <Input
           id="slug"
           required
@@ -118,14 +120,14 @@ export function ProductForm({
 
       <Tabs defaultValue="fr">
         <TabsList>
-          <TabsTrigger value="fr">Français</TabsTrigger>
-          <TabsTrigger value="en">English</TabsTrigger>
-          <TabsTrigger value="ar">العربية</TabsTrigger>
+          <TabsTrigger value="fr">{t("tabFr")}</TabsTrigger>
+          <TabsTrigger value="en">{t("tabEn")}</TabsTrigger>
+          <TabsTrigger value="ar">{t("tabAr")}</TabsTrigger>
         </TabsList>
         {(["fr", "en", "ar"] as const).map((locale) => (
           <TabsContent key={locale} value={locale} className="space-y-4">
             <div>
-              <Label>Nom</Label>
+              <Label>{t("name")}</Label>
               <Input
                 required
                 value={form.translations[locale].name}
@@ -138,7 +140,7 @@ export function ProductForm({
               />
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("description")}</Label>
               <Textarea
                 required
                 rows={4}
@@ -159,7 +161,7 @@ export function ProductForm({
       </Tabs>
 
       <div>
-        <Label>Catégorie</Label>
+        <Label>{t("category")}</Label>
         <Select
           items={categories.map((cat) => ({ value: cat._id, label: cat.translations.fr.name }))}
           value={form.category}
@@ -179,15 +181,15 @@ export function ProductForm({
       </div>
 
       <div>
-        <Label>Images</Label>
+        <Label>{t("images")}</Label>
         <ImageUploader images={form.images} onChange={(images) => setForm({ ...form, images })} />
       </div>
 
       <div>
-        <Label>Couleurs</Label>
+        <Label>{t("colorsLabel")}</Label>
         {colors.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Aucune couleur dans la palette — ajoutez-en depuis la page Couleurs.
+            {t("noColorsInPalette")}
           </p>
         ) : (
           <ColorPicker
@@ -200,7 +202,7 @@ export function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="basePrice">Prix (DZD)</Label>
+          <Label htmlFor="basePrice">{t("price")}</Label>
           <Input
             id="basePrice"
             type="number"
@@ -210,7 +212,7 @@ export function ProductForm({
           />
         </div>
         <div>
-          <Label htmlFor="stock">Stock</Label>
+          <Label htmlFor="stock">{t("stock")}</Label>
           <Input
             id="stock"
             type="number"
@@ -223,7 +225,7 @@ export function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="width">Largeur (cm)</Label>
+          <Label htmlFor="width">{t("width")}</Label>
           <Input
             id="width"
             type="number"
@@ -232,7 +234,7 @@ export function ProductForm({
           />
         </div>
         <div>
-          <Label htmlFor="height">Hauteur (cm)</Label>
+          <Label htmlFor="height">{t("height")}</Label>
           <Input
             id="height"
             type="number"
@@ -249,7 +251,7 @@ export function ProductForm({
             checked={form.isActive}
             onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
           />
-          Actif (visible sur le site)
+          {t("active")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -257,7 +259,7 @@ export function ProductForm({
             checked={form.isFeatured}
             onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
           />
-          Mis en avant
+          {t("featured")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -265,12 +267,12 @@ export function ProductForm({
             checked={form.isCustomizable}
             onChange={(e) => setForm({ ...form, isCustomizable: e.target.checked })}
           />
-          Personnalisable
+          {t("customizable")}
         </label>
       </div>
 
       <Button type="submit" disabled={loading}>
-        {isEditing ? "Enregistrer les modifications" : "Créer le produit"}
+        {isEditing ? t("saveChanges") : t("createProduct")}
       </Button>
     </form>
   );

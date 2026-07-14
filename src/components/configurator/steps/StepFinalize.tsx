@@ -27,6 +27,7 @@ function deriveSourceType(elements: { type: string }[]): "image" | "text" | "dra
 
 export function StepFinalize() {
   const t = useTranslations("Configurator.stepFinalize");
+  const tConfigurator = useTranslations("Configurator");
   const tCommon = useTranslations("Common");
   const router = useRouter();
 
@@ -49,7 +50,7 @@ export function StepFinalize() {
     setSubmitting(true);
     try {
       const previewImageUrl = canvasRef.current?.exportDataURL();
-      if (!previewImageUrl) throw new Error("Impossible d'exporter l'aperçu du design.");
+      if (!previewImageUrl) throw new Error(tConfigurator("exportError"));
 
       const res = await fetch("/api/customize/designs", {
         method: "POST",
@@ -67,7 +68,7 @@ export function StepFinalize() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "Impossible d'enregistrer le design.");
+        throw new Error(data.error ?? tConfigurator("saveError"));
       }
 
       const design = await res.json();
@@ -76,10 +77,10 @@ export function StepFinalize() {
       reset();
       router.push({
         pathname: "/checkout",
-        query: { type: "custom", id: design._id, name: "Enseigne personnalisée", price: String(price) },
+        query: { type: "custom", id: design._id, name: tConfigurator("customSignName"), price: String(price) },
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : tConfigurator("genericError"));
     } finally {
       setSubmitting(false);
     }

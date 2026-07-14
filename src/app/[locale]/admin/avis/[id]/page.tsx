@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Review } from "@/models/Review";
 import { TestimonialForm } from "@/components/admin/TestimonialForm";
 
 export default async function EditTestimonialPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const t = await getTranslations("Admin");
   await connectDB();
 
   const review = await Review.findById(id).lean();
@@ -14,7 +16,7 @@ export default async function EditTestimonialPage({ params }: { params: Promise<
 
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Modifier le témoignage</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("reviewsPage.editTestimonial")}</h1>
       <TestimonialForm
         reviewId={String(review._id)}
         initialData={JSON.parse(

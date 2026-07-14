@@ -61,13 +61,13 @@ export default function CheckoutPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error?.toString() ?? "Erreur lors de l'envoi de la commande.");
+        throw new Error(data.error?.toString() ?? t("errorSubmit"));
       }
 
       const order = await res.json();
       setCreatedOrder({ orderNumber: order.orderNumber, total: order.total });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : t("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -79,13 +79,16 @@ export default function CheckoutPage() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
           <CheckCircle2 className="h-8 w-8 text-emerald-500" />
         </div>
-        <h1 className="mt-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Commande envoyée !</h1>
+        <h1 className="mt-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("orderSentTitle")}</h1>
         <p className="mt-2 text-muted-foreground">
-          Votre commande <span className="font-semibold text-foreground">{createdOrder.orderNumber}</span> a bien été reçue.
+          {t.rich("orderReceivedText", {
+            orderNumber: createdOrder.orderNumber,
+            bold: (chunks) => <span className="font-semibold text-foreground">{chunks}</span>,
+          })}
         </p>
         <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-border bg-muted/50 p-4 text-sm">
           <Phone className="h-4 w-4 text-primary" />
-          <span>Nous allons vous appeler très prochainement pour confirmer votre commande.</span>
+          <span>{t("willCallText")}</span>
         </div>
         <p className="mt-6 text-lg font-bold text-primary">
           {createdOrder.total.toLocaleString()} {tCommon("currency")}
@@ -98,14 +101,14 @@ export default function CheckoutPage() {
     return (
       <div className="mx-auto max-w-md px-4 py-20 text-center sm:px-6">
         <p className="text-muted-foreground">
-          Aucun article à commander. Choisissez un produit dans le catalogue ou créez votre néon personnalisé.
+          {t("noItemText")}
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link href="/catalogue">
-            <Button variant="secondary">Voir le catalogue</Button>
+            <Button variant="secondary">{t("viewCatalog")}</Button>
           </Link>
           <Link href="/personnaliser">
-            <Button>Créer mon néon</Button>
+            <Button>{t("createNeon")}</Button>
           </Link>
         </div>
       </div>
@@ -116,7 +119,7 @@ export default function CheckoutPage() {
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
       <h1 className="mb-2 font-display text-4xl font-bold uppercase tracking-[0.03em] sm:text-5xl">{t("title")}</h1>
       <p className="mb-8 text-muted-foreground">
-        Remplissez vos coordonnées, nous vous appelons pour confirmer la commande — aucun paiement en ligne requis.
+        {t("fillDetailsText")}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -138,18 +141,18 @@ export default function CheckoutPage() {
 
         {!session?.user && (
           <div>
-            <h2 className="mb-4 font-semibold">Vos coordonnées</h2>
+            <h2 className="mb-4 font-semibold">{t("yourDetails")}</h2>
             <div className="grid gap-4">
               <div>
-                <Label htmlFor="name">Nom complet</Label>
+                <Label htmlFor="name">{t("fullName")}</Label>
                 <Input id="name" required value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="phone">Téléphone</Label>
-                <Input id="phone" type="tel" required placeholder="05XX XX XX XX" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
+                <Label htmlFor="phone">{t("phone")}</Label>
+                <Input id="phone" type="tel" required placeholder={t("phonePlaceholder")} value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="email">E-mail (optionnel)</Label>
+                <Label htmlFor="email">{t("emailOptional")}</Label>
                 <Input id="email" type="email" value={guest.email} onChange={(e) => setGuest({ ...guest, email: e.target.value })} />
               </div>
             </div>
@@ -160,16 +163,16 @@ export default function CheckoutPage() {
           <h2 className="mb-4 font-semibold">{t("shippingAddress")}</h2>
           <div className="grid gap-4">
             <div>
-              <Label htmlFor="line1">Adresse</Label>
+              <Label htmlFor="line1">{t("address")}</Label>
               <Input id="line1" required value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="city">Ville</Label>
+                <Label htmlFor="city">{t("city")}</Label>
                 <Input id="city" required value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="wilaya">Wilaya</Label>
+                <Label htmlFor="wilaya">{t("wilaya")}</Label>
                 <Input id="wilaya" value={address.wilaya} onChange={(e) => setAddress({ ...address, wilaya: e.target.value })} />
               </div>
             </div>
@@ -177,14 +180,14 @@ export default function CheckoutPage() {
         </div>
 
         <div className="flex items-center justify-between border-t border-border pt-6">
-          <span className="font-semibold">Total</span>
+          <span className="font-semibold">{tCommon("total")}</span>
           <span className="text-xl font-bold text-primary">
             {total.toLocaleString()} {tCommon("currency")}
           </span>
         </div>
 
         <Button size="lg" className="w-full" disabled={loading} type="submit">
-          {loading ? tCommon("loading") : "Envoyer ma commande"}
+          {loading ? tCommon("loading") : t("submitOrder")}
         </Button>
       </form>
     </div>

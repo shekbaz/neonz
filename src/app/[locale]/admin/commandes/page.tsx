@@ -1,17 +1,9 @@
+import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "En attente",
-  confirmed: "Confirmée",
-  in_production: "En fabrication",
-  shipped: "Expédiée",
-  delivered: "Livrée",
-  cancelled: "Annulée",
-};
 
 export default async function AdminOrdersPage({
   params,
@@ -23,6 +15,10 @@ export default async function AdminOrdersPage({
   const { locale } = await params;
   const { status } = await searchParams;
 
+  const t = await getTranslations("Admin");
+  const tStatus = await getTranslations("OrderStatus");
+  const tShared = await getTranslations("Admin.orderShared");
+
   await connectDB();
   const filter = status
     ? { status: status as "pending" | "confirmed" | "in_production" | "shipped" | "delivered" | "cancelled" }
@@ -33,21 +29,23 @@ export default async function AdminOrdersPage({
     .limit(100)
     .lean();
 
+  const statusKeys = ["pending", "confirmed", "in_production", "shipped", "delivered", "cancelled"] as const;
+
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">Commandes</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("orders")}</h1>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <Link href="/admin/commandes" className="text-sm text-muted-foreground hover:text-foreground">
-          Toutes
+          {t("ordersPage.all")}
         </Link>
-        {Object.entries(STATUS_LABELS).map(([key, label]) => (
+        {statusKeys.map((key) => (
           <Link
             key={key}
             href={{ pathname: "/admin/commandes", query: { status: key } }}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            {label}
+            {tStatus(key)}
           </Link>
         ))}
       </div>
@@ -55,13 +53,13 @@ export default async function AdminOrdersPage({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>N° commande</TableHead>
-            <TableHead>Article</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Téléphone</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead className="text-end">Total</TableHead>
+            <TableHead>{t("ordersPage.colOrderNumber")}</TableHead>
+            <TableHead>{t("ordersPage.colItem")}</TableHead>
+            <TableHead>{t("ordersPage.colClient")}</TableHead>
+            <TableHead>{t("ordersPage.colPhone")}</TableHead>
+            <TableHead>{t("ordersPage.colDate")}</TableHead>
+            <TableHead>{t("ordersPage.colStatus")}</TableHead>
+            <TableHead className="text-end">{t("ordersPage.colTotal")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -73,10 +71,10 @@ export default async function AdminOrdersPage({
             const extraCount = order.items.length - 1;
             const firstItemLabel =
               firstItem?.type === "custom"
-                ? "Enseigne personnalisée"
+                ? tShared("customSign")
                 : (firstItem?.snapshot?.translations?.[locale]?.name ??
                   firstItem?.snapshot?.translations?.fr?.name ??
-                  "Produit catalogue");
+                  tShared("catalogProduct"));
             const firstItemImage = firstItem?.type === "catalog" ? firstItem?.snapshot?.images?.[0] : undefined;
             return (
               <TableRow key={String(order._id)}>
@@ -102,7 +100,7 @@ export default async function AdminOrdersPage({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     {clientName}
-                    {isNew && <Badge className="bg-primary/15 text-primary hover:bg-primary/15">À appeler</Badge>}
+                    {isNew && <Badge className="bg-primary/15 text-primary hover:bg-primary/15">{t("ordersPage.toCall")}</Badge>}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -116,7 +114,7 @@ export default async function AdminOrdersPage({
                 </TableCell>
                 <TableCell>{new Date(order.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{STATUS_LABELS[order.status]}</Badge>
+                  <Badge variant="secondary">{tStatus(order.status as never)}</Badge>
                 </TableCell>
                 <TableCell className="text-end">{order.total.toLocaleString()} DZD</TableCell>
               </TableRow>
@@ -125,7 +123,7 @@ export default async function AdminOrdersPage({
         </TableBody>
       </Table>
 
-      {orders.length === 0 && <p className="mt-6 text-sm text-muted-foreground">Aucune commande.</p>}
+      {orders.length === 0 && <p className="mt-6 text-sm text-muted-foreground">{t("ordersPage.empty")}</p>}
     </div>
   );
 }

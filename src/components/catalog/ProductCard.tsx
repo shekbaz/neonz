@@ -16,6 +16,7 @@ export interface ProductCardData {
 
 export function ProductCard({ product, locale }: { product: ProductCardData; locale: Locale }) {
   const tCommon = useTranslations("Common");
+  const tCatalog = useTranslations("Catalog");
 
   const price = product.discountPrice ?? product.basePrice;
   const name = product.translations[locale]?.name ?? product.translations.fr?.name;
@@ -36,7 +37,7 @@ export function ProductCard({ product, locale }: { product: ProductCardData; loc
         )}
         {product.discountPrice != null && (
           <span className="absolute end-3 top-3 rounded-full bg-primary px-2 py-0.5 text-[0.65rem] font-bold uppercase tracking-wider text-primary-foreground dark:shadow-[0_0_10px_var(--color-primary)]">
-            Promo
+            {tCatalog("promoBadge")}
           </span>
         )}
       </Link>
