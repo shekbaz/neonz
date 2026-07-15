@@ -14,7 +14,7 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.04em]">{t("categories")}</h1>
         <Link href="/admin/categories/nouveau">
           <Button size="sm">{t("categoriesPage.addCategory")}</Button>
