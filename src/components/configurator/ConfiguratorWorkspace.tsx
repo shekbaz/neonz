@@ -186,10 +186,6 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
     return textWidthPx / CM_TO_PX;
   };
 
-  const getTextStrokeWidth = (fontSize: number): number => {
-    return fontSize * 0.3125;
-  };
-
   const buildSpatialGrid = (points: Point[], cellSize: number = 30) => {
     const grid = new Map<string, Point[]>();
     points.forEach((point) => {
@@ -527,7 +523,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.strokeStyle = el.color;
-        ctx.lineWidth = getTextStrokeWidth(el.fontSize);
+        ctx.lineWidth = NEON_WIDTH_PX;
         ctx.lineJoin = "round";
         ctx.shadowColor = el.color;
         ctx.shadowBlur = 20;

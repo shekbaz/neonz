@@ -30,10 +30,11 @@ export function LangSwitcher() {
         <Globe className="h-4 w-4" />
         {LOCALE_LABELS[locale]}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="min-w-0 w-auto">
         {routing.locales.map((loc) => (
           <DropdownMenuItem
             key={loc}
+            className="justify-center"
             onClick={() =>
               router.replace(
                 // @ts-expect-error -- pathname est dynamique selon la route courante
