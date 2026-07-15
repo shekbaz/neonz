@@ -102,11 +102,21 @@ const NEON_COLORS = [
   { name: "Rose", value: "#ff0080" },
 ];
 
-export function ConfiguratorWorkspace() {
+interface AdminColor {
+  _id: string;
+  name: string;
+  hex: string;
+}
+
+export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: AdminColor[] }) {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
+
+  // Palette gérée par l'admin (voir /admin/couleurs) — repli sur la palette néon
+  // par défaut si l'admin n'a encore configuré aucune couleur.
+  const palette = initialColors.length > 0 ? initialColors.map((c) => ({ name: c.name, value: c.hex })) : NEON_COLORS;
 
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [elements, setElements] = useState<CanvasElement[]>([]);
@@ -115,7 +125,7 @@ export function ConfiguratorWorkspace() {
 
   const [currentTool, setCurrentTool] = useState<"draw" | "text" | "select" | "line">("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [currentColor, setCurrentColor] = useState(NEON_COLORS[0].value);
+  const [currentColor, setCurrentColor] = useState(palette[0].value);
 
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -1240,19 +1250,20 @@ export function ConfiguratorWorkspace() {
               Couleur
             </h3>
 
-            <div className="mb-4 grid grid-cols-4 gap-2">
-              {NEON_COLORS.map((color) => (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {palette.map((color) => (
                 <button
                   key={color.value}
                   onClick={() => setCurrentColor(color.value)}
-                  className={`aspect-square rounded-lg border-2 transition-all ${currentColor === color.value ? "scale-110 border-foreground" : "border-border hover:border-foreground/40"}`}
-                  style={{ backgroundColor: color.value, boxShadow: currentColor === color.value ? `0 0 20px ${color.value}` : "none" }}
+                  aria-pressed={currentColor === color.value}
+                  className={`h-6 w-6 shrink-0 rounded-full border-2 transition-all ${currentColor === color.value ? "scale-110 border-foreground" : "border-border hover:border-foreground/40"}`}
+                  style={{ backgroundColor: color.value, boxShadow: currentColor === color.value ? `0 0 10px ${color.value}` : "none" }}
                   title={color.name}
                 />
               ))}
             </div>
 
-            <input type="color" value={currentColor} onChange={(e) => setCurrentColor(e.target.value)} className="h-12 w-full cursor-pointer rounded-lg border-2 border-border" />
+            <input type="color" value={currentColor} onChange={(e) => setCurrentColor(e.target.value)} className="h-10 w-full cursor-pointer rounded-lg border-2 border-border" />
           </div>
         </div>
 
