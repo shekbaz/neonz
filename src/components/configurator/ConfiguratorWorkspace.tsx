@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,8 @@ import {
   Zap,
   ArrowRight,
   Minus,
+  Pencil,
+  Plus,
 } from "lucide-react";
 
 /**
@@ -88,7 +91,6 @@ const CM_TO_PX = 10;
 const NEON_WIDTH_CM = 1;
 const NEON_WIDTH_PX = NEON_WIDTH_CM * CM_TO_PX;
 const PRICE_PER_CM = 180;
-const CURRENCY = "DZD";
 const MAX_DIMENSIONS = { width: 85, height: 85 };
 
 const NEON_COLORS = [
@@ -109,6 +111,8 @@ interface AdminColor {
 }
 
 export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: AdminColor[] }) {
+  const t = useTranslations("Configurator");
+  const tCommon = useTranslations("Common");
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -856,10 +860,25 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   function scaleSelected(scale: number) {
     if (!selectedId) return;
     const newElements = elements.map((el) => {
-      if (el.id === selectedId) {
-        if (el.type === "text") return { ...el, fontSize: Math.max(12, Math.min(120, el.fontSize * scale)) };
-        if (el.type === "rect" && el.width && el.height) return { ...el, width: el.width * scale, height: el.height * scale };
-        if (el.type === "circle" && el.radius) return { ...el, radius: el.radius * scale };
+      if (el.id !== selectedId) return el;
+
+      if (el.type === "text") return { ...el, fontSize: Math.max(12, Math.min(120, el.fontSize * scale)) };
+      if (el.type === "rect" && el.width && el.height) return { ...el, width: el.width * scale, height: el.height * scale };
+      if (el.type === "circle" && el.radius) return { ...el, radius: el.radius * scale };
+
+      // Dessin libre et ligne : pas de largeur/hauteur propre, on met à
+      // l'échelle les points/extrémités autour du centre de l'élément.
+      const bounds = getObjectBounds(el);
+      if (!bounds) return el;
+      const cx = bounds.x + bounds.width / 2;
+      const cy = bounds.y + bounds.height / 2;
+      const scalePoint = (p: Point): Point => ({ x: cx + (p.x - cx) * scale, y: cy + (p.y - cy) * scale });
+
+      if (el.type === "draw") return { ...el, points: el.points.map(scalePoint) };
+      if (el.type === "line") {
+        const p1 = scalePoint({ x: el.x1, y: el.y1 });
+        const p2 = scalePoint({ x: el.x2, y: el.y2 });
+        return { ...el, x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
       }
       return el;
     });
@@ -873,7 +892,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   }
 
   function handleClear() {
-    if (confirm("Voulez-vous vraiment tout effacer ?")) {
+    if (confirm(t("errors.confirmClearAll"))) {
       saveToHistory([]);
       setSelectedId(null);
     }
@@ -941,7 +960,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
   async function handleContinueToQuote() {
     if (elements.length === 0) {
-      toast.error("Veuillez d'abord créer votre design !");
+      toast.error(t("errors.createFirst"));
       return;
     }
 
@@ -969,16 +988,16 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "Impossible d'enregistrer le design.");
+        throw new Error(data.error ?? t("errors.saveFailed"));
       }
 
       const design = await res.json();
       router.push({
         pathname: "/checkout",
-        query: { type: "custom", id: design._id, name: "Enseigne personnalisée", price: String(estimatedPrice) },
+        query: { type: "custom", id: design._id, name: t("customSignName"), price: String(estimatedPrice) },
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue.");
+      toast.error(error instanceof Error ? error.message : t("errors.generic"));
     } finally {
       setSubmitting(false);
     }
@@ -993,55 +1012,56 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         <div className="mb-6">
           <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
             <span className="tube-dash" aria-hidden />
-            Atelier
+            {t("eyebrow")}
           </p>
-          <h1 className="mb-4 font-display text-3xl font-bold uppercase tracking-[0.03em] sm:text-4xl">🎨 Créez votre Néon Personnalisé</h1>
+          <h1 className="mb-4 font-display text-3xl font-bold uppercase tracking-[0.03em] sm:text-4xl">{t("title")}</h1>
 
           <div className="flex flex-wrap gap-3">
             <Button onClick={() => setCurrentTool("select")} variant={currentTool === "select" ? "default" : "outline"} size="sm">
-              <Move size={18} className="mr-2" />
-              Sélection
+              <Move size={18} />
+              {t("tools.select")}
             </Button>
 
             <Button onClick={() => setCurrentTool("draw")} variant={currentTool === "draw" ? "default" : "outline"} size="sm">
-              ✏️ Dessin
+              <Pencil size={18} />
+              {t("tools.draw")}
             </Button>
 
             <Button onClick={() => setCurrentTool("line")} variant={currentTool === "line" ? "default" : "outline"} size="sm">
-              <Minus size={18} className="mr-2" />
-              Ligne
+              <Minus size={18} />
+              {t("tools.line")}
             </Button>
 
             {image && (
               <Button onClick={() => setSnapEnabled(!snapEnabled)} variant={snapEnabled ? "default" : "outline"} size="sm">
-                <Target size={18} className="mr-2" />
-                Snap {snapEnabled ? "ON" : "OFF"}
+                <Target size={18} />
+                {snapEnabled ? t("tools.snapOn") : t("tools.snapOff")}
               </Button>
             )}
 
             <Button onClick={undo} disabled={historyIndex === 0} variant="outline" size="sm">
-              <Undo size={18} className="mr-2" />
-              Annuler
+              <Undo size={18} />
+              {t("tools.undo")}
             </Button>
 
             <Button onClick={redo} disabled={historyIndex === history.length - 1} variant="outline" size="sm">
-              <Redo size={18} className="mr-2" />
-              Refaire
+              <Redo size={18} />
+              {t("tools.redo")}
             </Button>
 
             <Button onClick={handleExport} variant="outline" size="sm">
-              <Download size={18} className="mr-2" />
-              Exporter
+              <Download size={18} />
+              {t("tools.export")}
             </Button>
 
             <Button onClick={handleClear} variant="outline" size="sm">
-              <Trash2 size={18} className="mr-2" />
-              Effacer
+              <Trash2 size={18} />
+              {t("tools.clear")}
             </Button>
 
             <Button onClick={() => setShowSettings(!showSettings)} variant="outline" size="sm">
-              <Settings size={18} className="mr-2" />
-              Dimensions
+              <Settings size={18} />
+              {t("tools.dimensions")}
             </Button>
           </div>
         </div>
@@ -1049,10 +1069,10 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         {/* Settings Panel */}
         {showSettings && (
           <div className="mb-6 rounded-xl bg-card p-6 ring-1 ring-foreground/10">
-            <h3 className="mb-4 text-xl font-bold">📏 Dimensions du Plan de Travail</h3>
+            <h3 className="mb-4 text-xl font-bold">{t("settingsPanel.title")}</h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="mb-2 block text-sm text-muted-foreground">Largeur (10 - {MAX_DIMENSIONS.width} cm)</label>
+                <label className="mb-2 block text-sm text-muted-foreground">{t("settingsPanel.width", { max: MAX_DIMENSIONS.width })}</label>
                 <input
                   type="range"
                   min="10"
@@ -1064,7 +1084,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                 <span className="font-bold text-primary">{canvasWidth} cm</span>
               </div>
               <div>
-                <label className="mb-2 block text-sm text-muted-foreground">Hauteur (10 - {MAX_DIMENSIONS.height} cm)</label>
+                <label className="mb-2 block text-sm text-muted-foreground">{t("settingsPanel.height", { max: MAX_DIMENSIONS.height })}</label>
                 <input
                   type="range"
                   min="10"
@@ -1076,9 +1096,9 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                 <span className="font-bold text-primary">{canvasHeight} cm</span>
               </div>
               <div className="text-sm text-muted-foreground">
-                <div>Surface: {(canvasWidth * canvasHeight).toFixed(0)} cm²</div>
-                <div className="font-bold text-primary">Largeur tube: {NEON_WIDTH_CM} cm</div>
-                {elements.length > 0 && <div className="text-xs text-primary">✓ Auto-adapt actif</div>}
+                <div>{t("settingsPanel.surface", { value: (canvasWidth * canvasHeight).toFixed(0) })}</div>
+                <div className="font-bold text-primary">{t("settingsPanel.tubeWidth", { value: NEON_WIDTH_CM })}</div>
+                {elements.length > 0 && <div className="text-xs text-primary">✓ {t("settingsPanel.autoAdapt")}</div>}
               </div>
             </div>
           </div>
@@ -1089,11 +1109,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           <div className="mb-6 rounded-xl bg-card p-4 ring-1 ring-amber-500/30">
             <h3 className="mb-3 flex items-center gap-2 text-lg font-bold text-amber-500">
               <Zap size={20} />
-              🧲 Réglages Snap Magnétique
+              {t("snapPanel.title")}
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="mb-1 block text-sm text-muted-foreground">Sensibilité: {edgeThreshold}</label>
+                <label className="mb-1 block text-sm text-muted-foreground">{t("snapPanel.sensitivity", { value: edgeThreshold })}</label>
                 <input
                   type="range"
                   min="20"
@@ -1105,10 +1125,10 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                   }}
                   className="h-2 w-full cursor-pointer rounded-lg bg-muted accent-amber-500"
                 />
-                <span className="text-xs text-muted-foreground">Bas = plus de points</span>
+                <span className="text-xs text-muted-foreground">{t("snapPanel.sensitivityHint")}</span>
               </div>
               <div>
-                <label className="mb-1 block text-sm text-muted-foreground">Distance snap: {snapDistance}px</label>
+                <label className="mb-1 block text-sm text-muted-foreground">{t("snapPanel.distance", { value: snapDistance })}</label>
                 <input
                   type="range"
                   min="10"
@@ -1117,14 +1137,14 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                   onChange={(e) => handleSnapDistanceChange(parseInt(e.target.value))}
                   className="h-2 w-full cursor-pointer rounded-lg bg-muted accent-amber-500"
                 />
-                <span className="text-xs text-primary">✓ Actif</span>
+                <span className="text-xs text-primary">✓ {t("snapPanel.active")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Button onClick={() => setShowEdges(!showEdges)} variant={showEdges ? "default" : "outline"} size="sm">
-                  {showEdges ? <Eye size={18} /> : <EyeOff size={18} />}
-                  <span className="ml-2">{showEdges ? "Cacher" : "Voir"}</span>
+                  {showEdges ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showEdges ? t("snapPanel.hide") : t("snapPanel.show")}
                 </Button>
-                <span className="text-xs text-muted-foreground">{edgePoints.length} pts</span>
+                <span className="text-xs text-muted-foreground">{t("snapPanel.points", { count: edgePoints.length })}</span>
               </div>
             </div>
           </div>
@@ -1134,30 +1154,38 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         {selectedElement && currentTool === "select" && (
           <div className="mb-6 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
             <h3 className="mb-3 text-lg font-bold">
-              Objet Sélectionné (
-              {selectedElement.type === "line" ? "Ligne" : selectedElement.type === "rect" ? "Rectangle" : selectedElement.type === "circle" ? "Cercle" : selectedElement.type})
+              {t("selection.title", {
+                type:
+                  selectedElement.type === "line"
+                    ? t("selection.typeLine")
+                    : selectedElement.type === "rect"
+                      ? t("selection.typeRect")
+                      : selectedElement.type === "circle"
+                        ? t("selection.typeCircle")
+                        : selectedElement.type,
+              })}
             </h3>
             <div className="flex flex-wrap gap-2">
               {"rotation" in selectedElement && selectedElement.type !== "line" && (
                 <Button onClick={rotateSelected} variant="outline" size="sm">
-                  <RotateCw size={18} className="mr-2" />
-                  Pivoter 45°
+                  <RotateCw size={18} />
+                  {t("selection.rotate")}
                 </Button>
               )}
               <Button onClick={() => scaleSelected(1.2)} variant="outline" size="sm">
-                <Maximize2 size={18} className="mr-2" />
-                Agrandir
+                <Maximize2 size={18} />
+                {t("selection.enlarge")}
               </Button>
               <Button onClick={() => scaleSelected(0.8)} variant="outline" size="sm">
-                <Maximize2 size={18} className="mr-2" style={{ transform: "scale(0.8)" }} />
-                Réduire
+                <Maximize2 size={18} style={{ transform: "scale(0.8)" }} />
+                {t("selection.reduce")}
               </Button>
               <Button onClick={deleteSelected} variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                <Trash2 size={18} className="mr-2" />
-                Supprimer
+                <Trash2 size={18} />
+                {t("selection.delete")}
               </Button>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">💡 Pour redimensionner précisément, tirez les carrés bleus aux coins (ou extrémités pour les lignes)</p>
+            <p className="mt-3 text-xs text-muted-foreground">{t("selection.resizeHint")}</p>
           </div>
         )}
 
@@ -1183,8 +1211,8 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           </div>
 
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            Dimensions: {canvasWidth} × {canvasHeight} cm | Grille: 10cm × 10cm | Largeur néon: {NEON_WIDTH_CM} cm
-            {snapEnabled && image && <span className="text-primary"> | 🎯 Snap magnétique actif!</span>}
+            {t("canvas.dimensions", { w: canvasWidth, h: canvasHeight, tube: NEON_WIDTH_CM })}
+            {snapEnabled && image && <span className="text-primary"> | 🎯 {t("canvas.snapActive")}</span>}
           </div>
         </div>
 
@@ -1192,19 +1220,19 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Outils */}
           <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-            <h3 className="mb-4 text-lg font-bold">Outils</h3>
+            <h3 className="mb-4 text-lg font-bold">{t("toolsGrid.toolsTitle")}</h3>
             <div className="space-y-2">
               <label className="block">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                 <Button size="sm" variant="outline" className="w-full justify-start" onClick={() => fileInputRef.current?.click()}>
-                  <Upload size={18} className="mr-2" />
-                  Charger une image
+                  <Upload size={18} />
+                  {t("toolsGrid.uploadImage")}
                 </Button>
               </label>
 
               <Button size="sm" variant={currentTool === "text" ? "default" : "outline"} onClick={() => setCurrentTool("text")} className="w-full justify-start">
-                <Type size={18} className="mr-2" />
-                Mode Texte
+                <Type size={18} />
+                {t("toolsGrid.textMode")}
               </Button>
 
               {currentTool === "text" && (
@@ -1214,14 +1242,14 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                     type="text"
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
-                    placeholder="Votre texte..."
+                    placeholder={t("toolsGrid.textPlaceholder")}
                     className="flex-1"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && textInput.trim()) addText();
                     }}
                   />
                   <Button onClick={addText} disabled={!textInput.trim()} size="sm">
-                    ➕
+                    <Plus size={18} />
                   </Button>
                 </div>
               )}
@@ -1230,15 +1258,15 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
           {/* Formes */}
           <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-            <h3 className="mb-4 text-lg font-bold">Formes</h3>
+            <h3 className="mb-4 text-lg font-bold">{t("toolsGrid.shapesTitle")}</h3>
             <div className="grid grid-cols-2 gap-2">
               <Button size="sm" variant="outline" onClick={() => addShape("rect")} className="justify-start">
-                <Square size={18} className="mr-2" />
-                Carré
+                <Square size={18} />
+                {t("toolsGrid.square")}
               </Button>
               <Button size="sm" variant="outline" onClick={() => addShape("circle")} className="justify-start">
-                <Circle size={18} className="mr-2" />
-                Cercle
+                <Circle size={18} />
+                {t("toolsGrid.circle")}
               </Button>
             </div>
           </div>
@@ -1247,7 +1275,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10 md:col-span-2 lg:col-span-1">
             <h3 className="mb-4 flex items-center gap-2 text-lg font-bold">
               <Palette size={20} />
-              Couleur
+              {t("toolsGrid.colorTitle")}
             </h3>
 
             <div className="mb-4 flex flex-wrap gap-1.5">
@@ -1272,24 +1300,24 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           <div className="mb-6 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-6 ring-1 ring-primary/20">
             <div className="mb-6 grid grid-cols-1 gap-6 text-center md:grid-cols-2">
               <div>
-                <span className="mb-2 block text-lg text-muted-foreground">Longueur totale:</span>
+                <span className="mb-2 block text-lg text-muted-foreground">{t("price.totalLength")}</span>
                 <span className="text-4xl font-bold text-primary">{totalLength.toFixed(1)} cm</span>
               </div>
               <div>
-                <span className="mb-2 block text-lg text-muted-foreground">Prix estimé:</span>
+                <span className="mb-2 block text-lg text-muted-foreground">{t("price.estimatedPrice")}</span>
                 <span className="font-display text-5xl font-bold text-primary">
-                  {estimatedPrice.toLocaleString()} {CURRENCY}
+                  {estimatedPrice.toLocaleString()} {tCommon("currency")}
                 </span>
               </div>
             </div>
             <p className="mb-4 text-center text-sm text-muted-foreground">
-              Prix calculé à {PRICE_PER_CM} {CURRENCY}/cm — acompte de 30% à la commande.
+              {t("price.footnote", { price: PRICE_PER_CM, currency: tCommon("currency") })}
             </p>
 
             <div className="text-center">
               <Button onClick={handleContinueToQuote} disabled={submitting} size="lg" className="glow-primary px-12 py-6 text-xl font-bold">
-                🚀 Continuer vers la commande
-                <ArrowRight size={24} className="ml-2" />
+                {t("price.continue")}
+                <ArrowRight size={24} />
               </Button>
             </div>
           </div>
@@ -1297,25 +1325,26 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
         {/* Instructions */}
         <div className="rounded-lg bg-card p-4 ring-1 ring-foreground/10">
-          <h4 className="mb-2 font-bold">Instructions:</h4>
+          <h4 className="mb-2 font-bold">{t("instructions.title")}</h4>
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li>
-              • <strong>Mode Sélection:</strong> Cliquez sur un élément pour le sélectionner, déplacer. Tirez les carrés bleus pour redimensionner
+              • <strong>{t("instructions.selectLabel")}</strong> {t("instructions.selectText")}
             </li>
             <li>
-              • <strong>Mode Dessin:</strong> Dessinez librement - {snapEnabled && image && <span className="text-primary">🎯 cercle vert = snap actif!</span>}
+              • <strong>{t("instructions.drawLabel")}</strong> {t("instructions.drawText")}
+              {snapEnabled && image && <span className="text-primary"> — 🎯 {t("instructions.snapActiveHint")}</span>}
             </li>
             <li>
-              • <strong>Mode Ligne:</strong> Cliquez pour définir le point de départ, puis cliquez à nouveau pour le point d&apos;arrivée
+              • <strong>{t("instructions.lineLabel")}</strong> {t("instructions.lineText")}
             </li>
             <li>
-              • <strong>Mode Texte:</strong> Écrivez puis cliquez ➕ ou Entrée
+              • <strong>{t("instructions.textLabel")}</strong> {t("instructions.textText")}
             </li>
             <li>
-              • <strong>Formes:</strong> Rectangle = périmètre | Cercle = circonférence | Ligne = longueur - tout est calculé dans le prix!
+              • <strong>{t("instructions.shapesLabel")}</strong> {t("instructions.shapesText")}
             </li>
             <li>
-              • <strong>Ctrl+Z:</strong> Annuler | <strong>Ctrl+Y:</strong> Refaire | <strong>Delete:</strong> Supprimer | <strong>Échap:</strong> Désélectionner
+              • <strong>{t("instructions.shortcutsLabel")}</strong> {t("instructions.shortcutsText")}
             </li>
           </ul>
         </div>

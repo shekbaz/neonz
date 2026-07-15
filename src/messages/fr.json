@@ -353,5 +353,93 @@
     "currency": "DZD",
     "search": "Rechercher",
     "total": "Total"
+  },
+  "Configurator": {
+    "eyebrow": "Atelier",
+    "title": "Créez votre Néon Personnalisé",
+    "tools": {
+      "select": "Sélection",
+      "draw": "Dessin",
+      "line": "Ligne",
+      "snapOn": "Snap ON",
+      "snapOff": "Snap OFF",
+      "undo": "Annuler",
+      "redo": "Refaire",
+      "export": "Exporter",
+      "clear": "Effacer",
+      "dimensions": "Dimensions"
+    },
+    "settingsPanel": {
+      "title": "Dimensions du plan de travail",
+      "width": "Largeur (10 - {max} cm)",
+      "height": "Hauteur (10 - {max} cm)",
+      "surface": "Surface : {value} cm²",
+      "tubeWidth": "Largeur tube : {value} cm",
+      "autoAdapt": "Auto-adapt actif"
+    },
+    "snapPanel": {
+      "title": "Réglages snap magnétique",
+      "sensitivity": "Sensibilité : {value}",
+      "sensitivityHint": "Bas = plus de points",
+      "distance": "Distance snap : {value}px",
+      "active": "Actif",
+      "show": "Voir",
+      "hide": "Cacher",
+      "points": "{count} pts"
+    },
+    "selection": {
+      "title": "Objet sélectionné ({type})",
+      "typeLine": "Ligne",
+      "typeRect": "Rectangle",
+      "typeCircle": "Cercle",
+      "rotate": "Pivoter 45°",
+      "enlarge": "Agrandir",
+      "reduce": "Réduire",
+      "delete": "Supprimer",
+      "resizeHint": "Pour redimensionner précisément, tirez les carrés bleus aux coins (ou extrémités pour les lignes)"
+    },
+    "canvas": {
+      "dimensions": "Dimensions : {w} × {h} cm | Grille : 10cm × 10cm | Largeur néon : {tube} cm",
+      "snapActive": "Snap magnétique actif !"
+    },
+    "toolsGrid": {
+      "toolsTitle": "Outils",
+      "uploadImage": "Charger une image",
+      "textMode": "Mode texte",
+      "textPlaceholder": "Votre texte...",
+      "shapesTitle": "Formes",
+      "square": "Carré",
+      "circle": "Cercle",
+      "colorTitle": "Couleur"
+    },
+    "price": {
+      "totalLength": "Longueur totale :",
+      "estimatedPrice": "Prix estimé :",
+      "footnote": "Prix calculé à {price} {currency}/cm — acompte de 30% à la commande.",
+      "continue": "Continuer vers la commande"
+    },
+    "instructions": {
+      "title": "Instructions :",
+      "selectLabel": "Mode sélection :",
+      "selectText": "cliquez sur un élément pour le sélectionner, déplacer. Tirez les carrés bleus pour redimensionner.",
+      "drawLabel": "Mode dessin :",
+      "drawText": "dessinez librement",
+      "snapActiveHint": "cercle vert = snap actif !",
+      "lineLabel": "Mode ligne :",
+      "lineText": "cliquez pour définir le point de départ, puis cliquez à nouveau pour le point d'arrivée.",
+      "textLabel": "Mode texte :",
+      "textText": "écrivez puis cliquez ➕ ou Entrée.",
+      "shapesLabel": "Formes :",
+      "shapesText": "rectangle = périmètre | cercle = circonférence | ligne = longueur — tout est calculé dans le prix !",
+      "shortcutsLabel": "Raccourcis :",
+      "shortcutsText": "Ctrl+Z annuler | Ctrl+Y rétablir | Suppr supprimer | Échap désélectionner."
+    },
+    "errors": {
+      "createFirst": "Veuillez d'abord créer votre design !",
+      "saveFailed": "Impossible d'enregistrer le design.",
+      "generic": "Une erreur est survenue.",
+      "confirmClearAll": "Voulez-vous vraiment tout effacer ?"
+    },
+    "customSignName": "Enseigne personnalisée"
   }
 }

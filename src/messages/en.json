@@ -353,5 +353,93 @@
     "currency": "DZD",
     "search": "Search",
     "total": "Total"
+  },
+  "Configurator": {
+    "eyebrow": "Workshop",
+    "title": "Create Your Custom Neon Sign",
+    "tools": {
+      "select": "Select",
+      "draw": "Draw",
+      "line": "Line",
+      "snapOn": "Snap ON",
+      "snapOff": "Snap OFF",
+      "undo": "Undo",
+      "redo": "Redo",
+      "export": "Export",
+      "clear": "Clear",
+      "dimensions": "Dimensions"
+    },
+    "settingsPanel": {
+      "title": "Workspace dimensions",
+      "width": "Width (10 - {max} cm)",
+      "height": "Height (10 - {max} cm)",
+      "surface": "Surface: {value} cm²",
+      "tubeWidth": "Tube width: {value} cm",
+      "autoAdapt": "Auto-adapt active"
+    },
+    "snapPanel": {
+      "title": "Magnetic snap settings",
+      "sensitivity": "Sensitivity: {value}",
+      "sensitivityHint": "Lower = more points",
+      "distance": "Snap distance: {value}px",
+      "active": "Active",
+      "show": "Show",
+      "hide": "Hide",
+      "points": "{count} pts"
+    },
+    "selection": {
+      "title": "Selected object ({type})",
+      "typeLine": "Line",
+      "typeRect": "Rectangle",
+      "typeCircle": "Circle",
+      "rotate": "Rotate 45°",
+      "enlarge": "Enlarge",
+      "reduce": "Shrink",
+      "delete": "Delete",
+      "resizeHint": "To resize precisely, drag the blue squares at the corners (or endpoints for lines)"
+    },
+    "canvas": {
+      "dimensions": "Dimensions: {w} × {h} cm | Grid: 10cm × 10cm | Neon width: {tube} cm",
+      "snapActive": "Magnetic snap active!"
+    },
+    "toolsGrid": {
+      "toolsTitle": "Tools",
+      "uploadImage": "Upload an image",
+      "textMode": "Text mode",
+      "textPlaceholder": "Your text...",
+      "shapesTitle": "Shapes",
+      "square": "Square",
+      "circle": "Circle",
+      "colorTitle": "Color"
+    },
+    "price": {
+      "totalLength": "Total length:",
+      "estimatedPrice": "Estimated price:",
+      "footnote": "Price calculated at {price} {currency}/cm — 30% deposit due at order.",
+      "continue": "Continue to order"
+    },
+    "instructions": {
+      "title": "Instructions:",
+      "selectLabel": "Select mode:",
+      "selectText": "click an element to select it, move it. Drag the blue squares to resize.",
+      "drawLabel": "Draw mode:",
+      "drawText": "draw freely",
+      "snapActiveHint": "green circle = snap active!",
+      "lineLabel": "Line mode:",
+      "lineText": "click to set the starting point, then click again for the end point.",
+      "textLabel": "Text mode:",
+      "textText": "type then click ➕ or Enter.",
+      "shapesLabel": "Shapes:",
+      "shapesText": "rectangle = perimeter | circle = circumference | line = length — all counted in the price!",
+      "shortcutsLabel": "Shortcuts:",
+      "shortcutsText": "Ctrl+Z undo | Ctrl+Y redo | Delete remove | Esc deselect."
+    },
+    "errors": {
+      "createFirst": "Please create your design first!",
+      "saveFailed": "Could not save the design.",
+      "generic": "Something went wrong.",
+      "confirmClearAll": "Are you sure you want to clear everything?"
+    },
+    "customSignName": "Custom neon sign"
   }
 }

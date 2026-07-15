@@ -59,7 +59,7 @@ export function ImageUploader({
             <button
               type="button"
               onClick={() => removeImage(url)}
-              className="absolute right-1 top-1 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+              className="absolute end-1 top-1 rounded-full bg-black/60 p-0.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
               aria-label={t("removeImage")}
             >
               <X className="h-3.5 w-3.5" />

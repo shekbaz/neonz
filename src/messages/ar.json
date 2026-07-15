@@ -353,5 +353,93 @@
     "currency": "دج",
     "search": "بحث",
     "total": "المجموع"
+  },
+  "Configurator": {
+    "eyebrow": "الورشة",
+    "title": "أنشئ لافتة النيون الخاصة بك",
+    "tools": {
+      "select": "تحديد",
+      "draw": "رسم",
+      "line": "خط",
+      "snapOn": "الالتصاق مفعّل",
+      "snapOff": "الالتصاق معطّل",
+      "undo": "تراجع",
+      "redo": "إعادة",
+      "export": "تصدير",
+      "clear": "مسح",
+      "dimensions": "الأبعاد"
+    },
+    "settingsPanel": {
+      "title": "أبعاد مساحة العمل",
+      "width": "العرض (10 - {max} سم)",
+      "height": "الارتفاع (10 - {max} سم)",
+      "surface": "المساحة: {value} سم²",
+      "tubeWidth": "سمك الأنبوب: {value} سم",
+      "autoAdapt": "التكيّف التلقائي مفعّل"
+    },
+    "snapPanel": {
+      "title": "إعدادات الالتصاق المغناطيسي",
+      "sensitivity": "الحساسية: {value}",
+      "sensitivityHint": "منخفض = نقاط أكثر",
+      "distance": "مسافة الالتصاق: {value}px",
+      "active": "مفعّل",
+      "show": "إظهار",
+      "hide": "إخفاء",
+      "points": "{count} نقطة"
+    },
+    "selection": {
+      "title": "العنصر المحدد ({type})",
+      "typeLine": "خط",
+      "typeRect": "مستطيل",
+      "typeCircle": "دائرة",
+      "rotate": "تدوير 45°",
+      "enlarge": "تكبير",
+      "reduce": "تصغير",
+      "delete": "حذف",
+      "resizeHint": "لتغيير الحجم بدقة، اسحب المربعات الزرقاء في الزوايا (أو الأطراف بالنسبة للخطوط)"
+    },
+    "canvas": {
+      "dimensions": "الأبعاد: {w} × {h} سم | الشبكة: 10 سم × 10 سم | سمك النيون: {tube} سم",
+      "snapActive": "الالتصاق المغناطيسي مفعّل!"
+    },
+    "toolsGrid": {
+      "toolsTitle": "الأدوات",
+      "uploadImage": "تحميل صورة",
+      "textMode": "وضع النص",
+      "textPlaceholder": "نصك...",
+      "shapesTitle": "الأشكال",
+      "square": "مربع",
+      "circle": "دائرة",
+      "colorTitle": "اللون"
+    },
+    "price": {
+      "totalLength": "الطول الإجمالي:",
+      "estimatedPrice": "السعر المقدر:",
+      "footnote": "السعر محسوب بـ {price} {currency}/سم — عربون 30% عند الطلب.",
+      "continue": "المتابعة إلى الطلب"
+    },
+    "instructions": {
+      "title": "التعليمات:",
+      "selectLabel": "وضع التحديد:",
+      "selectText": "انقر على عنصر لتحديده أو تحريكه. اسحب المربعات الزرقاء لتغيير الحجم.",
+      "drawLabel": "وضع الرسم:",
+      "drawText": "ارسم بحرية",
+      "snapActiveHint": "دائرة خضراء = الالتصاق مفعّل!",
+      "lineLabel": "وضع الخط:",
+      "lineText": "انقر لتحديد نقطة البداية، ثم انقر مجددًا لنقطة النهاية.",
+      "textLabel": "وضع النص:",
+      "textText": "اكتب ثم انقر ➕ أو Enter.",
+      "shapesLabel": "الأشكال:",
+      "shapesText": "المستطيل = المحيط | الدائرة = المحيط الدائري | الخط = الطول — كل ذلك محسوب في السعر!",
+      "shortcutsLabel": "الاختصارات:",
+      "shortcutsText": "Ctrl+Z تراجع | Ctrl+Y إعادة | Delete حذف | Esc إلغاء التحديد."
+    },
+    "errors": {
+      "createFirst": "يرجى إنشاء تصميمك أولاً!",
+      "saveFailed": "تعذّر حفظ التصميم.",
+      "generic": "حدث خطأ ما.",
+      "confirmClearAll": "هل تريد حقًا مسح كل شيء؟"
+    },
+    "customSignName": "لافتة نيون مخصصة"
   }
 }

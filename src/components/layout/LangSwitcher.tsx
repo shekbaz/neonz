@@ -13,9 +13,9 @@ import { Globe } from "lucide-react";
 import { routing } from "@/i18n/routing";
 
 const LOCALE_LABELS: Record<string, string> = {
-  fr: "Français",
-  en: "English",
-  ar: "العربية",
+  fr: "FR",
+  en: "EN",
+  ar: "AR",
 };
 
 export function LangSwitcher() {
