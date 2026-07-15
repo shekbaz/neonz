@@ -79,6 +79,10 @@ export const NEON_COLORS = [
 export type NeonColorId = (typeof NEON_COLORS)[number]["id"];
 
 export const NEON_FONTS = [
+  { id: "caveat-regular", label: "Caveat", file: "/fonts/Caveat-Regular.ttf" },
+  { id: "caveat-medium", label: "Caveat Medium", file: "/fonts/Caveat-Medium.ttf" },
+  { id: "caveat-semibold", label: "Caveat SemiBold", file: "/fonts/Caveat-SemiBold.ttf" },
+  { id: "caveat-bold", label: "Caveat Bold", file: "/fonts/Caveat-Bold.ttf" },
   { id: "pacifico", label: "Pacifico", file: "/fonts/Pacifico-Regular.ttf" },
   { id: "dancing-script", label: "Dancing Script", file: "/fonts/DancingScript-Bold.ttf" },
   { id: "tangerine", label: "Tangerine", file: "/fonts/Tangerine-Bold.ttf" },
@@ -101,6 +105,10 @@ export type NeonFontId = (typeof NEON_FONTS)[number]["id"];
 
 /** id CSS font-family utilisable directement par le canvas (`font: bold 32px "<family>"`), une police web déjà chargée par l'app (voir globals.css @font-face). */
 export const NEON_FONT_FAMILIES: Record<NeonFontId, string> = {
+  "caveat-regular": "Caveat Regular",
+  "caveat-medium": "Caveat Medium",
+  "caveat-semibold": "Caveat SemiBold",
+  "caveat-bold": "Caveat Bold",
   pacifico: "Pacifico",
   "dancing-script": "Dancing Script",
   tangerine: "Tangerine",

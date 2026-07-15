@@ -218,6 +218,29 @@
   src: url("/fonts/Monoton-Regular.ttf") format("truetype");
   font-display: swap;
 }
+/* Caveat : trait fin et régulier (contrairement aux scripts décoratifs
+   ci-dessus) — seule famille du configurateur rendue en contour plutôt
+   qu'en remplissage, pour un tube néon à épaisseur réellement fixe. */
+@font-face {
+  font-family: "Caveat Regular";
+  src: url("/fonts/Caveat-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Caveat Medium";
+  src: url("/fonts/Caveat-Medium.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Caveat SemiBold";
+  src: url("/fonts/Caveat-SemiBold.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Caveat Bold";
+  src: url("/fonts/Caveat-Bold.ttf") format("truetype");
+  font-display: swap;
+}
 
 :lang(ar) body {
   font-family: var(--font-cairo);

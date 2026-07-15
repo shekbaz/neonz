@@ -96,6 +96,13 @@ const NEON_WIDTH_CM = 1;
 const NEON_WIDTH_PX = NEON_WIDTH_CM * CM_TO_PX;
 const PRICE_PER_CM = 180;
 const MAX_DIMENSIONS = { width: 85, height: 85 };
+// Une lettre doit rester bien plus grande que l'épaisseur du tube (1cm) pour
+// que celui-ci reste lisible en la traçant : 12cm de haut par défaut, avec
+// une plage d'agrandissement/réduction qui ne redescend jamais en dessous
+// d'une taille où le tube engloutirait la forme des lettres.
+const DEFAULT_TEXT_FONT_SIZE_PX = 12 * CM_TO_PX;
+const MIN_TEXT_FONT_SIZE_PX = 6 * CM_TO_PX;
+const MAX_TEXT_FONT_SIZE_PX = 40 * CM_TO_PX;
 
 const NEON_COLORS = [
   { name: "Cyan", value: "#00FFFF" },
@@ -534,18 +541,20 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         ctx.lineTo(el.x2, el.y2);
         ctx.stroke();
       } else if (el.type === "text") {
-        // Remplissage plein avec une police néon (trait fin et régulier par
-        // conception, contrairement à un Arial gras) : tracer uniquement le
-        // contour d'un glyphe épais dessine deux lignes distinctes (bord
-        // extérieur + bord intérieur de la lettre), avec un espace non
-        // éclairé entre les deux — d'où le double contour indésirable.
+        // Contour seul, à épaisseur fixe NEON_WIDTH_PX (comme les autres
+        // éléments) : ne donne un trait unique propre, sans double contour,
+        // que parce que "Caveat" a un trait déjà fin par conception —
+        // contrairement aux scripts décoratifs épais (Pacifico, etc.), dont
+        // le remplissage plein est nécessaire pour ne pas dédoubler le trait.
         ctx.font = `${el.fontSize}px "${NEON_FONT_FAMILIES[el.fontId] ?? "sans-serif"}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = el.color;
+        ctx.strokeStyle = el.color;
+        ctx.lineWidth = NEON_WIDTH_PX;
+        ctx.lineJoin = "round";
         ctx.shadowColor = el.color;
         ctx.shadowBlur = 20;
-        ctx.fillText(el.content, el.x, el.y);
+        ctx.strokeText(el.content, el.x, el.y);
       } else if (el.type === "rect" && el.width && el.height) {
         ctx.strokeStyle = el.color;
         ctx.lineWidth = NEON_WIDTH_PX;
@@ -659,7 +668,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           y: pos.y,
           content: textInput,
           color: currentColor,
-          fontSize: 32,
+          fontSize: DEFAULT_TEXT_FONT_SIZE_PX,
           fontId: textFontId,
           rotation: 0,
         };
@@ -839,7 +848,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
       y: heightPx / 2,
       content: textInput,
       color: currentColor,
-      fontSize: 32,
+      fontSize: DEFAULT_TEXT_FONT_SIZE_PX,
       fontId: textFontId,
       rotation: 0,
     };
@@ -875,7 +884,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
     const newElements = elements.map((el) => {
       if (el.id !== selectedId) return el;
 
-      if (el.type === "text") return { ...el, fontSize: Math.max(12, Math.min(120, el.fontSize * scale)) };
+      if (el.type === "text") return { ...el, fontSize: Math.max(MIN_TEXT_FONT_SIZE_PX, Math.min(MAX_TEXT_FONT_SIZE_PX, el.fontSize * scale)) };
       if (el.type === "rect" && el.width && el.height) return { ...el, width: el.width * scale, height: el.height * scale };
       if (el.type === "circle" && el.radius) return { ...el, radius: el.radius * scale };
 
