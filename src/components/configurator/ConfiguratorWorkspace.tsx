@@ -523,14 +523,15 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.strokeStyle = el.color;
+        // Contour uniquement (pas de fillText) : le remplissage plein d'un
+        // glyphe épaissit avec fontSize (propriété de la police), ce qui
+        // casse l'épaisseur fixe de 1cm — comme une vraie enseigne néon,
+        // seul le tube (contour) doit rester à NEON_WIDTH_PX constant.
         ctx.lineWidth = NEON_WIDTH_PX;
         ctx.lineJoin = "round";
         ctx.shadowColor = el.color;
         ctx.shadowBlur = 20;
         ctx.strokeText(el.content, el.x, el.y);
-        ctx.fillStyle = el.color;
-        ctx.shadowBlur = 15;
-        ctx.fillText(el.content, el.x, el.y);
       } else if (el.type === "rect" && el.width && el.height) {
         ctx.strokeStyle = el.color;
         ctx.lineWidth = NEON_WIDTH_PX;
