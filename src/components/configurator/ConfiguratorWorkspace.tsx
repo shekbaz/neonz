@@ -121,6 +121,136 @@ interface AdminColor {
   hex: string;
 }
 
+/**
+ * Réduit un masque binaire (glyphe plein) à sa ligne centrale (squelette) —
+ * algorithme de Zhang-Suen, deux sous-itérations qui érodent les pixels de
+ * bord tant qu'ils ne cassent pas la connectivité du tracé. Nécessaire car
+ * TOUT contour de police (aussi fine soit-elle) épaissit avec la taille de
+ * police ; seul le squelette permet un tube à épaisseur réellement fixe,
+ * quelle que soit la taille du texte ou la police choisie.
+ */
+function zhangSuenThinning(binary: Uint8Array, width: number, height: number): Uint8Array {
+  const img = binary.slice();
+  const get = (x: number, y: number) => (x < 0 || y < 0 || x >= width || y >= height ? 0 : img[y * width + x]);
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const step of [0, 1]) {
+      const toClear: number[] = [];
+      for (let y = 1; y < height - 1; y++) {
+        for (let x = 1; x < width - 1; x++) {
+          if (!get(x, y)) continue;
+          const p2 = get(x, y - 1);
+          const p3 = get(x + 1, y - 1);
+          const p4 = get(x + 1, y);
+          const p5 = get(x + 1, y + 1);
+          const p6 = get(x, y + 1);
+          const p7 = get(x - 1, y + 1);
+          const p8 = get(x - 1, y);
+          const p9 = get(x - 1, y - 1);
+          const neighbors = [p2, p3, p4, p5, p6, p7, p8, p9];
+          const b = neighbors.reduce((a, v) => a + v, 0);
+          if (b < 2 || b > 6) continue;
+          let a = 0;
+          for (let i = 0; i < 8; i++) if (neighbors[i] === 0 && neighbors[(i + 1) % 8] === 1) a++;
+          if (a !== 1) continue;
+          if (step === 0) {
+            if (p2 * p4 * p6 !== 0 || p4 * p6 * p8 !== 0) continue;
+          } else {
+            if (p2 * p4 * p8 !== 0 || p2 * p6 * p8 !== 0) continue;
+          }
+          toClear.push(y * width + x);
+        }
+      }
+      if (toClear.length > 0) {
+        changed = true;
+        for (const idx of toClear) img[idx] = 0;
+      }
+    }
+  }
+  return img;
+}
+
+/** Épaissit un masque (ici : le squelette) de `radiusPx` dans toutes les directions — donne au tracé du squelette l'épaisseur fixe du tube néon. */
+function dilateMask(mask: Uint8Array, width: number, height: number, radiusPx: number): Uint8Array {
+  const out = new Uint8Array(width * height);
+  const r = Math.ceil(radiusPx);
+  const r2 = radiusPx * radiusPx;
+  const offsets: Array<[number, number]> = [];
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dy * dy <= r2) offsets.push([dx, dy]);
+    }
+  }
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!mask[y * width + x]) continue;
+      for (const [dx, dy] of offsets) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < width && ny < height) out[ny * width + nx] = 1;
+      }
+    }
+  }
+  return out;
+}
+
+const GLYPH_RASTER_PADDING = Math.ceil(NEON_WIDTH_PX * 1.5) + 4;
+
+/** Dessine le texte plein (glyphes de la police) dans un canvas hors-écran, pour en extraire un masque binaire (alpha > seuil). */
+function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: number) {
+  const measure = document.createElement("canvas").getContext("2d")!;
+  measure.textAlign = "center";
+  measure.textBaseline = "middle";
+  measure.font = `${fontSizePx}px "${fontFamily}"`;
+  const metrics = measure.measureText(content);
+  // Mesure réelle de l'encre du glyphe (boîte englobante), pas une estimation
+  // approximative par caractère — sous-évaluer rogne les jambages/boucles des
+  // scripts cursifs (lettres liées, plus larges que largeur*nb caractères).
+  const halfWidth = Math.max(metrics.actualBoundingBoxLeft ?? 0, metrics.actualBoundingBoxRight ?? 0, fontSizePx * 0.6);
+  const halfHeight = Math.max((metrics.actualBoundingBoxAscent ?? 0) + (metrics.actualBoundingBoxDescent ?? 0), fontSizePx) / 2;
+  const width = Math.ceil(halfWidth * 2) + GLYPH_RASTER_PADDING * 2;
+  const height = Math.ceil(halfHeight * 2) + GLYPH_RASTER_PADDING * 2;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `${fontSizePx}px "${fontFamily}"`;
+  ctx.fillText(content, width / 2, height / 2);
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const binary = new Uint8Array(width * height);
+  for (let i = 0; i < width * height; i++) binary[i] = imageData.data[i * 4 + 3] > 127 ? 1 : 0;
+  return { binary, width, height };
+}
+
+/** Construit (et met en cache) le tube néon d'un texte : squelette du glyphe, dilaté à l'épaisseur fixe du tube — un canvas blanc/alpha, à teinter à la couleur voulue au moment du rendu. */
+function buildTextTubeStencil(content: string, fontFamily: string, fontSizePx: number, tubeWidthPx: number): HTMLCanvasElement {
+  const { binary, width, height } = rasterizeGlyphAlpha(content, fontFamily, fontSizePx);
+  const skeleton = zhangSuenThinning(binary, width, height);
+  const dilated = dilateMask(skeleton, width, height, tubeWidthPx / 2);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  const imageData = ctx.createImageData(width, height);
+  for (let i = 0; i < width * height; i++) {
+    if (dilated[i]) {
+      imageData.data[i * 4] = 255;
+      imageData.data[i * 4 + 1] = 255;
+      imageData.data[i * 4 + 2] = 255;
+      imageData.data[i * 4 + 3] = 255;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
 export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: AdminColor[] }) {
   const t = useTranslations("Configurator");
   const tCommon = useTranslations("Common");
@@ -128,6 +258,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
+  // Cache des tubes néon de texte (squelette dilaté), par contenu/police/taille
+  // — coûteux à calculer (amincissement), pas besoin de le refaire à chaque
+  // frame tant que ces trois valeurs ne changent pas (drag/couleur : gratuits).
+  const textTubeCacheRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
+  const tintScratchRef = useRef<HTMLCanvasElement | null>(null);
 
   // Palette gérée par l'admin (voir /admin/couleurs) — repli sur la palette néon
   // par défaut si l'admin n'a encore configuré aucune couleur.
@@ -540,21 +675,33 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         ctx.moveTo(el.x1, el.y1);
         ctx.lineTo(el.x2, el.y2);
         ctx.stroke();
-      } else if (el.type === "text") {
-        // Contour seul, à épaisseur fixe NEON_WIDTH_PX (comme les autres
-        // éléments) : ne donne un trait unique propre, sans double contour,
-        // que parce que "Caveat" a un trait déjà fin par conception —
-        // contrairement aux scripts décoratifs épais (Pacifico, etc.), dont
-        // le remplissage plein est nécessaire pour ne pas dédoubler le trait.
-        ctx.font = `${el.fontSize}px "${NEON_FONT_FAMILIES[el.fontId] ?? "sans-serif"}"`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.strokeStyle = el.color;
-        ctx.lineWidth = NEON_WIDTH_PX;
-        ctx.lineJoin = "round";
+      } else if (el.type === "text" && el.content) {
+        // Trait du squelette du glyphe (pas son contour plein) : épaisseur
+        // réellement fixe à toute taille et pour n'importe quelle police —
+        // voir buildTextTubeStencil / zhangSuenThinning plus haut.
+        const family = NEON_FONT_FAMILIES[el.fontId] ?? "sans-serif";
+        const cacheKey = `${family}::${Math.round(el.fontSize)}::${el.content}`;
+        let stencil = textTubeCacheRef.current.get(cacheKey);
+        if (!stencil) {
+          stencil = buildTextTubeStencil(el.content, family, el.fontSize, NEON_WIDTH_PX);
+          textTubeCacheRef.current.set(cacheKey, stencil);
+        }
+
+        if (!tintScratchRef.current) tintScratchRef.current = document.createElement("canvas");
+        const scratch = tintScratchRef.current;
+        scratch.width = stencil.width;
+        scratch.height = stencil.height;
+        const sctx = scratch.getContext("2d")!;
+        sctx.clearRect(0, 0, stencil.width, stencil.height);
+        sctx.drawImage(stencil, 0, 0);
+        sctx.globalCompositeOperation = "source-in";
+        sctx.fillStyle = el.color;
+        sctx.fillRect(0, 0, stencil.width, stencil.height);
+        sctx.globalCompositeOperation = "source-over";
+
         ctx.shadowColor = el.color;
         ctx.shadowBlur = 20;
-        ctx.strokeText(el.content, el.x, el.y);
+        ctx.drawImage(scratch, el.x - stencil.width / 2, el.y - stencil.height / 2);
       } else if (el.type === "rect" && el.width && el.height) {
         ctx.strokeStyle = el.color;
         ctx.lineWidth = NEON_WIDTH_PX;
