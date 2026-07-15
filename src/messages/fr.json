@@ -410,7 +410,8 @@
       "shapesTitle": "Formes",
       "square": "Carré",
       "circle": "Cercle",
-      "colorTitle": "Couleur"
+      "colorTitle": "Couleur",
+      "fontLabel": "Police néon"
     },
     "price": {
       "totalLength": "Longueur totale :",

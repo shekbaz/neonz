@@ -410,7 +410,8 @@
       "shapesTitle": "Shapes",
       "square": "Square",
       "circle": "Circle",
-      "colorTitle": "Color"
+      "colorTitle": "Color",
+      "fontLabel": "Neon font"
     },
     "price": {
       "totalLength": "Total length:",

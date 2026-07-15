@@ -410,7 +410,8 @@
       "shapesTitle": "الأشكال",
       "square": "مربع",
       "circle": "دائرة",
-      "colorTitle": "اللون"
+      "colorTitle": "اللون",
+      "fontLabel": "خط النيون"
     },
     "price": {
       "totalLength": "الطول الإجمالي:",

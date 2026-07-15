@@ -6,6 +6,9 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { NEON_FONTS, NEON_FONT_FAMILIES, type NeonFontId } from "@/types/neon";
 import {
   Upload,
   Download,
@@ -49,6 +52,7 @@ interface TextElement extends Point {
   content: string;
   color: string;
   fontSize: number;
+  fontId: NeonFontId;
   rotation: number;
   selected?: boolean;
 }
@@ -140,6 +144,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   const [lineStart, setLineStart] = useState<Point | null>(null);
 
   const [textInput, setTextInput] = useState("");
+  const [textFontId, setTextFontId] = useState<NeonFontId>(NEON_FONTS[0].id);
   const [canvasWidth, setCanvasWidth] = useState(50);
   const [canvasHeight, setCanvasHeight] = useState(40);
 
@@ -383,6 +388,16 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   }, [selectedId, historyIndex, history]);
 
   useEffect(() => {
+    // Canvas 2D ne suit pas font-display: swap comme le HTML — sans ce
+    // chargement explicite, ctx.font utilise la police de secours tant
+    // qu'aucun autre repaint n'est déclenché après le chargement réel.
+    Promise.all(NEON_FONTS.map((font) => document.fonts.load(`32px "${NEON_FONT_FAMILIES[font.id]}"`)))
+      .then(() => drawCanvas())
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     drawCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [image, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart]);
@@ -519,19 +534,18 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         ctx.lineTo(el.x2, el.y2);
         ctx.stroke();
       } else if (el.type === "text") {
-        ctx.font = `bold ${el.fontSize}px Arial`;
+        // Remplissage plein avec une police néon (trait fin et régulier par
+        // conception, contrairement à un Arial gras) : tracer uniquement le
+        // contour d'un glyphe épais dessine deux lignes distinctes (bord
+        // extérieur + bord intérieur de la lettre), avec un espace non
+        // éclairé entre les deux — d'où le double contour indésirable.
+        ctx.font = `${el.fontSize}px "${NEON_FONT_FAMILIES[el.fontId] ?? "sans-serif"}"`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.strokeStyle = el.color;
-        // Contour uniquement (pas de fillText) : le remplissage plein d'un
-        // glyphe épaissit avec fontSize (propriété de la police), ce qui
-        // casse l'épaisseur fixe de 1cm — comme une vraie enseigne néon,
-        // seul le tube (contour) doit rester à NEON_WIDTH_PX constant.
-        ctx.lineWidth = NEON_WIDTH_PX;
-        ctx.lineJoin = "round";
+        ctx.fillStyle = el.color;
         ctx.shadowColor = el.color;
         ctx.shadowBlur = 20;
-        ctx.strokeText(el.content, el.x, el.y);
+        ctx.fillText(el.content, el.x, el.y);
       } else if (el.type === "rect" && el.width && el.height) {
         ctx.strokeStyle = el.color;
         ctx.lineWidth = NEON_WIDTH_PX;
@@ -646,6 +660,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           content: textInput,
           color: currentColor,
           fontSize: 32,
+          fontId: textFontId,
           rotation: 0,
         };
         saveToHistory([...elements, newText]);
@@ -825,6 +840,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
       content: textInput,
       color: currentColor,
       fontSize: 32,
+      fontId: textFontId,
       rotation: 0,
     };
     saveToHistory([...elements, newText]);
@@ -1233,21 +1249,44 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
               </Button>
 
               {currentTool === "text" && (
-                <div className="flex gap-2">
-                  <Input
-                    ref={textInputRef}
-                    type="text"
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    placeholder={t("toolsGrid.textPlaceholder")}
-                    className="flex-1"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && textInput.trim()) addText();
-                    }}
-                  />
-                  <Button onClick={addText} disabled={!textInput.trim()} size="sm">
-                    <Plus size={18} />
-                  </Button>
+                <div className="space-y-2">
+                  <div>
+                    <Label htmlFor="configurator-font" className="mb-1 block text-xs">
+                      {t("toolsGrid.fontLabel")}
+                    </Label>
+                    <Select
+                      items={NEON_FONTS.map((f) => ({ value: f.id, label: f.label }))}
+                      value={textFontId}
+                      onValueChange={(v) => v && setTextFontId(v as NeonFontId)}
+                    >
+                      <SelectTrigger id="configurator-font" className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {NEON_FONTS.map((font) => (
+                          <SelectItem key={font.id} value={font.id} style={{ fontFamily: `"${NEON_FONT_FAMILIES[font.id]}"` }}>
+                            {font.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      ref={textInputRef}
+                      type="text"
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      placeholder={t("toolsGrid.textPlaceholder")}
+                      className="flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && textInput.trim()) addText();
+                      }}
+                    />
+                    <Button onClick={addText} disabled={!textInput.trim()} size="sm">
+                      <Plus size={18} />
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
