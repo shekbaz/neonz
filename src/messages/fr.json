@@ -60,13 +60,6 @@
     "saveError": "Impossible d'enregistrer le design.",
     "genericError": "Une erreur est survenue.",
     "customSignName": "Enseigne personnalisée",
-    "comingSoonBadge": "En cours d'allumage",
-    "comingSoon": "Notre configurateur d'enseignes néon personnalisées arrive très prochainement. Revenez bientôt !",
-    "comingSoonCta": "Voir le catalogue en attendant",
-    "steps": {
-      "create": "Créer",
-      "finalize": "Finaliser"
-    },
     "stepCreate": {
       "addText": "Ajouter du texte",
       "addImage": "Ajouter une image",
@@ -129,9 +122,7 @@
       "totalPrice": "Prix total",
       "depositNote": "Acompte de {amount} DZD (30%) à régler avant fabrication — le solde est réglé à la livraison.",
       "addToCart": "Commander"
-    },
-    "next": "Suivant",
-    "back": "Retour"
+    }
   },
   "Checkout": {
     "title": "Finaliser la commande",

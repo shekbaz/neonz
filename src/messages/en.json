@@ -60,13 +60,6 @@
     "saveError": "Could not save the design.",
     "genericError": "Something went wrong.",
     "customSignName": "Custom neon sign",
-    "comingSoonBadge": "Warming up",
-    "comingSoon": "Our custom neon sign configurator is launching very soon. Check back shortly!",
-    "comingSoonCta": "Browse the catalog in the meantime",
-    "steps": {
-      "create": "Create",
-      "finalize": "Finalize"
-    },
     "stepCreate": {
       "addText": "Add text",
       "addImage": "Add image",
@@ -129,9 +122,7 @@
       "totalPrice": "Total price",
       "depositNote": "Deposit of {amount} DZD (30%) due before production — the remaining balance is paid on delivery.",
       "addToCart": "Order now"
-    },
-    "next": "Next",
-    "back": "Back"
+    }
   },
   "Checkout": {
     "title": "Complete your order",

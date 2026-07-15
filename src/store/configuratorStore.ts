@@ -4,7 +4,6 @@ import type { NeonElement, Point } from "@/types/neon";
 import type { DesignPriceBreakdown } from "@/lib/neon/pricing";
 import { translateElement, rotateElement, scaleElement, scaleElementsToWorkspace } from "@/lib/neon/elementGeometry";
 
-export type ConfiguratorStep = 1 | 2;
 export type SupportType = "acrylic-transparent" | "acrylic-black" | "silhouette-cut";
 
 /** Surface de travail fixe du canvas unifié — les éléments ajoutés (texte, dessin, formes)
@@ -13,10 +12,6 @@ export const DEFAULT_WORKSPACE_WIDTH_PX = 600;
 export const DEFAULT_WORKSPACE_HEIGHT_PX = 400;
 
 interface ConfiguratorState {
-  step: ConfiguratorStep;
-  /** Étape la plus avancée jamais atteinte — borne la navigation avant du stepper cliquable. */
-  furthestStepReached: ConfiguratorStep;
-
   elements: NeonElement[];
   /** Piles d'annulation/rétablissement des éditions manuelles (couleur, suppression, déplacement, ajout...). */
   elementsHistory: NeonElement[][];
@@ -32,10 +27,6 @@ interface ConfiguratorState {
   hasRemote: boolean;
 
   priceBreakdown: DesignPriceBreakdown | null;
-
-  setStep: (step: ConfiguratorStep) => void;
-  goNext: () => void;
-  goBack: () => void;
 
   setElements: (elements: NeonElement[], workspaceWidthPx: number, workspaceHeightPx: number) => void;
   addElement: (el: NeonElement) => void;
@@ -64,7 +55,6 @@ interface ConfiguratorState {
   setHasRemote: (value: boolean) => void;
   setPriceBreakdown: (breakdown: DesignPriceBreakdown | null) => void;
 
-  canProceedFromCurrentStep: () => boolean;
   reset: () => void;
 }
 
@@ -78,8 +68,6 @@ const volatileInitialState = {
 };
 
 const initialState = {
-  step: 1 as ConfiguratorStep,
-  furthestStepReached: 1 as ConfiguratorStep,
   workspaceWidthPx: DEFAULT_WORKSPACE_WIDTH_PX,
   workspaceHeightPx: DEFAULT_WORKSPACE_HEIGHT_PX,
   widthCm: 60,
@@ -114,14 +102,6 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
   persist(
     (set, get) => ({
       ...initialState,
-
-      setStep: (step) => set({ step }),
-      goNext: () =>
-        set((s) => {
-          const next = (s.step < 2 ? s.step + 1 : s.step) as ConfiguratorStep;
-          return { step: next, furthestStepReached: (Math.max(s.furthestStepReached, next) as ConfiguratorStep) };
-        }),
-      goBack: () => set((s) => ({ step: (s.step > 1 ? ((s.step - 1) as ConfiguratorStep) : s.step) })),
 
       // Remplacement complet (ex: "Nouveau design") : pas une édition manuelle,
       // donc pas d'entrée d'historique.
@@ -223,31 +203,17 @@ export const useConfiguratorStore = create<ConfiguratorState>()(
       setHasRemote: (hasRemote) => set({ hasRemote }),
       setPriceBreakdown: (priceBreakdown) => set({ priceBreakdown }),
 
-      canProceedFromCurrentStep: () => {
-        const s = get();
-        switch (s.step) {
-          case 1:
-            return s.elements.length > 0;
-          case 2:
-            return true;
-          default:
-            return false;
-        }
-      },
-
       reset: () => set(initialState),
     }),
     {
       name: "neonz-configurator",
       storage: createJSONStorage(() => localStorage),
-      version: 3,
+      version: 4,
       // Le canvas est composé librement par l'utilisateur (texte/dessin/formes,
       // édition de zone) sans régénération automatique au chargement —
       // `elements` doit donc être persisté, sous peine de perdre le design à
       // un rafraîchissement.
       partialize: (s) => ({
-        step: s.step,
-        furthestStepReached: s.furthestStepReached,
         elements: s.elements,
         widthCm: s.widthCm,
         heightCm: s.heightCm,
