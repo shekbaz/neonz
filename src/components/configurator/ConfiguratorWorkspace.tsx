@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { NEON_FONTS, NEON_FONT_FAMILIES, type NeonFontId } from "@/types/neon";
+import { NEON_FONTS, NEON_FONT_FAMILIES, DEFAULT_GLOW_INTENSITY, type NeonFontId } from "@/types/neon";
+import { CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
 import {
   Upload,
   Download,
@@ -31,6 +32,9 @@ import {
   Minus,
   Pencil,
   Plus,
+  Copy,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 /**
@@ -46,7 +50,15 @@ interface Point {
   y: number;
 }
 
-interface TextElement extends Point {
+/** Propriétés d'éclairage communes — mêmes champs (et mêmes défauts) que le schéma serveur `customDesign.schema.ts` : glowIntensity 0-100, blink = contrôleur multi-zone requis. */
+interface NeonLighting {
+  /** Intensité du halo lumineux (0-100), défaut DEFAULT_GLOW_INTENSITY */
+  glowIntensity?: number;
+  /** Clignotement — implique le surcoût contrôleur multi-zone (voir pricing.ts) */
+  blink?: boolean;
+}
+
+interface TextElement extends Point, NeonLighting {
   id: string;
   type: "text";
   content: string;
@@ -57,7 +69,7 @@ interface TextElement extends Point {
   selected?: boolean;
 }
 
-interface DrawElement {
+interface DrawElement extends NeonLighting {
   id: string;
   type: "draw";
   points: Point[];
@@ -66,7 +78,7 @@ interface DrawElement {
   selected?: boolean;
 }
 
-interface LineElement {
+interface LineElement extends NeonLighting {
   id: string;
   type: "line";
   x1: number;
@@ -78,7 +90,7 @@ interface LineElement {
   selected?: boolean;
 }
 
-interface ShapeElement extends Point {
+interface ShapeElement extends Point, NeonLighting {
   id: string;
   type: "rect" | "circle";
   color: string;
@@ -119,6 +131,30 @@ interface AdminColor {
   _id: string;
   name: string;
   hex: string;
+}
+
+// Sauvegarde locale automatique du design en cours (localStorage) — restaurée
+// au montage pour ne pas perdre le travail sur un rafraîchissement de page.
+const AUTOSAVE_KEY = "neonzart-configurator-draft";
+const AUTOSAVE_DELAY_MS = 400;
+
+/** Intensité 0-100 → flou d'ombre canvas. Au défaut (60), retrouve le blur historique de ~20px. */
+function glowBlurPx(glowIntensity: number | undefined): number {
+  return ((glowIntensity ?? DEFAULT_GLOW_INTENSITY) / 100) * 33;
+}
+
+/**
+ * Couleur d'un tube néon ÉTEINT (aperçu jour) : un tube LED hors tension
+ * garde une teinte laiteuse et pâle de sa couleur — mélange vers le blanc,
+ * sans halo. Utilisé uniquement pour le rendu, jamais persisté.
+ */
+function toUnlitColor(hex: string): string {
+  const raw = hex.replace("#", "");
+  const full = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw;
+  const n = parseInt(full, 16);
+  if (full.length !== 6 || Number.isNaN(n)) return "#d6d3d1";
+  const mix = (c: number) => Math.round(c * 0.45 + 255 * 0.55);
+  return `rgb(${mix((n >> 16) & 255)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`;
 }
 
 /**
@@ -300,6 +336,12 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
   const [showSettings, setShowSettings] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Aperçu jour (enseigne éteinte, fond clair) vs nuit (allumée, fond sombre).
+  const [previewMode, setPreviewMode] = useState<"night" | "day">("night");
+  // Phase de l'animation de clignotement (bascule via setInterval quand au
+  // moins un élément a blink: true et que l'aperçu est en mode nuit).
+  const [blinkPhase, setBlinkPhase] = useState(true);
 
   const widthPx = canvasWidth * CM_TO_PX;
   const heightPx = canvasHeight * CM_TO_PX;
@@ -499,7 +541,12 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
     }, 0);
   }, [elements]);
 
-  const estimatedPrice = Math.round(totalLength * PRICE_PER_CM);
+  // Le clignotement (n'importe quel élément) requiert un contrôleur multi-zone
+  // physique — même règle que le serveur (route /api/customize/designs), qui
+  // re-dérive lui-même ce surcoût des éléments, jamais du prix envoyé.
+  const hasBlinkElements = elements.some((el) => el.blink);
+  const controllerSurcharge = hasBlinkElements ? CONTROLLER_OPTION_PRICE : 0;
+  const estimatedPrice = Math.round(totalLength * PRICE_PER_CM) + controllerSurcharge;
 
   function handleSnapDistanceChange(value: number) {
     setSnapDistance(value);
@@ -508,26 +555,98 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+      // Ne pas voler les touches quand l'utilisateur tape dans un champ
+      // (sinon Suppr dans l'input texte effaçait l'élément sélectionné).
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable)) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         undo();
+        return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
         e.preventDefault();
         redo();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        duplicateSelected();
+        return;
       }
       if (e.key === "Delete" && selectedId) {
         deleteSelected();
+        return;
       }
       if (e.key === "Escape") {
         setSelectedId(null);
         setCurrentTool("select");
+        return;
+      }
+      if (selectedId && (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        e.preventDefault();
+        // Déplacement fin au pixel ; Maj = pas de 1 cm (grille métier).
+        const step = e.shiftKey ? CM_TO_PX : 1;
+        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        nudgeSelected(dx, dy);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, historyIndex, history]);
+  }, [selectedId, historyIndex, history, elements]);
+
+  // Restauration du brouillon local (une seule fois, au montage) — l'image de
+  // référence n'est pas persistée (data URL trop lourde), seulement le design.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(AUTOSAVE_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { elements?: unknown; canvasWidth?: unknown; canvasHeight?: unknown };
+      if (!Array.isArray(draft.elements) || draft.elements.length === 0) return;
+      const restored = draft.elements.filter(
+        (el): el is CanvasElement =>
+          !!el && typeof el === "object" && "type" in el && ["text", "draw", "line", "rect", "circle"].includes((el as { type: string }).type)
+      );
+      if (restored.length === 0) return;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- pattern standard : hydratation depuis localStorage (indisponible au rendu serveur), une seule fois au montage
+      setElements(restored);
+      setHistory([[], restored]);
+      setHistoryIndex(1);
+      if (typeof draft.canvasWidth === "number") setCanvasWidth(Math.max(10, Math.min(MAX_DIMENSIONS.width, Math.round(draft.canvasWidth))));
+      if (typeof draft.canvasHeight === "number") setCanvasHeight(Math.max(10, Math.min(MAX_DIMENSIONS.height, Math.round(draft.canvasHeight))));
+      toast.info(t("autosave.restored"));
+    } catch {
+      // Brouillon corrompu ou stockage indisponible : on repart de zéro.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sauvegarde locale automatique, légèrement différée pour ne pas écrire à
+  // chaque point de dessin libre — un design vide supprime le brouillon.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        if (elements.length === 0) window.localStorage.removeItem(AUTOSAVE_KEY);
+        else window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ elements, canvasWidth, canvasHeight }));
+      } catch {
+        // Stockage plein ou bloqué : l'atelier reste utilisable sans autosave.
+      }
+    }, AUTOSAVE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [elements, canvasWidth, canvasHeight]);
+
+  // Animation de clignotement — active seulement en aperçu nuit (une enseigne
+  // éteinte ne clignote pas) et s'il y a au moins un élément blink. Pas besoin
+  // de réinitialiser la phase à l'arrêt : elle n'est lue que pour les éléments
+  // blink en mode nuit, et l'intervalle la fait rebasculer en ≤600ms.
+  useEffect(() => {
+    if (!hasBlinkElements || previewMode === "day") return;
+    const id = window.setInterval(() => setBlinkPhase((p) => !p), 600);
+    return () => window.clearInterval(id);
+  }, [hasBlinkElements, previewMode]);
 
   useEffect(() => {
     // Canvas 2D ne suit pas font-display: swap comme le HTML — sans ce
@@ -542,7 +661,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   useEffect(() => {
     drawCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart]);
+  }, [image, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart, previewMode, blinkPhase]);
 
   function getObjectBounds(el: CanvasElement) {
     if (el.type === "draw") {
@@ -596,9 +715,14 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
     return null;
   }
 
-  function drawCanvas() {
+  function drawCanvas(opts?: { forceLit?: boolean }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // forceLit : rendu "allumé, tout visible" pour la capture du preview
+    // envoyé au backend, quel que soit le mode d'aperçu courant.
+    const isDay = opts?.forceLit ? false : previewMode === "day";
+    const phase = opts?.forceLit ? true : blinkPhase;
 
     canvas.width = widthPx;
     canvas.height = heightPx;
@@ -606,10 +730,10 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    ctx.fillStyle = "#0a0a0a";
+    ctx.fillStyle = isDay ? "#e7e5e4" : "#0a0a0a";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = "#1a1a1a";
+    ctx.strokeStyle = isDay ? "#d6d3d1" : "#1a1a1a";
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvasWidth; i += 10) {
       ctx.beginPath();
@@ -646,6 +770,15 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
       ctx.save();
       const isSelected = el.id === selectedId;
 
+      // Couleur/halo selon le mode : allumé = couleur vive + halo réglable par
+      // élément ; éteint (jour) = teinte laiteuse du tube, aucun halo. Un
+      // élément clignotant en phase "off" reste faiblement visible (alpha
+      // réduit) pour pouvoir continuer à le sélectionner.
+      const renderColor = isDay ? toUnlitColor(el.color) : el.color;
+      const blinkOff = !isDay && el.blink === true && !phase;
+      const glow = isDay || blinkOff ? 0 : glowBlurPx(el.glowIntensity);
+      if (blinkOff) ctx.globalAlpha = 0.15;
+
       if (el.rotation && "x" in el && "y" in el) {
         ctx.translate(el.x, el.y);
         ctx.rotate((el.rotation * Math.PI) / 180);
@@ -653,12 +786,12 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
       }
 
       if (el.type === "draw") {
-        ctx.strokeStyle = el.color;
+        ctx.strokeStyle = renderColor;
         ctx.lineWidth = NEON_WIDTH_PX;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
-        ctx.shadowColor = el.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = renderColor;
+        ctx.shadowBlur = glow;
         if (el.points.length >= 2) {
           ctx.beginPath();
           ctx.moveTo(el.points[0].x, el.points[0].y);
@@ -666,11 +799,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           ctx.stroke();
         }
       } else if (el.type === "line") {
-        ctx.strokeStyle = el.color;
+        ctx.strokeStyle = renderColor;
         ctx.lineWidth = NEON_WIDTH_PX;
         ctx.lineCap = "round";
-        ctx.shadowColor = el.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = renderColor;
+        ctx.shadowBlur = glow;
         ctx.beginPath();
         ctx.moveTo(el.x1, el.y1);
         ctx.lineTo(el.x2, el.y2);
@@ -695,33 +828,35 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         sctx.clearRect(0, 0, stencil.width, stencil.height);
         sctx.drawImage(stencil, 0, 0);
         sctx.globalCompositeOperation = "source-in";
-        sctx.fillStyle = el.color;
+        sctx.fillStyle = renderColor;
         sctx.fillRect(0, 0, stencil.width, stencil.height);
         sctx.globalCompositeOperation = "source-over";
 
-        ctx.shadowColor = el.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = renderColor;
+        ctx.shadowBlur = glow;
         ctx.drawImage(scratch, el.x - stencil.width / 2, el.y - stencil.height / 2);
       } else if (el.type === "rect" && el.width && el.height) {
-        ctx.strokeStyle = el.color;
+        ctx.strokeStyle = renderColor;
         ctx.lineWidth = NEON_WIDTH_PX;
-        ctx.shadowColor = el.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = renderColor;
+        ctx.shadowBlur = glow;
         ctx.strokeRect(el.x, el.y, el.width, el.height);
       } else if (el.type === "circle" && el.radius) {
-        ctx.strokeStyle = el.color;
+        ctx.strokeStyle = renderColor;
         ctx.lineWidth = NEON_WIDTH_PX;
-        ctx.shadowColor = el.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowColor = renderColor;
+        ctx.shadowBlur = glow;
         ctx.beginPath();
         ctx.arc(el.x, el.y, el.radius, 0, Math.PI * 2);
         ctx.stroke();
       }
 
       ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
 
       if (isSelected) {
-        ctx.strokeStyle = "#00FFFF";
+        const selectionColor = isDay ? "#0e7490" : "#00FFFF";
+        ctx.strokeStyle = selectionColor;
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
 
@@ -730,7 +865,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           ctx.strokeRect(bounds.x - 10, bounds.y - 10, bounds.width + 20, bounds.height + 20);
 
           if (el.type === "rect" || el.type === "circle" || el.type === "line") {
-            ctx.fillStyle = "#00FFFF";
+            ctx.fillStyle = selectionColor;
             const handles = getResizeHandles(el);
             handles.forEach((handle) => {
               ctx.fillRect(handle.x - 5, handle.y - 5, 10, 10);
@@ -745,11 +880,12 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
     if (isDrawing && currentDrawPoints.length >= 2) {
       ctx.save();
-      ctx.strokeStyle = currentColor;
+      const previewColor = isDay ? toUnlitColor(currentColor) : currentColor;
+      ctx.strokeStyle = previewColor;
       ctx.lineWidth = NEON_WIDTH_PX;
       ctx.lineCap = "round";
-      ctx.shadowColor = currentColor;
-      ctx.shadowBlur = 20;
+      ctx.shadowColor = previewColor;
+      ctx.shadowBlur = isDay ? 0 : glowBlurPx(undefined);
       ctx.beginPath();
       ctx.moveTo(currentDrawPoints[0].x, currentDrawPoints[0].y);
       currentDrawPoints.forEach((p) => ctx.lineTo(p.x, p.y));
@@ -1060,6 +1196,52 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
     setSelectedId(null);
   }
 
+  function duplicateSelected() {
+    const el = elements.find((e) => e.id === selectedId);
+    if (!el) return;
+    const OFFSET = 20;
+    // Suffixe aléatoire : Date.now() seul peut collisionner sur des
+    // duplications rapides (Ctrl+D maintenu).
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    let copy: CanvasElement;
+    if (el.type === "draw") {
+      copy = { ...el, id, points: el.points.map((p) => ({ x: p.x + OFFSET, y: p.y + OFFSET })) };
+    } else if (el.type === "line") {
+      copy = { ...el, id, x1: el.x1 + OFFSET, y1: el.y1 + OFFSET, x2: el.x2 + OFFSET, y2: el.y2 + OFFSET };
+    } else {
+      copy = { ...el, id, x: el.x + OFFSET, y: el.y + OFFSET };
+    }
+    saveToHistory([...elements, copy]);
+    setSelectedId(id);
+  }
+
+  function nudgeSelected(dx: number, dy: number) {
+    if (!selectedId) return;
+    const newElements = elements.map((el) => {
+      if (el.id !== selectedId) return el;
+      if (el.type === "draw") return { ...el, points: el.points.map((p) => ({ x: p.x + dx, y: p.y + dy })) };
+      if (el.type === "line") return { ...el, x1: el.x1 + dx, y1: el.y1 + dy, x2: el.x2 + dx, y2: el.y2 + dy };
+      return { ...el, x: el.x + dx, y: el.y + dy };
+    });
+    saveToHistory(newElements);
+  }
+
+  // Mise à jour "live" du halo pendant le drag du slider (sans polluer
+  // l'historique), l'entrée n'est poussée qu'au relâchement (commit).
+  function setSelectedGlow(value: number) {
+    if (!selectedId) return;
+    setElements(elements.map((el) => (el.id === selectedId ? { ...el, glowIntensity: value } : el)));
+  }
+
+  function commitSelectedGlow() {
+    saveToHistory([...elements]);
+  }
+
+  function toggleSelectedBlink() {
+    if (!selectedId) return;
+    saveToHistory(elements.map((el) => (el.id === selectedId ? { ...el, blink: !el.blink } : el)));
+  }
+
   function handleClear() {
     if (confirm(t("errors.confirmClearAll"))) {
       saveToHistory([]);
@@ -1138,7 +1320,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
     setSubmitting(true);
     try {
+      // Capture toujours l'enseigne allumée (et tous les éléments visibles,
+      // même ceux en phase "off" du clignotement), quel que soit l'aperçu.
+      drawCanvas({ forceLit: true });
       const previewImageUrl = canvas.toDataURL("image/png");
+      drawCanvas();
       const pxToCm = 1 / CM_TO_PX;
 
       const res = await fetch("/api/customize/designs", {
@@ -1161,6 +1347,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
       }
 
       const design = await res.json();
+      try {
+        window.localStorage.removeItem(AUTOSAVE_KEY);
+      } catch {
+        // Rien de bloquant : le brouillon local sera simplement ré-écrasé.
+      }
       router.push({
         pathname: "/checkout",
         query: { type: "custom", id: design._id, name: t("customSignName"), price: String(estimatedPrice) },
@@ -1207,6 +1398,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                 {snapEnabled ? t("tools.snapOn") : t("tools.snapOff")}
               </Button>
             )}
+
+            <Button onClick={() => setPreviewMode(previewMode === "day" ? "night" : "day")} variant="outline" size="sm">
+              {previewMode === "day" ? <Moon size={18} /> : <Sun size={18} />}
+              {previewMode === "day" ? t("tools.nightPreview") : t("tools.dayPreview")}
+            </Button>
 
             <Button onClick={undo} disabled={historyIndex === 0} variant="outline" size="sm">
               <Undo size={18} />
@@ -1349,11 +1545,39 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                 <Maximize2 size={18} style={{ transform: "scale(0.8)" }} />
                 {t("selection.reduce")}
               </Button>
+              <Button onClick={duplicateSelected} variant="outline" size="sm">
+                <Copy size={18} />
+                {t("selection.duplicate")}
+              </Button>
+              <Button onClick={toggleSelectedBlink} variant={selectedElement.blink ? "default" : "outline"} size="sm">
+                <Zap size={18} />
+                {t("selection.blink")}
+              </Button>
               <Button onClick={deleteSelected} variant="outline" size="sm" className="text-destructive hover:text-destructive">
                 <Trash2 size={18} />
                 {t("selection.delete")}
               </Button>
             </div>
+            <div className="mt-4 max-w-xs">
+              <label className="mb-1 block text-sm text-muted-foreground">
+                {t("selection.glow", { value: selectedElement.glowIntensity ?? DEFAULT_GLOW_INTENSITY })}
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={selectedElement.glowIntensity ?? DEFAULT_GLOW_INTENSITY}
+                onChange={(e) => setSelectedGlow(parseInt(e.target.value))}
+                onPointerUp={commitSelectedGlow}
+                onKeyUp={commitSelectedGlow}
+                className="h-2 w-full cursor-pointer rounded-lg bg-muted accent-primary"
+              />
+            </div>
+            {selectedElement.blink && (
+              <p className="mt-2 text-xs text-primary">
+                {t("selection.blinkHint", { price: CONTROLLER_OPTION_PRICE.toLocaleString(), currency: tCommon("currency") })}
+              </p>
+            )}
             <p className="mt-3 text-xs text-muted-foreground">{t("selection.resizeHint")}</p>
           </div>
         )}
@@ -1502,6 +1726,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
                 </span>
               </div>
             </div>
+            {hasBlinkElements && (
+              <p className="mb-2 text-center text-sm font-semibold text-primary">
+                {t("price.controller", { price: CONTROLLER_OPTION_PRICE.toLocaleString(), currency: tCommon("currency") })}
+              </p>
+            )}
             <p className="mb-4 text-center text-sm text-muted-foreground">
               {t("price.footnote", { price: PRICE_PER_CM, currency: tCommon("currency") })}
             </p>
@@ -1534,6 +1763,9 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
             </li>
             <li>
               • <strong>{t("instructions.shapesLabel")}</strong> {t("instructions.shapesText")}
+            </li>
+            <li>
+              • <strong>{t("instructions.dayNightLabel")}</strong> {t("instructions.dayNightText")}
             </li>
             <li>
               • <strong>{t("instructions.shortcutsLabel")}</strong> {t("instructions.shortcutsText")}

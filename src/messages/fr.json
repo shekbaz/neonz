@@ -363,6 +363,8 @@
       "line": "Ligne",
       "snapOn": "Snap ON",
       "snapOff": "Snap OFF",
+      "dayPreview": "Aperçu jour",
+      "nightPreview": "Aperçu nuit",
       "undo": "Annuler",
       "redo": "Refaire",
       "export": "Exporter",
@@ -396,6 +398,10 @@
       "enlarge": "Agrandir",
       "reduce": "Réduire",
       "delete": "Supprimer",
+      "duplicate": "Dupliquer",
+      "blink": "Clignotement",
+      "blinkHint": "Clignotement activé — ajoute un contrôleur multi-zone (+{price} {currency}) au devis.",
+      "glow": "Halo lumineux : {value}%",
       "resizeHint": "Pour redimensionner précisément, tirez les carrés bleus aux coins (ou extrémités pour les lignes)"
     },
     "canvas": {
@@ -416,6 +422,7 @@
     "price": {
       "totalLength": "Longueur totale :",
       "estimatedPrice": "Prix estimé :",
+      "controller": "Contrôleur multi-zone (clignotement) : +{price} {currency}",
       "footnote": "Prix calculé à {price} {currency}/cm — acompte de 30% à la commande.",
       "continue": "Continuer vers la commande"
     },
@@ -433,7 +440,9 @@
       "shapesLabel": "Formes :",
       "shapesText": "rectangle = périmètre | cercle = circonférence | ligne = longueur — tout est calculé dans le prix !",
       "shortcutsLabel": "Raccourcis :",
-      "shortcutsText": "Ctrl+Z annuler | Ctrl+Y rétablir | Suppr supprimer | Échap désélectionner."
+      "dayNightLabel": "Aperçu jour/nuit :",
+      "dayNightText": "visualisez votre enseigne éteinte (jour) ou allumée (nuit).",
+      "shortcutsText": "Ctrl+Z annuler | Ctrl+Y rétablir | Ctrl+D dupliquer | Flèches déplacer (Maj = 1 cm) | Suppr supprimer | Échap désélectionner."
     },
     "errors": {
       "createFirst": "Veuillez d'abord créer votre design !",
@@ -441,6 +450,9 @@
       "generic": "Une erreur est survenue.",
       "confirmClearAll": "Voulez-vous vraiment tout effacer ?"
     },
-    "customSignName": "Enseigne personnalisée"
+    "customSignName": "Enseigne personnalisée",
+    "autosave": {
+      "restored": "Votre design précédent a été restauré automatiquement."
+    }
   }
 }

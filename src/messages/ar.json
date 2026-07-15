@@ -363,6 +363,8 @@
       "line": "خط",
       "snapOn": "الالتصاق مفعّل",
       "snapOff": "الالتصاق معطّل",
+      "dayPreview": "معاينة نهارية",
+      "nightPreview": "معاينة ليلية",
       "undo": "تراجع",
       "redo": "إعادة",
       "export": "تصدير",
@@ -396,6 +398,10 @@
       "enlarge": "تكبير",
       "reduce": "تصغير",
       "delete": "حذف",
+      "duplicate": "تكرار",
+      "blink": "وميض",
+      "blinkHint": "الوميض مفعّل — يضيف وحدة تحكم متعددة المناطق (+{price} {currency}) إلى عرض السعر.",
+      "glow": "شدة التوهج: {value}%",
       "resizeHint": "لتغيير الحجم بدقة، اسحب المربعات الزرقاء في الزوايا (أو الأطراف بالنسبة للخطوط)"
     },
     "canvas": {
@@ -416,6 +422,7 @@
     "price": {
       "totalLength": "الطول الإجمالي:",
       "estimatedPrice": "السعر المقدر:",
+      "controller": "وحدة تحكم متعددة المناطق (وميض): +{price} {currency}",
       "footnote": "السعر محسوب بـ {price} {currency}/سم — عربون 30% عند الطلب.",
       "continue": "المتابعة إلى الطلب"
     },
@@ -433,7 +440,9 @@
       "shapesLabel": "الأشكال:",
       "shapesText": "المستطيل = المحيط | الدائرة = المحيط الدائري | الخط = الطول — كل ذلك محسوب في السعر!",
       "shortcutsLabel": "الاختصارات:",
-      "shortcutsText": "Ctrl+Z تراجع | Ctrl+Y إعادة | Delete حذف | Esc إلغاء التحديد."
+      "dayNightLabel": "معاينة نهار/ليل:",
+      "dayNightText": "شاهد لافتتك مطفأة (نهارًا) أو مضاءة (ليلًا).",
+      "shortcutsText": "Ctrl+Z تراجع | Ctrl+Y إعادة | Ctrl+D تكرار | الأسهم للتحريك (Shift = 1 سم) | Delete حذف | Esc إلغاء التحديد."
     },
     "errors": {
       "createFirst": "يرجى إنشاء تصميمك أولاً!",
@@ -441,6 +450,9 @@
       "generic": "حدث خطأ ما.",
       "confirmClearAll": "هل تريد حقًا مسح كل شيء؟"
     },
-    "customSignName": "لافتة نيون مخصصة"
+    "customSignName": "لافتة نيون مخصصة",
+    "autosave": {
+      "restored": "تمت استعادة تصميمك السابق تلقائيًا."
+    }
   }
 }

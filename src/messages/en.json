@@ -363,6 +363,8 @@
       "line": "Line",
       "snapOn": "Snap ON",
       "snapOff": "Snap OFF",
+      "dayPreview": "Day preview",
+      "nightPreview": "Night preview",
       "undo": "Undo",
       "redo": "Redo",
       "export": "Export",
@@ -396,6 +398,10 @@
       "enlarge": "Enlarge",
       "reduce": "Shrink",
       "delete": "Delete",
+      "duplicate": "Duplicate",
+      "blink": "Blink",
+      "blinkHint": "Blink enabled — adds a multi-zone controller (+{price} {currency}) to the quote.",
+      "glow": "Glow intensity: {value}%",
       "resizeHint": "To resize precisely, drag the blue squares at the corners (or endpoints for lines)"
     },
     "canvas": {
@@ -416,6 +422,7 @@
     "price": {
       "totalLength": "Total length:",
       "estimatedPrice": "Estimated price:",
+      "controller": "Multi-zone controller (blink): +{price} {currency}",
       "footnote": "Price calculated at {price} {currency}/cm — 30% deposit due at order.",
       "continue": "Continue to order"
     },
@@ -433,7 +440,9 @@
       "shapesLabel": "Shapes:",
       "shapesText": "rectangle = perimeter | circle = circumference | line = length — all counted in the price!",
       "shortcutsLabel": "Shortcuts:",
-      "shortcutsText": "Ctrl+Z undo | Ctrl+Y redo | Delete remove | Esc deselect."
+      "dayNightLabel": "Day/night preview:",
+      "dayNightText": "see your sign switched off (day) or lit up (night).",
+      "shortcutsText": "Ctrl+Z undo | Ctrl+Y redo | Ctrl+D duplicate | Arrow keys move (Shift = 1 cm) | Delete remove | Esc deselect."
     },
     "errors": {
       "createFirst": "Please create your design first!",
@@ -441,6 +450,9 @@
       "generic": "Something went wrong.",
       "confirmClearAll": "Are you sure you want to clear everything?"
     },
-    "customSignName": "Custom neon sign"
+    "customSignName": "Custom neon sign",
+    "autosave": {
+      "restored": "Your previous design was automatically restored."
+    }
   }
 }
