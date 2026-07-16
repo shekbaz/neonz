@@ -54,8 +54,8 @@ const customDesignSchema = new Schema(
 
     support: {
       type: String,
-      enum: ["acrylic-transparent", "acrylic-black", "silhouette-cut"],
-      default: "acrylic-transparent",
+      enum: ["forex", "plexiglass"],
+      default: "forex",
     },
     hasRemote: { type: Boolean, default: false },
     // Dérivé server-side de `elements.some(e => e.blink)` — jamais fourni par le client.

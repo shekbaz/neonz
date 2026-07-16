@@ -4,6 +4,7 @@ import { CustomDesign } from "@/models/CustomDesign";
 import { auth } from "@/lib/auth";
 import { customDesignCreateSchema } from "@/lib/validators/customDesign.schema";
 import { calculateDesignPrice, applyFinalOptions } from "@/lib/neon/pricing";
+import { getPricingSettings } from "@/lib/neon/getPricingSettings";
 import type { NeonElement } from "@/types/neon";
 
 export async function POST(request: NextRequest) {
@@ -22,11 +23,15 @@ export async function POST(request: NextRequest) {
   // Jamais confiance au client pour le contrôleur : dérivé des éléments eux-mêmes.
   const hasController = data.elements.some((e) => e.blink);
 
-  const breakdown = calculateDesignPrice({
-    elements: data.elements as NeonElement[],
-    pxToCm: data.pxToCmRatio,
-  });
-  const price = applyFinalOptions(breakdown, { support: data.support, hasRemote: data.hasRemote, hasController });
+  const pricingSettings = await getPricingSettings();
+  const breakdown = calculateDesignPrice(
+    {
+      elements: data.elements as NeonElement[],
+      pxToCm: data.pxToCmRatio,
+    },
+    pricingSettings
+  );
+  const price = applyFinalOptions(breakdown, { support: data.support, hasRemote: data.hasRemote, hasController }, pricingSettings);
 
   const design = await CustomDesign.create({
     user: session?.user?.id,

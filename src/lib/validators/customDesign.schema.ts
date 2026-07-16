@@ -61,7 +61,7 @@ export const customDesignCreateSchema = z.object({
     heightCm: z.number().positive().max(MAX_DIMENSION_CM),
   }),
   pxToCmRatio: z.number().positive(),
-  support: z.enum(["acrylic-transparent", "acrylic-black", "silhouette-cut"]),
+  support: z.enum(["forex", "plexiglass"]),
   hasRemote: z.boolean().default(false),
 });
 

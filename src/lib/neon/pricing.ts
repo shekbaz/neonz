@@ -6,20 +6,50 @@ import { totalLengthCm } from "@/lib/neon/elementGeometry";
  * dans la réalité de la fabrication), formule directe sans étape serveur —
  * le même calcul tourne en temps réel dans le navigateur pendant l'édition.
  *
- * Toutes les valeurs sont exprimées en DZD (dinar algérien) — à adapter via
- * PRICING_CONFIG si l'app doit gérer plusieurs devises.
+ * Toutes les valeurs sont exprimées en DZD (dinar algérien). Les montants
+ * ci-dessous sont les valeurs par défaut de repli (utilisées tant que l'admin
+ * n'a rien configuré) — voir le modèle Mongo `PricingConfig` et la page
+ * /admin/tarifs pour la configuration réelle, chargée en base de données.
  */
 
-export const PRICING_CONFIG = {
+export type SupportType = "forex" | "plexiglass";
+
+export interface PricingSettings {
+  currency: string;
+  /** Prix au cm linéaire de tube néon LED. */
+  pricePerCmOfTube: number;
+  /** Part du prix des articles personnalisés à régler avant le lancement en fabrication (0-1). */
+  depositRate: number;
+  /** Supplément selon le support physique choisi (Forex ou Plexiglass). */
+  supportPrices: Record<SupportType, number>;
+  /** Supplément télécommande/variateur. */
+  remoteOptionPrice: number;
+  /** Supplément contrôleur multi-zone, requis dès qu'un élément clignote. */
+  controllerOptionPrice: number;
+}
+
+/** Valeurs par défaut — servent tant que l'admin n'a pas encore enregistré de config en base (voir PricingConfig). */
+export const DEFAULT_PRICING_SETTINGS: PricingSettings = {
   currency: "DZD",
-  pricePerCmOfTube: 180, // prix au cm linéaire de tube néon LED
-  /** Part du prix des articles personnalisés à régler avant le lancement en fabrication. */
+  pricePerCmOfTube: 180,
   depositRate: 0.3,
+  supportPrices: {
+    forex: 0, // panneau PVC expansé, léger et économique
+    plexiglass: 1200, // panneau acrylique transparent, plus résistant et plus qualitatif
+  },
+  remoteOptionPrice: 1800,
+  controllerOptionPrice: 2500,
 };
 
+/** Conservé pour compatibilité : ancien export utilisé par endroits, équivalent à DEFAULT_PRICING_SETTINGS. */
+export const PRICING_CONFIG = DEFAULT_PRICING_SETTINGS;
+export const SUPPORT_PRICE_MODIFIERS = DEFAULT_PRICING_SETTINGS.supportPrices;
+export const REMOTE_OPTION_PRICE = DEFAULT_PRICING_SETTINGS.remoteOptionPrice;
+export const CONTROLLER_OPTION_PRICE = DEFAULT_PRICING_SETTINGS.controllerOptionPrice;
+
 /** Acompte requis sur un montant d'articles personnalisés (arrondi au DZD). */
-export function calculateDeposit(customItemsTotal: number): number {
-  return Math.round(customItemsTotal * PRICING_CONFIG.depositRate);
+export function calculateDeposit(customItemsTotal: number, settings: PricingSettings = DEFAULT_PRICING_SETTINGS): number {
+  return Math.round(customItemsTotal * settings.depositRate);
 }
 
 export interface DesignPriceBreakdown {
@@ -35,10 +65,13 @@ export interface DesignPriceBreakdown {
   currency: string;
 }
 
-export function calculateDesignPrice(params: { elements: NeonElement[]; pxToCm: number }): DesignPriceBreakdown {
+export function calculateDesignPrice(
+  params: { elements: NeonElement[]; pxToCm: number },
+  settings: PricingSettings = DEFAULT_PRICING_SETTINGS
+): DesignPriceBreakdown {
   const { elements, pxToCm } = params;
   const lengthCm = totalLengthCm(elements, pxToCm);
-  const tubePrice = Math.round(lengthCm * PRICING_CONFIG.pricePerCmOfTube);
+  const tubePrice = Math.round(lengthCm * settings.pricePerCmOfTube);
 
   return {
     tubePrice,
@@ -47,30 +80,18 @@ export function calculateDesignPrice(params: { elements: NeonElement[]; pxToCm: 
     remoteSurcharge: 0,
     controllerSurcharge: 0,
     total: tubePrice,
-    currency: PRICING_CONFIG.currency,
+    currency: settings.currency,
   };
 }
 
-export const SUPPORT_PRICE_MODIFIERS: Record<
-  "acrylic-transparent" | "acrylic-black" | "silhouette-cut",
-  number
-> = {
-  "acrylic-transparent": 0,
-  "acrylic-black": 800,
-  "silhouette-cut": 2200, // découpe sur-mesure suivant le contour, plus coûteuse
-};
-
-export const REMOTE_OPTION_PRICE = 1800;
-/** Contrôleur multi-zone requis dès qu'un élément clignote — un seul contrôleur pilote toutes les zones. */
-export const CONTROLLER_OPTION_PRICE = 2500;
-
 export function applyFinalOptions(
   breakdown: DesignPriceBreakdown,
-  options: { support: keyof typeof SUPPORT_PRICE_MODIFIERS; hasRemote: boolean; hasController: boolean }
+  options: { support: SupportType; hasRemote: boolean; hasController: boolean },
+  settings: PricingSettings = DEFAULT_PRICING_SETTINGS
 ): DesignPriceBreakdown {
-  const supportPrice = SUPPORT_PRICE_MODIFIERS[options.support];
-  const remotePrice = options.hasRemote ? REMOTE_OPTION_PRICE : 0;
-  const controllerPrice = options.hasController ? CONTROLLER_OPTION_PRICE : 0;
+  const supportPrice = settings.supportPrices[options.support];
+  const remotePrice = options.hasRemote ? settings.remoteOptionPrice : 0;
+  const controllerPrice = options.hasController ? settings.controllerOptionPrice : 0;
   return {
     ...breakdown,
     supportSurcharge: supportPrice,

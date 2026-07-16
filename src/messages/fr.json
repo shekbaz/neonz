@@ -96,6 +96,7 @@
     "newOrder": "Nouvelle commande reçue",
     "categories": "Catégories",
     "colors": "Couleurs",
+    "pricing": "Tarifs",
     "sidebarEyebrow": "Atelier",
     "dashboardPage": {
       "monthlyRevenueCard": "Revenu mensuel"
@@ -125,6 +126,22 @@
     },
     "colorsPage": {
       "title": "Palette de couleurs"
+    },
+    "pricingPage": {
+      "title": "Tarifs de l'atelier néon",
+      "pricePerCm": "Prix au cm de tube néon (DZD)",
+      "depositRate": "Acompte à la commande (%)",
+      "supportForex": "Supplément support Forex (DZD)",
+      "supportPlexiglass": "Supplément support Plexiglass (DZD)",
+      "remotePrice": "Supplément télécommande (DZD)",
+      "controllerPrice": "Supplément contrôleur multi-zone (DZD)",
+      "save": "Enregistrer les tarifs",
+      "saved": "Tarifs mis à jour.",
+      "exampleTitle": "Exemple de calcul",
+      "exampleDescription": "Néon de {length} cm de long, support {support}, avec clignotant.",
+      "exampleTube": "Tube ({length} cm × {price} DZD/cm)",
+      "exampleController": "Contrôleur multi-zone (clignotant)",
+      "exampleTotal": "Total estimé"
     },
     "ordersPage": {
       "all": "Toutes",
@@ -422,6 +439,11 @@
     "price": {
       "totalLength": "Longueur totale :",
       "estimatedPrice": "Prix estimé :",
+      "supportLabel": "Support physique",
+      "support": {
+        "forex": "Forex (PVC expansé, léger)",
+        "plexiglass": "Plexiglass (acrylique transparent)"
+      },
       "controller": "Contrôleur multi-zone (clignotement) : +{price} {currency}",
       "footnote": "Prix calculé à {price} {currency}/cm — acompte de 30% à la commande.",
       "continue": "Continuer vers la commande"

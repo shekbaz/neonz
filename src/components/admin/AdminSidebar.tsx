@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutDashboard, Package, Tag, Palette, ShoppingBag, Users, Star, BarChart3, Menu } from "lucide-react";
+import { LayoutDashboard, Package, Tag, Palette, ShoppingBag, Users, Star, BarChart3, Menu, Banknote } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ function useAdminLinks() {
     { href: "/admin/produits", label: t("products"), icon: Package },
     { href: "/admin/categories", label: t("categories"), icon: Tag },
     { href: "/admin/couleurs", label: t("colors"), icon: Palette },
+    { href: "/admin/tarifs", label: t("pricing"), icon: Banknote },
     { href: "/admin/commandes", label: t("orders"), icon: ShoppingBag },
     { href: "/admin/clients", label: t("customers"), icon: Users },
     { href: "/admin/avis", label: t("reviews"), icon: Star },

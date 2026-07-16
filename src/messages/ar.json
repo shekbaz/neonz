@@ -96,6 +96,7 @@
     "newOrder": "تم استلام طلب جديد",
     "categories": "التصنيفات",
     "colors": "الألوان",
+    "pricing": "الأسعار",
     "sidebarEyebrow": "الورشة",
     "dashboardPage": {
       "monthlyRevenueCard": "الإيرادات الشهرية"
@@ -122,6 +123,22 @@
       "colOrder": "الترتيب",
       "colActions": "إجراءات",
       "empty": "لا يوجد أي تصنيف."
+    },
+    "pricingPage": {
+      "title": "أسعار ورشة النيون",
+      "pricePerCm": "السعر لكل سم من أنبوب النيون (دج)",
+      "depositRate": "العربون عند الطلب (%)",
+      "supportForex": "رسوم إضافية لدعامة Forex (دج)",
+      "supportPlexiglass": "رسوم إضافية لدعامة Plexiglass (دج)",
+      "remotePrice": "رسوم إضافية للتحكم عن بعد (دج)",
+      "controllerPrice": "رسوم إضافية لوحدة التحكم متعددة المناطق (دج)",
+      "save": "حفظ الأسعار",
+      "saved": "تم تحديث الأسعار.",
+      "exampleTitle": "مثال على الحساب",
+      "exampleDescription": "نيون بطول {length} سم، دعامة {support}، مع وميض.",
+      "exampleTube": "الأنبوب ({length} سم × {price} دج/سم)",
+      "exampleController": "وحدة تحكم متعددة المناطق (وميض)",
+      "exampleTotal": "المجموع المقدر"
     },
     "colorsPage": {
       "title": "لوحة الألوان"
@@ -422,6 +439,11 @@
     "price": {
       "totalLength": "الطول الإجمالي:",
       "estimatedPrice": "السعر المقدر:",
+      "supportLabel": "الدعامة الفيزيائية",
+      "support": {
+        "forex": "Forex (PVC خفيف)",
+        "plexiglass": "Plexiglass (أكريليك شفاف)"
+      },
       "controller": "وحدة تحكم متعددة المناطق (وميض): +{price} {currency}",
       "footnote": "السعر محسوب بـ {price} {currency}/سم — عربون 30% عند الطلب.",
       "continue": "المتابعة إلى الطلب"

@@ -96,6 +96,7 @@
     "newOrder": "New order received",
     "categories": "Categories",
     "colors": "Colors",
+    "pricing": "Pricing",
     "sidebarEyebrow": "Workshop",
     "dashboardPage": {
       "monthlyRevenueCard": "Monthly revenue"
@@ -125,6 +126,22 @@
     },
     "colorsPage": {
       "title": "Color palette"
+    },
+    "pricingPage": {
+      "title": "Neon workshop pricing",
+      "pricePerCm": "Price per cm of neon tube (DZD)",
+      "depositRate": "Deposit at order (%)",
+      "supportForex": "Forex support surcharge (DZD)",
+      "supportPlexiglass": "Plexiglass support surcharge (DZD)",
+      "remotePrice": "Remote control surcharge (DZD)",
+      "controllerPrice": "Multi-zone controller surcharge (DZD)",
+      "save": "Save pricing",
+      "saved": "Pricing updated.",
+      "exampleTitle": "Example calculation",
+      "exampleDescription": "{length} cm long neon, {support} support, with blinking.",
+      "exampleTube": "Tube ({length} cm × {price} DZD/cm)",
+      "exampleController": "Multi-zone controller (blinking)",
+      "exampleTotal": "Estimated total"
     },
     "ordersPage": {
       "all": "All",
@@ -422,6 +439,11 @@
     "price": {
       "totalLength": "Total length:",
       "estimatedPrice": "Estimated price:",
+      "supportLabel": "Physical support",
+      "support": {
+        "forex": "Forex (expanded PVC, lightweight)",
+        "plexiglass": "Plexiglass (clear acrylic)"
+      },
       "controller": "Multi-zone controller (blink): +{price} {currency}",
       "footnote": "Price calculated at {price} {currency}/cm — 30% deposit due at order.",
       "continue": "Continue to order"

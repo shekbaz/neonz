@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { NEON_FONTS, NEON_FONT_FAMILIES, DEFAULT_GLOW_INTENSITY, type NeonFontId } from "@/types/neon";
-import { CONTROLLER_OPTION_PRICE } from "@/lib/neon/pricing";
+import { DEFAULT_PRICING_SETTINGS, type PricingSettings, type SupportType } from "@/lib/neon/pricing";
 import {
   Upload,
   Download,
@@ -106,8 +106,8 @@ type CanvasElement = TextElement | DrawElement | ShapeElement | LineElement;
 const CM_TO_PX = 10;
 const NEON_WIDTH_CM = 1;
 const NEON_WIDTH_PX = NEON_WIDTH_CM * CM_TO_PX;
-const PRICE_PER_CM = 180;
 const MAX_DIMENSIONS = { width: 85, height: 85 };
+const SUPPORT_TYPES: SupportType[] = ["forex", "plexiglass"];
 // Une lettre doit rester bien plus grande que l'épaisseur du tube (1cm) pour
 // que celui-ci reste lisible en la traçant : 12cm de haut par défaut, avec
 // une plage d'agrandissement/réduction qui ne redescend jamais en dessous
@@ -287,7 +287,13 @@ function buildTextTubeStencil(content: string, fontFamily: string, fontSizePx: n
   return canvas;
 }
 
-export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: AdminColor[] }) {
+export function ConfiguratorWorkspace({
+  initialColors = [],
+  pricingSettings = DEFAULT_PRICING_SETTINGS,
+}: {
+  initialColors?: AdminColor[];
+  pricingSettings?: PricingSettings;
+}) {
   const t = useTranslations("Configurator");
   const tCommon = useTranslations("Common");
   const router = useRouter();
@@ -325,6 +331,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   const [textFontId, setTextFontId] = useState<NeonFontId>(NEON_FONTS[0].id);
   const [canvasWidth, setCanvasWidth] = useState(50);
   const [canvasHeight, setCanvasHeight] = useState(40);
+  const [support, setSupport] = useState<SupportType>("forex");
 
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [snapDistance, setSnapDistance] = useState(25);
@@ -481,7 +488,16 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
 
     return elements.map((el) => {
       if (el.type === "text") {
-        return { ...el, x: el.x * scaleX, y: el.y * scaleY };
+        // Échelle uniforme (le plus petit facteur des deux axes) pour la taille de
+        // police : appliquer scaleX/scaleY indépendamment étirerait les lettres au
+        // lieu de simplement les agrandir, ce qui les déforme visuellement.
+        const uniformScale = Math.min(scaleX, scaleY);
+        return {
+          ...el,
+          x: el.x * scaleX,
+          y: el.y * scaleY,
+          fontSize: Math.max(MIN_TEXT_FONT_SIZE_PX, Math.min(MAX_TEXT_FONT_SIZE_PX, el.fontSize * uniformScale)),
+        };
       } else if (el.type === "draw") {
         return { ...el, points: el.points.map((p) => ({ x: p.x * scaleX, y: p.y * scaleY })) };
       } else if (el.type === "line") {
@@ -545,8 +561,9 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
   // physique — même règle que le serveur (route /api/customize/designs), qui
   // re-dérive lui-même ce surcoût des éléments, jamais du prix envoyé.
   const hasBlinkElements = elements.some((el) => el.blink);
-  const controllerSurcharge = hasBlinkElements ? CONTROLLER_OPTION_PRICE : 0;
-  const estimatedPrice = Math.round(totalLength * PRICE_PER_CM) + controllerSurcharge;
+  const controllerSurcharge = hasBlinkElements ? pricingSettings.controllerOptionPrice : 0;
+  const supportSurcharge = pricingSettings.supportPrices[support];
+  const estimatedPrice = Math.round(totalLength * pricingSettings.pricePerCmOfTube) + controllerSurcharge + supportSurcharge;
 
   function handleSnapDistanceChange(value: number) {
     setSnapDistance(value);
@@ -864,7 +881,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         if (bounds) {
           ctx.strokeRect(bounds.x - 10, bounds.y - 10, bounds.width + 20, bounds.height + 20);
 
-          if (el.type === "rect" || el.type === "circle" || el.type === "line") {
+          if (el.type === "rect" || el.type === "circle" || el.type === "line" || el.type === "text") {
             ctx.fillStyle = selectionColor;
             const handles = getResizeHandles(el);
             handles.forEach((handle) => {
@@ -1051,6 +1068,18 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           } else if (el.type === "line") {
             if (resizeHandle === "start") return { ...el, x1: pos.x, y1: pos.y };
             if (resizeHandle === "end") return { ...el, x2: pos.x, y2: pos.y };
+          } else if (el.type === "text") {
+            // Un seul facteur d'échelle uniforme dérivé de la distance au centre —
+            // jamais width/height indépendants, sinon les lettres s'étirent et se
+            // déforment au lieu de simplement grandir.
+            const bounds = getObjectBounds(el);
+            if (!bounds) return el;
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            const origDist = Math.hypot(bounds.width / 2, bounds.height / 2);
+            const newDist = Math.hypot(pos.x - cx, pos.y - cy);
+            const scaleFactor = origDist > 0 ? newDist / origDist : 1;
+            return { ...el, fontSize: Math.max(MIN_TEXT_FONT_SIZE_PX, Math.min(MAX_TEXT_FONT_SIZE_PX, el.fontSize * scaleFactor)) };
           }
         }
         return el;
@@ -1336,7 +1365,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
           previewImageUrl,
           dimensions: { widthCm: canvasWidth, heightCm: canvasHeight },
           pxToCmRatio: pxToCm,
-          support: "acrylic-transparent",
+          support,
           hasRemote: false,
         }),
       });
@@ -1575,7 +1604,7 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
             </div>
             {selectedElement.blink && (
               <p className="mt-2 text-xs text-primary">
-                {t("selection.blinkHint", { price: CONTROLLER_OPTION_PRICE.toLocaleString(), currency: tCommon("currency") })}
+                {t("selection.blinkHint", { price: pricingSettings.controllerOptionPrice.toLocaleString(), currency: tCommon("currency") })}
               </p>
             )}
             <p className="mt-3 text-xs text-muted-foreground">{t("selection.resizeHint")}</p>
@@ -1714,6 +1743,26 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
         {/* Estimation Prix + Bouton Continuer */}
         {totalLength > 0 && (
           <div className="mb-6 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-6 ring-1 ring-primary/20">
+            <div className="mb-6">
+              <label className="mb-2 block text-sm text-muted-foreground">{t("price.supportLabel")}</label>
+              <Select value={support} onValueChange={(value) => setSupport(value as SupportType)}>
+                <SelectTrigger className="w-full sm:w-72">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORT_TYPES.map((type) => {
+                    const surcharge = pricingSettings.supportPrices[type];
+                    return (
+                      <SelectItem key={type} value={type}>
+                        {t(`price.support.${type}`)}
+                        {surcharge > 0 ? ` (+${surcharge.toLocaleString()} ${tCommon("currency")})` : ""}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="mb-6 grid grid-cols-1 gap-6 text-center md:grid-cols-2">
               <div>
                 <span className="mb-2 block text-lg text-muted-foreground">{t("price.totalLength")}</span>
@@ -1728,11 +1777,11 @@ export function ConfiguratorWorkspace({ initialColors = [] }: { initialColors?: 
             </div>
             {hasBlinkElements && (
               <p className="mb-2 text-center text-sm font-semibold text-primary">
-                {t("price.controller", { price: CONTROLLER_OPTION_PRICE.toLocaleString(), currency: tCommon("currency") })}
+                {t("price.controller", { price: pricingSettings.controllerOptionPrice.toLocaleString(), currency: tCommon("currency") })}
               </p>
             )}
             <p className="mb-4 text-center text-sm text-muted-foreground">
-              {t("price.footnote", { price: PRICE_PER_CM, currency: tCommon("currency") })}
+              {t("price.footnote", { price: pricingSettings.pricePerCmOfTube, currency: tCommon("currency") })}
             </p>
 
             <div className="text-center">
