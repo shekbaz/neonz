@@ -1324,6 +1324,15 @@ export function ConfiguratorWorkspace({
     saveToHistory(elements.map((el) => (el.id === selectedId ? { ...el, blink: !el.blink } : el)));
   }
 
+  // Choisir une couleur définit la couleur des prochains éléments créés et,
+  // si un élément est déjà sélectionné, met aussi à jour sa couleur en direct.
+  function applyColor(color: string) {
+    setCurrentColor(color);
+    if (selectedId) {
+      saveToHistory(elements.map((el) => (el.id === selectedId ? { ...el, color } : el)));
+    }
+  }
+
   function handleClear() {
     if (confirm(t("errors.confirmClearAll"))) {
       saveToHistory([]);
@@ -1825,19 +1834,27 @@ export function ConfiguratorWorkspace({
             </h3>
 
             <div className="mb-4 flex flex-wrap gap-1.5">
-              {palette.map((color) => (
-                <button
-                  key={color.value}
-                  onClick={() => setCurrentColor(color.value)}
-                  aria-pressed={currentColor === color.value}
-                  className={`h-6 w-6 shrink-0 rounded-full border-2 transition-all ${currentColor === color.value ? "scale-110 border-foreground" : "border-border hover:border-foreground/40"}`}
-                  style={{ backgroundColor: color.value, boxShadow: currentColor === color.value ? `0 0 10px ${color.value}` : "none" }}
-                  title={color.name}
-                />
-              ))}
+              {palette.map((color) => {
+                const activeColor = selectedElement?.color ?? currentColor;
+                return (
+                  <button
+                    key={color.value}
+                    onClick={() => applyColor(color.value)}
+                    aria-pressed={activeColor === color.value}
+                    className={`h-6 w-6 shrink-0 rounded-full border-2 transition-all ${activeColor === color.value ? "scale-110 border-foreground" : "border-border hover:border-foreground/40"}`}
+                    style={{ backgroundColor: color.value, boxShadow: activeColor === color.value ? `0 0 10px ${color.value}` : "none" }}
+                    title={color.name}
+                  />
+                );
+              })}
             </div>
 
-            <input type="color" value={currentColor} onChange={(e) => setCurrentColor(e.target.value)} className="h-10 w-full cursor-pointer rounded-lg border-2 border-border" />
+            <input
+              type="color"
+              value={selectedElement?.color ?? currentColor}
+              onChange={(e) => applyColor(e.target.value)}
+              className="h-10 w-full cursor-pointer rounded-lg border-2 border-border"
+            />
           </div>
         </div>
 
