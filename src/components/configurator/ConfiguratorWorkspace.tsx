@@ -106,6 +106,13 @@ type CanvasElement = TextElement | DrawElement | ShapeElement | LineElement;
 const CM_TO_PX = 10;
 const NEON_WIDTH_CM = 1;
 const NEON_WIDTH_PX = NEON_WIDTH_CM * CM_TO_PX;
+/**
+ * Le canvas est affiché plus grand que sa taille logique (1px = 1mm) : sans
+ * suréchantillonnage du backing store, le navigateur étire les pixels et tout
+ * paraît flou. Toutes les coordonnées restent en espace logique — seul le
+ * backing store (et le pochoir texte, voir drawCanvas) est rendu à 2x.
+ */
+const RENDER_SCALE = 2;
 const MAX_DIMENSIONS = { width: 85, height: 85 };
 const SUPPORT_TYPES: SupportType[] = ["forex", "plexiglass"];
 // Une lettre doit rester bien plus grande que l'épaisseur du tube (1cm) pour
@@ -238,13 +245,16 @@ const GLYPH_RASTER_PADDING = Math.ceil(NEON_WIDTH_PX * 1.5) + 4;
  * Facteur de suréchantillonnage du glyphe avant squelettisation : rastériser
  * au pixel près (1x) perd la position sous-pixel du tracé réel de la police,
  * ce qui produit un squelette grossier peu fidèle (surtout pour les scripts
- * fins). Réduit pour les très grandes tailles afin de garder un temps de
- * calcul raisonnable (le coût de la squelettisation croît avec la surface).
+ * fins). Le facteur vise une hauteur de rasterisation constante (~500px) :
+ * les petites tailles sont suréchantillonnées, les très grandes plafonnées
+ * (facteur < 1) pour garder un temps de squelettisation borné quelle que
+ * soit la taille du texte.
  */
+const GLYPH_RASTER_TARGET_PX = 500;
+
 function glyphSupersampleFactor(fontSizePx: number): number {
-  if (fontSizePx <= 200) return 3;
-  if (fontSizePx <= 300) return 2;
-  return 1;
+  if (fontSizePx >= GLYPH_RASTER_TARGET_PX) return GLYPH_RASTER_TARGET_PX / fontSizePx;
+  return Math.min(3, Math.max(1, Math.round(GLYPH_RASTER_TARGET_PX / fontSizePx)));
 }
 
 /** Dessine le texte plein (glyphes de la police) dans un canvas hors-écran, pour en extraire un masque binaire (alpha > seuil). */
@@ -260,9 +270,11 @@ function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: nu
   // scripts cursifs (lettres liées, plus larges que largeur*nb caractères).
   const halfWidth = Math.max(metrics.actualBoundingBoxLeft ?? 0, metrics.actualBoundingBoxRight ?? 0, scaledFontSizePx * 0.6);
   const halfHeight = Math.max((metrics.actualBoundingBoxAscent ?? 0) + (metrics.actualBoundingBoxDescent ?? 0), scaledFontSizePx) / 2;
+  // Dimensions entières obligatoires (indices du masque binaire), même quand
+  // le facteur de suréchantillonnage est fractionnaire (grandes tailles).
   const padding = GLYPH_RASTER_PADDING * supersample;
-  const width = Math.ceil(halfWidth * 2) + padding * 2;
-  const height = Math.ceil(halfHeight * 2) + padding * 2;
+  const width = Math.ceil(halfWidth * 2 + padding * 2);
+  const height = Math.ceil(halfHeight * 2 + padding * 2);
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -303,11 +315,11 @@ function buildTextTubeStencil(content: string, fontFamily: string, fontSizePx: n
 
   if (supersample === 1) return bigCanvas;
 
-  // Sous-échantillonnage lissé vers la résolution finale : adoucit les
+  // Rééchantillonnage lissé vers la résolution finale : adoucit les
   // marches d'escalier du masque suréchantillonné en un tube au trait net.
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(width / supersample);
-  canvas.height = Math.round(height / supersample);
+  canvas.width = Math.max(1, Math.round(width / supersample));
+  canvas.height = Math.max(1, Math.round(height / supersample));
   const ctx = canvas.getContext("2d")!;
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
@@ -425,14 +437,13 @@ export function ConfiguratorWorkspace({
   };
 
   const detectEdges = (img: HTMLImageElement) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const imgRatio = Math.min((canvas.width - 40) / img.width, (canvas.height - 40) / img.height) * imageScale;
+    // Coordonnées logiques (mêmes que le rendu de l'image dans drawCanvas),
+    // indépendantes du backing store suréchantillonné.
+    const imgRatio = Math.min((widthPx - 40) / img.width, (heightPx - 40) / img.height) * imageScale;
     const imgWidth = Math.floor(img.width * imgRatio);
     const imgHeight = Math.floor(img.height * imgRatio);
-    const imgX = Math.floor((canvas.width - imgWidth) / 2);
-    const imgY = Math.floor((canvas.height - imgHeight) / 2);
+    const imgX = Math.floor((widthPx - imgWidth) / 2);
+    const imgY = Math.floor((heightPx - imgHeight) / 2);
 
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = imgWidth;
@@ -770,36 +781,42 @@ export function ConfiguratorWorkspace({
     const isDay = opts?.forceLit ? false : previewMode === "day";
     const phase = opts?.forceLit ? true : blinkPhase;
 
-    canvas.width = widthPx;
-    canvas.height = heightPx;
+    // Backing store à 2x (voir RENDER_SCALE) : le contexte est mis à l'échelle
+    // une fois pour toutes, tout le reste du dessin travaille en coordonnées
+    // logiques (1px = 1mm) comme avant.
+    canvas.width = widthPx * RENDER_SCALE;
+    canvas.height = heightPx * RENDER_SCALE;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    ctx.scale(RENDER_SCALE, RENDER_SCALE);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
 
     ctx.fillStyle = isDay ? "#e7e5e4" : "#0a0a0a";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, widthPx, heightPx);
 
     ctx.strokeStyle = isDay ? "#d6d3d1" : "#1a1a1a";
     ctx.lineWidth = 1;
     for (let i = 0; i <= canvasWidth; i += 10) {
       ctx.beginPath();
       ctx.moveTo(i * CM_TO_PX, 0);
-      ctx.lineTo(i * CM_TO_PX, canvas.height);
+      ctx.lineTo(i * CM_TO_PX, heightPx);
       ctx.stroke();
     }
     for (let i = 0; i <= canvasHeight; i += 10) {
       ctx.beginPath();
       ctx.moveTo(0, i * CM_TO_PX);
-      ctx.lineTo(canvas.width, i * CM_TO_PX);
+      ctx.lineTo(widthPx, i * CM_TO_PX);
       ctx.stroke();
     }
 
     if (image) {
-      const imgRatio = Math.min((canvas.width - 40) / image.width, (canvas.height - 40) / image.height) * imageScale;
+      const imgRatio = Math.min((widthPx - 40) / image.width, (heightPx - 40) / image.height) * imageScale;
       const imgWidth = image.width * imgRatio;
       const imgHeight = image.height * imgRatio;
-      const imgX = (canvas.width - imgWidth) / 2;
-      const imgY = (canvas.height - imgHeight) / 2;
+      const imgX = (widthPx - imgWidth) / 2;
+      const imgY = (heightPx - imgHeight) / 2;
       ctx.globalAlpha = 0.3;
       ctx.drawImage(image, imgX, imgY, imgWidth, imgHeight);
       ctx.globalAlpha = 1.0;
@@ -822,7 +839,9 @@ export function ConfiguratorWorkspace({
       // réduit) pour pouvoir continuer à le sélectionner.
       const renderColor = isDay ? toUnlitColor(el.color) : el.color;
       const blinkOff = !isDay && el.blink === true && !phase;
-      const glow = isDay || blinkOff ? 0 : glowBlurPx(el.glowIntensity);
+      // shadowBlur n'est pas affecté par ctx.scale() — il s'exprime en pixels
+      // du backing store, d'où la multiplication par RENDER_SCALE.
+      const glow = isDay || blinkOff ? 0 : glowBlurPx(el.glowIntensity) * RENDER_SCALE;
       if (blinkOff) ctx.globalAlpha = 0.15;
 
       if (el.rotation && "x" in el && "y" in el) {
@@ -858,11 +877,15 @@ export function ConfiguratorWorkspace({
         // Trait du squelette du glyphe (pas son contour plein) : épaisseur
         // réellement fixe à toute taille et pour n'importe quelle police —
         // voir buildTextTubeStencil / zhangSuenThinning plus haut.
+        // Pochoir construit à la résolution du backing store (fontSize × 2) puis
+        // dessiné à taille logique : ses pixels tombent exactement sur ceux du
+        // canvas 2x, aucun étirement, tracé net.
         const family = NEON_FONT_FAMILIES[el.fontId] ?? "sans-serif";
-        const cacheKey = `${family}::${Math.round(el.fontSize)}::${el.content}`;
+        const stencilFontSize = el.fontSize * RENDER_SCALE;
+        const cacheKey = `${family}::${Math.round(stencilFontSize)}::${el.content}`;
         let stencil = textTubeCacheRef.current.get(cacheKey);
         if (!stencil) {
-          stencil = buildTextTubeStencil(el.content, family, el.fontSize, NEON_WIDTH_PX);
+          stencil = buildTextTubeStencil(el.content, family, stencilFontSize, NEON_WIDTH_PX * RENDER_SCALE);
           textTubeCacheRef.current.set(cacheKey, stencil);
         }
 
@@ -880,7 +903,9 @@ export function ConfiguratorWorkspace({
 
         ctx.shadowColor = renderColor;
         ctx.shadowBlur = glow;
-        ctx.drawImage(scratch, el.x - stencil.width / 2, el.y - stencil.height / 2);
+        const drawW = stencil.width / RENDER_SCALE;
+        const drawH = stencil.height / RENDER_SCALE;
+        ctx.drawImage(scratch, el.x - drawW / 2, el.y - drawH / 2, drawW, drawH);
       } else if (el.type === "rect" && el.width && el.height) {
         ctx.strokeStyle = renderColor;
         ctx.lineWidth = NEON_WIDTH_PX;
@@ -931,7 +956,7 @@ export function ConfiguratorWorkspace({
       ctx.lineWidth = NEON_WIDTH_PX;
       ctx.lineCap = "round";
       ctx.shadowColor = previewColor;
-      ctx.shadowBlur = isDay ? 0 : glowBlurPx(undefined);
+      ctx.shadowBlur = isDay ? 0 : glowBlurPx(undefined) * RENDER_SCALE;
       ctx.beginPath();
       ctx.moveTo(currentDrawPoints[0].x, currentDrawPoints[0].y);
       currentDrawPoints.forEach((p) => ctx.lineTo(p.x, p.y));
@@ -974,19 +999,21 @@ export function ConfiguratorWorkspace({
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
 
+    // Coordonnées logiques (widthPx/heightPx), pas celles du backing store
+    // qui est suréchantillonné (voir RENDER_SCALE).
     const rect = canvas.getBoundingClientRect();
     const touchEvent = e as React.TouchEvent;
     if (touchEvent.touches && touchEvent.touches[0]) {
       return {
-        x: ((touchEvent.touches[0].clientX - rect.left) / rect.width) * canvas.width,
-        y: ((touchEvent.touches[0].clientY - rect.top) / rect.height) * canvas.height,
+        x: ((touchEvent.touches[0].clientX - rect.left) / rect.width) * widthPx,
+        y: ((touchEvent.touches[0].clientY - rect.top) / rect.height) * heightPx,
       };
     }
 
     const mouseEvent = e as React.MouseEvent;
     return {
-      x: ((mouseEvent.clientX - rect.left) / rect.width) * canvas.width,
-      y: ((mouseEvent.clientY - rect.top) / rect.height) * canvas.height,
+      x: ((mouseEvent.clientX - rect.left) / rect.width) * widthPx,
+      y: ((mouseEvent.clientY - rect.top) / rect.height) * heightPx,
     };
   }
 
@@ -1736,6 +1763,9 @@ export function ConfiguratorWorkspace({
               className="mx-auto touch-none rounded-lg ring-1 ring-primary/30"
               style={{
                 cursor: currentTool === "select" ? (isResizing ? "nwse-resize" : "move") : currentTool === "draw" ? "crosshair" : currentTool === "line" ? "crosshair" : "text",
+                // Taille d'affichage logique : le backing store est à 2x
+                // (RENDER_SCALE) pour un rendu net, pas pour grossir le canvas.
+                width: widthPx,
                 maxWidth: "100%",
                 height: "auto",
               }}
