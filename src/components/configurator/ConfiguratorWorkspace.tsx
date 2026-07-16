@@ -355,6 +355,7 @@ export function ConfiguratorWorkspace({
   const [currentDrawPoints, setCurrentDrawPoints] = useState<Point[]>([]);
   const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
   const [lineStart, setLineStart] = useState<Point | null>(null);
+  const [linePreviewPoint, setLinePreviewPoint] = useState<Point | null>(null);
 
   const [textInput, setTextInput] = useState("");
   const [textFontId, setTextFontId] = useState<NeonFontId>(NEON_FONTS[0].id);
@@ -618,6 +619,8 @@ export function ConfiguratorWorkspace({
       if (e.key === "Escape") {
         setSelectedId(null);
         setCurrentTool("select");
+        setLineStart(null);
+        setLinePreviewPoint(null);
         return;
       }
       if (selectedId && (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight")) {
@@ -704,7 +707,7 @@ export function ConfiguratorWorkspace({
   useEffect(() => {
     drawCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image, imageScale, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart, previewMode, blinkPhase]);
+  }, [image, imageScale, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart, linePreviewPoint, previewMode, blinkPhase]);
 
   function getObjectBounds(el: CanvasElement) {
     if (el.type === "draw") {
@@ -936,6 +939,19 @@ export function ConfiguratorWorkspace({
       ctx.restore();
     }
 
+    if (currentTool === "line" && lineStart && linePreviewPoint) {
+      ctx.save();
+      ctx.strokeStyle = isDay ? "#78716c" : "#9ca3af";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(lineStart.x, lineStart.y);
+      ctx.lineTo(linePreviewPoint.x, linePreviewPoint.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
     if (currentSnapPoint && snapEnabled && (isDrawing || currentTool === "line")) {
       ctx.save();
       ctx.strokeStyle = "#00FF00";
@@ -1006,9 +1022,10 @@ export function ConfiguratorWorkspace({
     }
 
     if (currentTool === "line") {
-      if (!lineStart) {
-        setLineStart(snapToEdge(pos));
-      }
+      // Le point de départ est posé au relâchement (voir handlePointerUp),
+      // pas ici : down+up du même clic se suivent dans le même cycle de
+      // rendu, donc les poser tous les deux ici finaliserait la ligne dès
+      // le premier clic au lieu d'attendre le second.
       return;
     }
 
@@ -1054,7 +1071,10 @@ export function ConfiguratorWorkspace({
     e.preventDefault();
     const pos = getPosition(e);
 
-    if (currentTool === "line" && lineStart) return;
+    if (currentTool === "line" && lineStart) {
+      setLinePreviewPoint(snapToEdge(pos));
+      return;
+    }
 
     if (isDrawing && currentTool === "draw") {
       setCurrentDrawPoints((prev) => [...prev, snapToEdge(pos)]);
@@ -1144,8 +1164,14 @@ export function ConfiguratorWorkspace({
   function handlePointerUp(e: React.MouseEvent | React.TouchEvent) {
     const pos = getPosition(e);
 
-    if (currentTool === "line" && lineStart) {
+    if (currentTool === "line") {
       const snappedPos = snapToEdge(pos);
+      if (!lineStart) {
+        // Premier clic : pose le point de départ, la ligne discontinue de
+        // prévisualisation suit ensuite le curseur jusqu'au second clic.
+        setLineStart(snappedPos);
+        return;
+      }
       const newLine: LineElement = {
         id: Date.now().toString(),
         type: "line",
@@ -1157,6 +1183,7 @@ export function ConfiguratorWorkspace({
       };
       saveToHistory([...elements, newLine]);
       setLineStart(null);
+      setLinePreviewPoint(null);
       return;
     }
 
@@ -1445,6 +1472,26 @@ export function ConfiguratorWorkspace({
             {t("eyebrow")}
           </p>
           <h1 className="mb-4 font-display text-3xl font-bold uppercase tracking-[0.03em] sm:text-4xl">{t("title")}</h1>
+
+          <div className="mb-4 max-w-xs">
+            <label className="mb-2 block text-sm text-muted-foreground">{t("price.supportLabel")}</label>
+            <Select value={support} onValueChange={(value) => setSupport(value as SupportType)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORT_TYPES.map((type) => {
+                  const surcharge = Math.round(supportSurfaceCm2 * pricingSettings.supportPricePerCm2[type]);
+                  return (
+                    <SelectItem key={type} value={type}>
+                      {t(`price.support.${type}`)}
+                      {surcharge > 0 ? ` (+${surcharge.toLocaleString()} ${tCommon("currency")})` : ""}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="flex flex-wrap gap-3">
             <Button onClick={() => setCurrentTool("select")} variant={currentTool === "select" ? "default" : "outline"} size="sm">
@@ -1801,26 +1848,6 @@ export function ConfiguratorWorkspace({
         {/* Estimation Prix + Bouton Continuer */}
         {totalLength > 0 && (
           <div className="mb-6 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 p-6 ring-1 ring-primary/20">
-            <div className="mb-6">
-              <label className="mb-2 block text-sm text-muted-foreground">{t("price.supportLabel")}</label>
-              <Select value={support} onValueChange={(value) => setSupport(value as SupportType)}>
-                <SelectTrigger className="w-full sm:w-72">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORT_TYPES.map((type) => {
-                    const surcharge = Math.round(supportSurfaceCm2 * pricingSettings.supportPricePerCm2[type]);
-                    return (
-                      <SelectItem key={type} value={type}>
-                        {t(`price.support.${type}`)}
-                        {surcharge > 0 ? ` (+${surcharge.toLocaleString()} ${tCommon("currency")})` : ""}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="mb-6 grid grid-cols-1 gap-6 text-center md:grid-cols-2">
               <div>
                 <span className="mb-2 block text-lg text-muted-foreground">{t("price.totalLength")}</span>
