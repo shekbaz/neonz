@@ -78,51 +78,51 @@ export const NEON_COLORS = [
 
 export type NeonColorId = (typeof NEON_COLORS)[number]["id"];
 
+/**
+ * Uniquement des polices monolignes (trait d'épaisseur quasi constante) ou
+ * des sans-serifs uniformes : le texte est fabriqué en pliant un tube néon
+ * de 1cm le long du tracé (squelette du glyphe, voir ConfiguratorWorkspace),
+ * ce qui n'est fidèle que si la police n'a pas de forts pleins/déliés.
+ * Neonderthaw / Mr Dafoe / Vibur sont dessinées spécifiquement pour le
+ * lettrage néon.
+ */
 export const NEON_FONTS = [
+  { id: "neonderthaw", label: "Neonderthaw", file: "/fonts/Neonderthaw-Regular.ttf" },
+  { id: "mr-dafoe", label: "Mr Dafoe", file: "/fonts/MrDafoe-Regular.ttf" },
+  { id: "vibur", label: "Vibur", file: "/fonts/Vibur-Regular.ttf" },
   { id: "caveat-regular", label: "Caveat", file: "/fonts/Caveat-Regular.ttf" },
   { id: "caveat-medium", label: "Caveat Medium", file: "/fonts/Caveat-Medium.ttf" },
   { id: "caveat-semibold", label: "Caveat SemiBold", file: "/fonts/Caveat-SemiBold.ttf" },
   { id: "caveat-bold", label: "Caveat Bold", file: "/fonts/Caveat-Bold.ttf" },
-  { id: "pacifico", label: "Pacifico", file: "/fonts/Pacifico-Regular.ttf" },
-  { id: "dancing-script", label: "Dancing Script", file: "/fonts/DancingScript-Bold.ttf" },
-  { id: "tangerine", label: "Tangerine", file: "/fonts/Tangerine-Bold.ttf" },
   { id: "sacramento", label: "Sacramento", file: "/fonts/Sacramento-Regular.ttf" },
-  { id: "great-vibes", label: "Great Vibes", file: "/fonts/GreatVibes-Regular.ttf" },
-  { id: "lobster", label: "Lobster", file: "/fonts/Lobster-Regular.ttf" },
-  { id: "alex-brush", label: "Alex Brush", file: "/fonts/AlexBrush-Regular.ttf" },
   { id: "allura", label: "Allura", file: "/fonts/Allura-Regular.ttf" },
-  { id: "kaushan-script", label: "Kaushan Script", file: "/fonts/KaushanScript-Regular.ttf" },
-  { id: "poppins-bold", label: "Poppins Bold", file: "/fonts/Poppins-Bold.ttf" },
+  { id: "alex-brush", label: "Alex Brush", file: "/fonts/AlexBrush-Regular.ttf" },
+  { id: "dancing-script", label: "Dancing Script", file: "/fonts/DancingScript-Bold.ttf" },
   { id: "bebas-neue", label: "Bebas Neue", file: "/fonts/BebasNeue-Regular.ttf" },
-  { id: "anton", label: "Anton", file: "/fonts/Anton-Regular.ttf" },
-  { id: "righteous", label: "Righteous", file: "/fonts/Righteous-Regular.ttf" },
   { id: "pathway-gothic", label: "Pathway Gothic", file: "/fonts/PathwayGothicOne-Regular.ttf" },
-  { id: "bangers", label: "Bangers", file: "/fonts/Bangers-Regular.ttf" },
-  { id: "monoton", label: "Monoton", file: "/fonts/Monoton-Regular.ttf" },
+  { id: "righteous", label: "Righteous", file: "/fonts/Righteous-Regular.ttf" },
+  { id: "poppins-bold", label: "Poppins Bold", file: "/fonts/Poppins-Bold.ttf" },
+  { id: "anton", label: "Anton", file: "/fonts/Anton-Regular.ttf" },
 ] as const;
 
 export type NeonFontId = (typeof NEON_FONTS)[number]["id"];
 
 /** id CSS font-family utilisable directement par le canvas (`font: bold 32px "<family>"`), une police web déjà chargée par l'app (voir globals.css @font-face). */
 export const NEON_FONT_FAMILIES: Record<NeonFontId, string> = {
+  neonderthaw: "Neonderthaw",
+  "mr-dafoe": "Mr Dafoe",
+  vibur: "Vibur",
   "caveat-regular": "Caveat Regular",
   "caveat-medium": "Caveat Medium",
   "caveat-semibold": "Caveat SemiBold",
   "caveat-bold": "Caveat Bold",
-  pacifico: "Pacifico",
-  "dancing-script": "Dancing Script",
-  tangerine: "Tangerine",
   sacramento: "Sacramento",
-  "great-vibes": "Great Vibes",
-  lobster: "Lobster",
-  "alex-brush": "Alex Brush",
   allura: "Allura",
-  "kaushan-script": "Kaushan Script",
-  "poppins-bold": "Poppins",
+  "alex-brush": "Alex Brush",
+  "dancing-script": "Dancing Script",
   "bebas-neue": "Bebas Neue",
-  anton: "Anton",
-  righteous: "Righteous",
   "pathway-gothic": "Pathway Gothic One",
-  bangers: "Bangers",
-  monoton: "Monoton",
+  righteous: "Righteous",
+  "poppins-bold": "Poppins",
+  anton: "Anton",
 };

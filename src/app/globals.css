@@ -241,6 +241,23 @@
   src: url("/fonts/Caveat-Bold.ttf") format("truetype");
   font-display: swap;
 }
+/* Polices dessinées spécifiquement pour le lettrage néon (monolignes) —
+   le squelette du configurateur y est fidèle au tracé d'origine. */
+@font-face {
+  font-family: "Neonderthaw";
+  src: url("/fonts/Neonderthaw-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Mr Dafoe";
+  src: url("/fonts/MrDafoe-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vibur";
+  src: url("/fonts/Vibur-Regular.ttf") format("truetype");
+  font-display: swap;
+}
 
 :lang(ar) body {
   font-family: var(--font-cairo);

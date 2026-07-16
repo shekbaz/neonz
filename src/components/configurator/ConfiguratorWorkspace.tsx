@@ -214,6 +214,122 @@ function zhangSuenThinning(binary: Uint8Array, width: number, height: number): U
   return img;
 }
 
+/** Épaissit un masque (ici : le squelette) de `radiusPx` dans toutes les directions — donne au tracé du squelette l'épaisseur fixe du tube néon. */
+function dilateMask(mask: Uint8Array, width: number, height: number, radiusPx: number): Uint8Array {
+  const out = new Uint8Array(width * height);
+  const r = Math.ceil(radiusPx);
+  const r2 = radiusPx * radiusPx;
+  const offsets: Array<[number, number]> = [];
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      if (dx * dx + dy * dy <= r2) offsets.push([dx, dy]);
+    }
+  }
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (!mask[y * width + x]) continue;
+      for (const [dx, dy] of offsets) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < width && ny < height) out[ny * width + nx] = 1;
+      }
+    }
+  }
+  return out;
+}
+
+const GLYPH_RASTER_PADDING = Math.ceil(NEON_WIDTH_PX * 1.5) + 4;
+
+/**
+ * Facteur de suréchantillonnage du glyphe avant squelettisation : rastériser
+ * au pixel près (1x) perd la position sous-pixel du tracé réel de la police.
+ * Le facteur vise une hauteur de rasterisation constante (~500px) : petites
+ * tailles suréchantillonnées, très grandes plafonnées (facteur < 1) pour un
+ * temps de squelettisation borné quelle que soit la taille du texte.
+ */
+const GLYPH_RASTER_TARGET_PX = 500;
+
+function glyphSupersampleFactor(fontSizePx: number): number {
+  if (fontSizePx >= GLYPH_RASTER_TARGET_PX) return GLYPH_RASTER_TARGET_PX / fontSizePx;
+  return Math.min(3, Math.max(1, Math.round(GLYPH_RASTER_TARGET_PX / fontSizePx)));
+}
+
+/** Dessine le texte plein (glyphes de la police) dans un canvas hors-écran, pour en extraire un masque binaire (alpha > seuil). */
+function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: number, supersample: number) {
+  const scaledFontSizePx = fontSizePx * supersample;
+  const measure = document.createElement("canvas").getContext("2d")!;
+  measure.textAlign = "center";
+  measure.textBaseline = "middle";
+  measure.font = `${scaledFontSizePx}px "${fontFamily}"`;
+  const metrics = measure.measureText(content);
+  // Mesure réelle de l'encre du glyphe (boîte englobante), pas une estimation
+  // approximative par caractère — sous-évaluer rogne les jambages/boucles des
+  // scripts cursifs (lettres liées, plus larges que largeur*nb caractères).
+  const halfWidth = Math.max(metrics.actualBoundingBoxLeft ?? 0, metrics.actualBoundingBoxRight ?? 0, scaledFontSizePx * 0.6);
+  const halfHeight = Math.max((metrics.actualBoundingBoxAscent ?? 0) + (metrics.actualBoundingBoxDescent ?? 0), scaledFontSizePx) / 2;
+  // Dimensions entières obligatoires (indices du masque binaire), même quand
+  // le facteur de suréchantillonnage est fractionnaire (grandes tailles).
+  const padding = GLYPH_RASTER_PADDING * supersample;
+  const width = Math.ceil(halfWidth * 2 + padding * 2);
+  const height = Math.ceil(halfHeight * 2 + padding * 2);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `${scaledFontSizePx}px "${fontFamily}"`;
+  ctx.fillText(content, width / 2, height / 2);
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const binary = new Uint8Array(width * height);
+  for (let i = 0; i < width * height; i++) binary[i] = imageData.data[i * 4 + 3] > 127 ? 1 : 0;
+  return { binary, width, height };
+}
+
+/**
+ * Construit (et met en cache) le tube néon d'un texte : squelette du glyphe,
+ * dilaté à l'épaisseur fixe du tube (1cm), comme le tube physique plié par
+ * l'artisan. Fidèle à la police uniquement si celle-ci est monoligne (trait
+ * d'épaisseur constante) — d'où la liste de polices restreinte aux scripts
+ * monolignes et sans-serifs uniformes, voir NEON_FONTS.
+ */
+function buildTextTubeStencil(content: string, fontFamily: string, fontSizePx: number, tubeWidthPx: number): HTMLCanvasElement {
+  const supersample = glyphSupersampleFactor(fontSizePx);
+  const { binary, width, height } = rasterizeGlyphAlpha(content, fontFamily, fontSizePx, supersample);
+  const skeleton = zhangSuenThinning(binary, width, height);
+  const dilated = dilateMask(skeleton, width, height, (tubeWidthPx * supersample) / 2);
+
+  const bigCanvas = document.createElement("canvas");
+  bigCanvas.width = width;
+  bigCanvas.height = height;
+  const bigCtx = bigCanvas.getContext("2d")!;
+  const imageData = bigCtx.createImageData(width, height);
+  for (let i = 0; i < width * height; i++) {
+    if (dilated[i]) {
+      imageData.data[i * 4] = 255;
+      imageData.data[i * 4 + 1] = 255;
+      imageData.data[i * 4 + 2] = 255;
+      imageData.data[i * 4 + 3] = 255;
+    }
+  }
+  bigCtx.putImageData(imageData, 0, 0);
+
+  if (supersample === 1) return bigCanvas;
+
+  // Rééchantillonnage lissé vers la résolution finale : adoucit les
+  // marches d'escalier du masque suréchantillonné en un tube au trait net.
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width / supersample));
+  canvas.height = Math.max(1, Math.round(height / supersample));
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bigCanvas, 0, 0, width, height, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+
 export function ConfiguratorWorkspace({
   initialColors = [],
   pricingSettings = DEFAULT_PRICING_SETTINGS,
@@ -227,6 +343,11 @@ export function ConfiguratorWorkspace({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLInputElement>(null);
+  // Cache des tubes néon de texte (squelette dilaté), par contenu/police/taille
+  // — coûteux à calculer (amincissement), pas besoin de le refaire à chaque
+  // frame tant que ces trois valeurs ne changent pas (drag/couleur : gratuits).
+  const textTubeCacheRef = useRef<Map<string, HTMLCanvasElement>>(new Map());
+  const tintScratchRef = useRef<HTMLCanvasElement | null>(null);
 
   // Palette gérée par l'admin (voir /admin/couleurs) — repli sur la palette néon
   // par défaut si l'admin n'a encore configuré aucune couleur.
@@ -585,7 +706,13 @@ export function ConfiguratorWorkspace({
     // chargement explicite, ctx.font utilise la police de secours tant
     // qu'aucun autre repaint n'est déclenché après le chargement réel.
     Promise.all(NEON_FONTS.map((font) => document.fonts.load(`32px "${NEON_FONT_FAMILIES[font.id]}"`)))
-      .then(() => drawCanvas())
+      .then(() => {
+        // Un texte rendu avant que sa police ne finisse de charger a été
+        // tracé (et mis en cache) avec la police de secours du navigateur —
+        // vider le cache force à reconstruire le tube avec la vraie police.
+        textTubeCacheRef.current.clear();
+        drawCanvas();
+      })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -749,17 +876,37 @@ export function ConfiguratorWorkspace({
         ctx.lineTo(el.x2, el.y2);
         ctx.stroke();
       } else if (el.type === "text" && el.content) {
-        // Rendu direct du glyphe avec la police choisie : le texte à l'écran
-        // est exactement celui de la police, à n'importe quelle taille —
-        // l'agrandissement ne fait que changer fontSize, jamais la forme.
+        // Tube à épaisseur fixe (1cm), comme le néon physique : squelette du
+        // glyphe dilaté — fidèle à la police car la liste est restreinte aux
+        // polices monolignes (voir NEON_FONTS). Pochoir construit à la
+        // résolution du backing store (fontSize × 2) puis dessiné à taille
+        // logique : pixels alignés sur le canvas 2x, tracé net.
         const family = NEON_FONT_FAMILIES[el.fontId] ?? "sans-serif";
-        ctx.font = `${el.fontSize}px "${family}"`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = renderColor;
+        const stencilFontSize = el.fontSize * RENDER_SCALE;
+        const cacheKey = `${family}::${Math.round(stencilFontSize)}::${el.content}`;
+        let stencil = textTubeCacheRef.current.get(cacheKey);
+        if (!stencil) {
+          stencil = buildTextTubeStencil(el.content, family, stencilFontSize, NEON_WIDTH_PX * RENDER_SCALE);
+          textTubeCacheRef.current.set(cacheKey, stencil);
+        }
+
+        if (!tintScratchRef.current) tintScratchRef.current = document.createElement("canvas");
+        const scratch = tintScratchRef.current;
+        scratch.width = stencil.width;
+        scratch.height = stencil.height;
+        const sctx = scratch.getContext("2d")!;
+        sctx.clearRect(0, 0, stencil.width, stencil.height);
+        sctx.drawImage(stencil, 0, 0);
+        sctx.globalCompositeOperation = "source-in";
+        sctx.fillStyle = renderColor;
+        sctx.fillRect(0, 0, stencil.width, stencil.height);
+        sctx.globalCompositeOperation = "source-over";
+
         ctx.shadowColor = renderColor;
         ctx.shadowBlur = glow;
-        ctx.fillText(el.content, el.x, el.y);
+        const drawW = stencil.width / RENDER_SCALE;
+        const drawH = stencil.height / RENDER_SCALE;
+        ctx.drawImage(scratch, el.x - drawW / 2, el.y - drawH / 2, drawW, drawH);
       } else if (el.type === "rect" && el.width && el.height) {
         ctx.strokeStyle = renderColor;
         ctx.lineWidth = NEON_WIDTH_PX;
