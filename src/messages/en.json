@@ -131,15 +131,16 @@
       "title": "Neon workshop pricing",
       "pricePerCm": "Price per cm of neon tube (DZD)",
       "depositRate": "Deposit at order (%)",
-      "supportForex": "Forex support surcharge (DZD)",
-      "supportPlexiglass": "Plexiglass support surcharge (DZD)",
+      "supportForex": "Forex support (DZD/cm²)",
+      "supportPlexiglass": "Plexiglass support (DZD/cm²)",
       "remotePrice": "Remote control surcharge (DZD)",
       "controllerPrice": "Multi-zone controller surcharge (DZD)",
       "save": "Save pricing",
       "saved": "Pricing updated.",
       "exampleTitle": "Example calculation",
-      "exampleDescription": "{length} cm long neon, {support} support, with blinking.",
+      "exampleDescription": "{length} cm long neon, {width} × {height} cm workspace, {support} support, with blinking.",
       "exampleTube": "Tube ({length} cm × {price} DZD/cm)",
+      "exampleSupport": "Support ({surface} cm² × {price} DZD/cm²)",
       "exampleController": "Multi-zone controller (blinking)",
       "exampleTotal": "Estimated total"
     },
@@ -399,12 +400,14 @@
     "snapPanel": {
       "title": "Magnetic snap settings",
       "sensitivity": "Sensitivity: {value}",
-      "sensitivityHint": "Lower = more points",
+      "sensitivityHint": "Higher = more points (wider strokes detected as trace)",
       "distance": "Snap distance: {value}px",
       "active": "Active",
       "show": "Show",
       "hide": "Hide",
-      "points": "{count} pts"
+      "points": "{count} pts",
+      "imageScale": "Image size: {value}%",
+      "removeImage": "Remove image"
     },
     "selection": {
       "title": "Selected object ({type})",
@@ -445,7 +448,7 @@
         "plexiglass": "Plexiglass (clear acrylic)"
       },
       "controller": "Multi-zone controller (blink): +{price} {currency}",
-      "footnote": "Price calculated at {price} {currency}/cm — 30% deposit due at order.",
+      "footnote": "30% deposit due at order.",
       "continue": "Continue to order"
     },
     "instructions": {

@@ -131,15 +131,16 @@
       "title": "Tarifs de l'atelier néon",
       "pricePerCm": "Prix au cm de tube néon (DZD)",
       "depositRate": "Acompte à la commande (%)",
-      "supportForex": "Supplément support Forex (DZD)",
-      "supportPlexiglass": "Supplément support Plexiglass (DZD)",
+      "supportForex": "Support Forex (DZD/cm²)",
+      "supportPlexiglass": "Support Plexiglass (DZD/cm²)",
       "remotePrice": "Supplément télécommande (DZD)",
       "controllerPrice": "Supplément contrôleur multi-zone (DZD)",
       "save": "Enregistrer les tarifs",
       "saved": "Tarifs mis à jour.",
       "exampleTitle": "Exemple de calcul",
-      "exampleDescription": "Néon de {length} cm de long, support {support}, avec clignotant.",
+      "exampleDescription": "Néon de {length} cm de long, plan de travail {width} × {height} cm, support {support}, avec clignotant.",
       "exampleTube": "Tube ({length} cm × {price} DZD/cm)",
+      "exampleSupport": "Support ({surface} cm² × {price} DZD/cm²)",
       "exampleController": "Contrôleur multi-zone (clignotant)",
       "exampleTotal": "Total estimé"
     },
@@ -399,12 +400,14 @@
     "snapPanel": {
       "title": "Réglages snap magnétique",
       "sensitivity": "Sensibilité : {value}",
-      "sensitivityHint": "Bas = plus de points",
+      "sensitivityHint": "Haut = plus de points (trait plus large détecté comme trace)",
       "distance": "Distance snap : {value}px",
       "active": "Actif",
       "show": "Voir",
       "hide": "Cacher",
-      "points": "{count} pts"
+      "points": "{count} pts",
+      "imageScale": "Taille de l'image : {value}%",
+      "removeImage": "Supprimer l'image"
     },
     "selection": {
       "title": "Objet sélectionné ({type})",
@@ -445,7 +448,7 @@
         "plexiglass": "Plexiglass (acrylique transparent)"
       },
       "controller": "Contrôleur multi-zone (clignotement) : +{price} {currency}",
-      "footnote": "Prix calculé à {price} {currency}/cm — acompte de 30% à la commande.",
+      "footnote": "Acompte de 30% à la commande.",
       "continue": "Continuer vers la commande"
     },
     "instructions": {

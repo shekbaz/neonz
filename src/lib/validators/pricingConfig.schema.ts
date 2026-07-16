@@ -4,7 +4,7 @@ export const pricingConfigInputSchema = z.object({
   currency: z.string().min(1).max(10),
   pricePerCmOfTube: z.number().nonnegative(),
   depositRate: z.number().min(0).max(1),
-  supportPrices: z.object({
+  supportPricePerCm2: z.object({
     forex: z.number().nonnegative(),
     plexiglass: z.number().nonnegative(),
   }),

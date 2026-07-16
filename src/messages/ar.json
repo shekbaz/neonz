@@ -128,15 +128,16 @@
       "title": "أسعار ورشة النيون",
       "pricePerCm": "السعر لكل سم من أنبوب النيون (دج)",
       "depositRate": "العربون عند الطلب (%)",
-      "supportForex": "رسوم إضافية لدعامة Forex (دج)",
-      "supportPlexiglass": "رسوم إضافية لدعامة Plexiglass (دج)",
+      "supportForex": "دعامة Forex (دج/سم²)",
+      "supportPlexiglass": "دعامة Plexiglass (دج/سم²)",
       "remotePrice": "رسوم إضافية للتحكم عن بعد (دج)",
       "controllerPrice": "رسوم إضافية لوحدة التحكم متعددة المناطق (دج)",
       "save": "حفظ الأسعار",
       "saved": "تم تحديث الأسعار.",
       "exampleTitle": "مثال على الحساب",
-      "exampleDescription": "نيون بطول {length} سم، دعامة {support}، مع وميض.",
+      "exampleDescription": "نيون بطول {length} سم، مساحة عمل {width} × {height} سم، دعامة {support}، مع وميض.",
       "exampleTube": "الأنبوب ({length} سم × {price} دج/سم)",
+      "exampleSupport": "الدعامة ({surface} سم² × {price} دج/سم²)",
       "exampleController": "وحدة تحكم متعددة المناطق (وميض)",
       "exampleTotal": "المجموع المقدر"
     },
@@ -399,12 +400,14 @@
     "snapPanel": {
       "title": "إعدادات الالتصاق المغناطيسي",
       "sensitivity": "الحساسية: {value}",
-      "sensitivityHint": "منخفض = نقاط أكثر",
+      "sensitivityHint": "مرتفع = نقاط أكثر",
       "distance": "مسافة الالتصاق: {value}px",
       "active": "مفعّل",
       "show": "إظهار",
       "hide": "إخفاء",
-      "points": "{count} نقطة"
+      "points": "{count} نقطة",
+      "imageScale": "حجم الصورة: {value}%",
+      "removeImage": "حذف الصورة"
     },
     "selection": {
       "title": "العنصر المحدد ({type})",
@@ -445,7 +448,7 @@
         "plexiglass": "Plexiglass (أكريليك شفاف)"
       },
       "controller": "وحدة تحكم متعددة المناطق (وميض): +{price} {currency}",
-      "footnote": "السعر محسوب بـ {price} {currency}/سم — عربون 30% عند الطلب.",
+      "footnote": "عربون 30% عند الطلب.",
       "continue": "المتابعة إلى الطلب"
     },
     "instructions": {

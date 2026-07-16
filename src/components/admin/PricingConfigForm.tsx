@@ -9,8 +9,8 @@ import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import type { PricingSettings } from "@/lib/neon/pricing";
 
-/** Longueur/support/clignotement d'un exemple fixe, juste pour illustrer la formule en temps réel pendant que l'admin modifie les valeurs. */
-const EXAMPLE = { lengthCm: 150, support: "plexiglass" as const, hasController: true };
+/** Longueur/dimensions/support/clignotement d'un exemple fixe, juste pour illustrer la formule en temps réel pendant que l'admin modifie les valeurs. */
+const EXAMPLE = { lengthCm: 150, widthCm: 50, heightCm: 30, support: "plexiglass" as const, hasController: true };
 
 export function PricingConfigForm({ initialSettings }: { initialSettings: PricingSettings }) {
   const t = useTranslations("Admin.pricingPage");
@@ -21,9 +21,10 @@ export function PricingConfigForm({ initialSettings }: { initialSettings: Pricin
 
   const exampleTotal = useMemo(() => {
     const tubePrice = Math.round(EXAMPLE.lengthCm * form.pricePerCmOfTube);
-    const supportSurcharge = form.supportPrices[EXAMPLE.support];
+    const surfaceCm2 = EXAMPLE.widthCm * EXAMPLE.heightCm;
+    const supportSurcharge = Math.round(surfaceCm2 * form.supportPricePerCm2[EXAMPLE.support]);
     const controllerSurcharge = EXAMPLE.hasController ? form.controllerOptionPrice : 0;
-    return { tubePrice, supportSurcharge, controllerSurcharge, total: tubePrice + supportSurcharge + controllerSurcharge };
+    return { tubePrice, surfaceCm2, supportSurcharge, controllerSurcharge, total: tubePrice + supportSurcharge + controllerSurcharge };
   }, [form]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -84,8 +85,8 @@ export function PricingConfigForm({ initialSettings }: { initialSettings: Pricin
               type="number"
               min={0}
               required
-              value={form.supportPrices.forex}
-              onChange={(e) => setForm({ ...form, supportPrices: { ...form.supportPrices, forex: Number(e.target.value) } })}
+              value={form.supportPricePerCm2.forex}
+              onChange={(e) => setForm({ ...form, supportPricePerCm2: { ...form.supportPricePerCm2, forex: Number(e.target.value) } })}
             />
           </div>
           <div>
@@ -95,8 +96,8 @@ export function PricingConfigForm({ initialSettings }: { initialSettings: Pricin
               type="number"
               min={0}
               required
-              value={form.supportPrices.plexiglass}
-              onChange={(e) => setForm({ ...form, supportPrices: { ...form.supportPrices, plexiglass: Number(e.target.value) } })}
+              value={form.supportPricePerCm2.plexiglass}
+              onChange={(e) => setForm({ ...form, supportPricePerCm2: { ...form.supportPricePerCm2, plexiglass: Number(e.target.value) } })}
             />
           </div>
         </div>
@@ -134,7 +135,7 @@ export function PricingConfigForm({ initialSettings }: { initialSettings: Pricin
       <div className="h-fit rounded-xl bg-card p-5 ring-1 ring-foreground/10">
         <h3 className="mb-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{t("exampleTitle")}</h3>
         <p className="mb-4 text-xs text-muted-foreground">
-          {t("exampleDescription", { length: EXAMPLE.lengthCm, support: t("supportPlexiglass") })}
+          {t("exampleDescription", { length: EXAMPLE.lengthCm, width: EXAMPLE.widthCm, height: EXAMPLE.heightCm, support: t("supportPlexiglass") })}
         </p>
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
@@ -142,7 +143,9 @@ export function PricingConfigForm({ initialSettings }: { initialSettings: Pricin
             <dd className="font-medium">{exampleTotal.tubePrice.toLocaleString()} {form.currency}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">{t("supportPlexiglass")}</dt>
+            <dt className="text-muted-foreground">
+              {t("exampleSupport", { surface: exampleTotal.surfaceCm2, price: form.supportPricePerCm2[EXAMPLE.support] })}
+            </dt>
             <dd className="font-medium">+{exampleTotal.supportSurcharge.toLocaleString()} {form.currency}</dd>
           </div>
           <div className="flex justify-between">

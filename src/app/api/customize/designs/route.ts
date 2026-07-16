@@ -31,7 +31,11 @@ export async function POST(request: NextRequest) {
     },
     pricingSettings
   );
-  const price = applyFinalOptions(breakdown, { support: data.support, hasRemote: data.hasRemote, hasController }, pricingSettings);
+  const price = applyFinalOptions(
+    breakdown,
+    { support: data.support, dimensions: data.dimensions, hasRemote: data.hasRemote, hasController },
+    pricingSettings
+  );
 
   const design = await CustomDesign.create({
     user: session?.user?.id,

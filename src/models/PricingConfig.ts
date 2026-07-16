@@ -12,9 +12,9 @@ const pricingConfigSchema = new Schema(
     currency: { type: String, required: true, default: DEFAULT_PRICING_SETTINGS.currency },
     pricePerCmOfTube: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.pricePerCmOfTube },
     depositRate: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.depositRate, min: 0, max: 1 },
-    supportPrices: {
-      forex: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.supportPrices.forex },
-      plexiglass: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.supportPrices.plexiglass },
+    supportPricePerCm2: {
+      forex: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.supportPricePerCm2.forex },
+      plexiglass: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.supportPricePerCm2.plexiglass },
     },
     remoteOptionPrice: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.remoteOptionPrice },
     controllerOptionPrice: { type: Number, required: true, default: DEFAULT_PRICING_SETTINGS.controllerOptionPrice },

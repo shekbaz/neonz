@@ -234,20 +234,35 @@ function dilateMask(mask: Uint8Array, width: number, height: number, radiusPx: n
 
 const GLYPH_RASTER_PADDING = Math.ceil(NEON_WIDTH_PX * 1.5) + 4;
 
+/**
+ * Facteur de suréchantillonnage du glyphe avant squelettisation : rastériser
+ * au pixel près (1x) perd la position sous-pixel du tracé réel de la police,
+ * ce qui produit un squelette grossier peu fidèle (surtout pour les scripts
+ * fins). Réduit pour les très grandes tailles afin de garder un temps de
+ * calcul raisonnable (le coût de la squelettisation croît avec la surface).
+ */
+function glyphSupersampleFactor(fontSizePx: number): number {
+  if (fontSizePx <= 200) return 3;
+  if (fontSizePx <= 300) return 2;
+  return 1;
+}
+
 /** Dessine le texte plein (glyphes de la police) dans un canvas hors-écran, pour en extraire un masque binaire (alpha > seuil). */
-function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: number) {
+function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: number, supersample: number) {
+  const scaledFontSizePx = fontSizePx * supersample;
   const measure = document.createElement("canvas").getContext("2d")!;
   measure.textAlign = "center";
   measure.textBaseline = "middle";
-  measure.font = `${fontSizePx}px "${fontFamily}"`;
+  measure.font = `${scaledFontSizePx}px "${fontFamily}"`;
   const metrics = measure.measureText(content);
   // Mesure réelle de l'encre du glyphe (boîte englobante), pas une estimation
   // approximative par caractère — sous-évaluer rogne les jambages/boucles des
   // scripts cursifs (lettres liées, plus larges que largeur*nb caractères).
-  const halfWidth = Math.max(metrics.actualBoundingBoxLeft ?? 0, metrics.actualBoundingBoxRight ?? 0, fontSizePx * 0.6);
-  const halfHeight = Math.max((metrics.actualBoundingBoxAscent ?? 0) + (metrics.actualBoundingBoxDescent ?? 0), fontSizePx) / 2;
-  const width = Math.ceil(halfWidth * 2) + GLYPH_RASTER_PADDING * 2;
-  const height = Math.ceil(halfHeight * 2) + GLYPH_RASTER_PADDING * 2;
+  const halfWidth = Math.max(metrics.actualBoundingBoxLeft ?? 0, metrics.actualBoundingBoxRight ?? 0, scaledFontSizePx * 0.6);
+  const halfHeight = Math.max((metrics.actualBoundingBoxAscent ?? 0) + (metrics.actualBoundingBoxDescent ?? 0), scaledFontSizePx) / 2;
+  const padding = GLYPH_RASTER_PADDING * supersample;
+  const width = Math.ceil(halfWidth * 2) + padding * 2;
+  const height = Math.ceil(halfHeight * 2) + padding * 2;
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -256,7 +271,7 @@ function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: nu
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${fontSizePx}px "${fontFamily}"`;
+  ctx.font = `${scaledFontSizePx}px "${fontFamily}"`;
   ctx.fillText(content, width / 2, height / 2);
   const imageData = ctx.getImageData(0, 0, width, height);
   const binary = new Uint8Array(width * height);
@@ -266,15 +281,16 @@ function rasterizeGlyphAlpha(content: string, fontFamily: string, fontSizePx: nu
 
 /** Construit (et met en cache) le tube néon d'un texte : squelette du glyphe, dilaté à l'épaisseur fixe du tube — un canvas blanc/alpha, à teinter à la couleur voulue au moment du rendu. */
 function buildTextTubeStencil(content: string, fontFamily: string, fontSizePx: number, tubeWidthPx: number): HTMLCanvasElement {
-  const { binary, width, height } = rasterizeGlyphAlpha(content, fontFamily, fontSizePx);
+  const supersample = glyphSupersampleFactor(fontSizePx);
+  const { binary, width, height } = rasterizeGlyphAlpha(content, fontFamily, fontSizePx, supersample);
   const skeleton = zhangSuenThinning(binary, width, height);
-  const dilated = dilateMask(skeleton, width, height, tubeWidthPx / 2);
+  const dilated = dilateMask(skeleton, width, height, (tubeWidthPx * supersample) / 2);
 
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
-  const imageData = ctx.createImageData(width, height);
+  const bigCanvas = document.createElement("canvas");
+  bigCanvas.width = width;
+  bigCanvas.height = height;
+  const bigCtx = bigCanvas.getContext("2d")!;
+  const imageData = bigCtx.createImageData(width, height);
   for (let i = 0; i < width * height; i++) {
     if (dilated[i]) {
       imageData.data[i * 4] = 255;
@@ -283,7 +299,19 @@ function buildTextTubeStencil(content: string, fontFamily: string, fontSizePx: n
       imageData.data[i * 4 + 3] = 255;
     }
   }
-  ctx.putImageData(imageData, 0, 0);
+  bigCtx.putImageData(imageData, 0, 0);
+
+  if (supersample === 1) return bigCanvas;
+
+  // Sous-échantillonnage lissé vers la résolution finale : adoucit les
+  // marches d'escalier du masque suréchantillonné en un tube au trait net.
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(width / supersample);
+  canvas.height = Math.round(height / supersample);
+  const ctx = canvas.getContext("2d")!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bigCanvas, 0, 0, width, height, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
@@ -311,6 +339,7 @@ export function ConfiguratorWorkspace({
   const palette = initialColors.length > 0 ? initialColors.map((c) => ({ name: c.name, value: c.hex })) : NEON_COLORS;
 
   const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [imageScale, setImageScale] = useState(1);
   const [elements, setElements] = useState<CanvasElement[]>([]);
   const [history, setHistory] = useState<CanvasElement[][]>([[]]);
   const [historyIndex, setHistoryIndex] = useState(0);
@@ -398,7 +427,7 @@ export function ConfiguratorWorkspace({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const imgRatio = Math.min((canvas.width - 40) / img.width, (canvas.height - 40) / img.height);
+    const imgRatio = Math.min((canvas.width - 40) / img.width, (canvas.height - 40) / img.height) * imageScale;
     const imgWidth = Math.floor(img.width * imgRatio);
     const imgHeight = Math.floor(img.height * imgRatio);
     const imgX = Math.floor((canvas.width - imgWidth) / 2);
@@ -414,34 +443,23 @@ export function ConfiguratorWorkspace({
     const imageData = ctx.getImageData(0, 0, imgWidth, imgHeight);
     const data = imageData.data;
 
-    const gray = new Uint8Array(imgWidth * imgHeight);
+    // Masque binaire "encre" (pixel sombre = trait) plutôt qu'un contour de
+    // gradient (Sobel) — un contour marque les DEUX bords de chaque trait,
+    // ce qui produisait deux lignes parallèles au lieu d'une seule. Le
+    // squelette (même algorithme que pour le texte, voir zhangSuenThinning
+    // plus haut) réduit chaque trait à sa ligne centrale unique.
+    const binary = new Uint8Array(imgWidth * imgHeight);
     for (let i = 0; i < data.length; i += 4) {
-      const avg = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-      gray[i / 4] = avg;
+      const luminance = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+      binary[i / 4] = luminance < edgeThreshold ? 1 : 0;
     }
 
+    const skeleton = zhangSuenThinning(binary, imgWidth, imgHeight);
+
     const edges: Point[] = [];
-    for (let y = 1; y < imgHeight - 1; y++) {
-      for (let x = 1; x < imgWidth - 1; x++) {
-        const idx = y * imgWidth + x;
-        const gx =
-          -gray[idx - imgWidth - 1] +
-          gray[idx - imgWidth + 1] +
-          -2 * gray[idx - 1] +
-          2 * gray[idx + 1] +
-          -gray[idx + imgWidth - 1] +
-          gray[idx + imgWidth + 1];
-        const gy =
-          -gray[idx - imgWidth - 1] -
-          2 * gray[idx - imgWidth] -
-          gray[idx - imgWidth + 1] +
-          gray[idx + imgWidth - 1] +
-          2 * gray[idx + imgWidth] +
-          gray[idx + imgWidth + 1];
-        const magnitude = Math.sqrt(gx * gx + gy * gy);
-        if (magnitude > edgeThreshold) {
-          edges.push({ x: x + imgX, y: y + imgY });
-        }
+    for (let y = 0; y < imgHeight; y++) {
+      for (let x = 0; x < imgWidth; x++) {
+        if (skeleton[y * imgWidth + x]) edges.push({ x: x + imgX, y: y + imgY });
       }
     }
 
@@ -562,7 +580,8 @@ export function ConfiguratorWorkspace({
   // re-dérive lui-même ce surcoût des éléments, jamais du prix envoyé.
   const hasBlinkElements = elements.some((el) => el.blink);
   const controllerSurcharge = hasBlinkElements ? pricingSettings.controllerOptionPrice : 0;
-  const supportSurcharge = pricingSettings.supportPrices[support];
+  const supportSurfaceCm2 = canvasWidth * canvasHeight;
+  const supportSurcharge = Math.round(supportSurfaceCm2 * pricingSettings.supportPricePerCm2[support]);
   const estimatedPrice = Math.round(totalLength * pricingSettings.pricePerCmOfTube) + controllerSurcharge + supportSurcharge;
 
   function handleSnapDistanceChange(value: number) {
@@ -670,7 +689,14 @@ export function ConfiguratorWorkspace({
     // chargement explicite, ctx.font utilise la police de secours tant
     // qu'aucun autre repaint n'est déclenché après le chargement réel.
     Promise.all(NEON_FONTS.map((font) => document.fonts.load(`32px "${NEON_FONT_FAMILIES[font.id]}"`)))
-      .then(() => drawCanvas())
+      .then(() => {
+        // Un texte rendu avant que sa police ne finisse de charger a été
+        // tracé (et mis en cache) avec la police de secours du navigateur —
+        // vider le cache force à reconstruire le tube néon avec la vraie
+        // police une fois celle-ci disponible.
+        textTubeCacheRef.current.clear();
+        drawCanvas();
+      })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -678,7 +704,7 @@ export function ConfiguratorWorkspace({
   useEffect(() => {
     drawCanvas();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [image, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart, previewMode, blinkPhase]);
+  }, [image, imageScale, elements, canvasWidth, canvasHeight, selectedId, currentDrawPoints, showEdges, edgePoints, currentSnapPoint, lineStart, previewMode, blinkPhase]);
 
   function getObjectBounds(el: CanvasElement) {
     if (el.type === "draw") {
@@ -766,7 +792,7 @@ export function ConfiguratorWorkspace({
     }
 
     if (image) {
-      const imgRatio = Math.min((canvas.width - 40) / image.width, (canvas.height - 40) / image.height);
+      const imgRatio = Math.min((canvas.width - 40) / image.width, (canvas.height - 40) / image.height) * imageScale;
       const imgWidth = image.width * imgRatio;
       const imgHeight = image.height * imgRatio;
       const imgX = (canvas.width - imgWidth) / 2;
@@ -1296,11 +1322,26 @@ export function ConfiguratorWorkspace({
       const img = new Image();
       img.src = reader.result as string;
       img.onload = () => {
+        setImageScale(1);
         setImage(img);
         detectEdges(img);
       };
     };
     reader.readAsDataURL(file);
+  }
+
+  function handleImageScaleChange(scale: number) {
+    setImageScale(scale);
+    if (image) detectEdges(image);
+  }
+
+  function handleRemoveImage() {
+    setImage(null);
+    setImageScale(1);
+    setEdgePoints([]);
+    setSpatialGrid(new Map());
+    setShowEdges(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleDimensionChange(dimension: "width" | "height", value: number) {
@@ -1505,6 +1546,23 @@ export function ConfiguratorWorkspace({
               <Zap size={20} />
               {t("snapPanel.title")}
             </h3>
+            <div className="mb-4 flex flex-wrap items-end gap-4 border-b border-amber-500/20 pb-4">
+              <div className="min-w-48 flex-1">
+                <label className="mb-1 block text-sm text-muted-foreground">{t("snapPanel.imageScale", { value: Math.round(imageScale * 100) })}</label>
+                <input
+                  type="range"
+                  min="30"
+                  max="250"
+                  value={Math.round(imageScale * 100)}
+                  onChange={(e) => handleImageScaleChange(parseInt(e.target.value) / 100)}
+                  className="h-2 w-full cursor-pointer rounded-lg bg-muted accent-amber-500"
+                />
+              </div>
+              <Button onClick={handleRemoveImage} variant="outline" size="sm">
+                <Trash2 size={18} />
+                {t("snapPanel.removeImage")}
+              </Button>
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm text-muted-foreground">{t("snapPanel.sensitivity", { value: edgeThreshold })}</label>
@@ -1751,7 +1809,7 @@ export function ConfiguratorWorkspace({
                 </SelectTrigger>
                 <SelectContent>
                   {SUPPORT_TYPES.map((type) => {
-                    const surcharge = pricingSettings.supportPrices[type];
+                    const surcharge = Math.round(supportSurfaceCm2 * pricingSettings.supportPricePerCm2[type]);
                     return (
                       <SelectItem key={type} value={type}>
                         {t(`price.support.${type}`)}
@@ -1780,9 +1838,7 @@ export function ConfiguratorWorkspace({
                 {t("price.controller", { price: pricingSettings.controllerOptionPrice.toLocaleString(), currency: tCommon("currency") })}
               </p>
             )}
-            <p className="mb-4 text-center text-sm text-muted-foreground">
-              {t("price.footnote", { price: pricingSettings.pricePerCmOfTube, currency: tCommon("currency") })}
-            </p>
+            <p className="mb-4 text-center text-sm text-muted-foreground">{t("price.footnote")}</p>
 
             <div className="text-center">
               <Button onClick={handleContinueToQuote} disabled={submitting} size="lg" className="glow-primary px-12 py-6 text-xl font-bold">

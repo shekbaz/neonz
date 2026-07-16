@@ -20,8 +20,8 @@ export interface PricingSettings {
   pricePerCmOfTube: number;
   /** Part du prix des articles personnalisés à régler avant le lancement en fabrication (0-1). */
   depositRate: number;
-  /** Supplément selon le support physique choisi (Forex ou Plexiglass). */
-  supportPrices: Record<SupportType, number>;
+  /** Prix au cm² de surface du support physique (largeur × hauteur du néon), selon Forex ou Plexiglass — un panneau plus grand coûte plus de matière. */
+  supportPricePerCm2: Record<SupportType, number>;
   /** Supplément télécommande/variateur. */
   remoteOptionPrice: number;
   /** Supplément contrôleur multi-zone, requis dès qu'un élément clignote. */
@@ -33,9 +33,9 @@ export const DEFAULT_PRICING_SETTINGS: PricingSettings = {
   currency: "DZD",
   pricePerCmOfTube: 180,
   depositRate: 0.3,
-  supportPrices: {
-    forex: 0, // panneau PVC expansé, léger et économique
-    plexiglass: 1200, // panneau acrylique transparent, plus résistant et plus qualitatif
+  supportPricePerCm2: {
+    forex: 4, // panneau PVC expansé, léger et économique
+    plexiglass: 7, // panneau acrylique transparent, plus résistant et plus qualitatif
   },
   remoteOptionPrice: 1800,
   controllerOptionPrice: 2500,
@@ -43,7 +43,6 @@ export const DEFAULT_PRICING_SETTINGS: PricingSettings = {
 
 /** Conservé pour compatibilité : ancien export utilisé par endroits, équivalent à DEFAULT_PRICING_SETTINGS. */
 export const PRICING_CONFIG = DEFAULT_PRICING_SETTINGS;
-export const SUPPORT_PRICE_MODIFIERS = DEFAULT_PRICING_SETTINGS.supportPrices;
 export const REMOTE_OPTION_PRICE = DEFAULT_PRICING_SETTINGS.remoteOptionPrice;
 export const CONTROLLER_OPTION_PRICE = DEFAULT_PRICING_SETTINGS.controllerOptionPrice;
 
@@ -86,10 +85,11 @@ export function calculateDesignPrice(
 
 export function applyFinalOptions(
   breakdown: DesignPriceBreakdown,
-  options: { support: SupportType; hasRemote: boolean; hasController: boolean },
+  options: { support: SupportType; dimensions: { widthCm: number; heightCm: number }; hasRemote: boolean; hasController: boolean },
   settings: PricingSettings = DEFAULT_PRICING_SETTINGS
 ): DesignPriceBreakdown {
-  const supportPrice = settings.supportPrices[options.support];
+  const surfaceCm2 = options.dimensions.widthCm * options.dimensions.heightCm;
+  const supportPrice = Math.round(surfaceCm2 * settings.supportPricePerCm2[options.support]);
   const remotePrice = options.hasRemote ? settings.remoteOptionPrice : 0;
   const controllerPrice = options.hasController ? settings.controllerOptionPrice : 0;
   return {
