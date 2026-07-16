@@ -309,6 +309,60 @@
     "withdrawalHeading": "5. Rétractation",
     "withdrawalText": "Conformément à la réglementation applicable, le droit de rétractation ne s'applique pas aux produits personnalisés fabriqués sur mesure."
   },
+  "MentionsLegales": {
+    "title": "Mentions légales",
+    "publisherHeading": "1. Éditeur du site",
+    "publisherText": "Le présent site est édité par NEONZART, atelier de fabrication d'enseignes lumineuses néon LED. Pour toute question relative à l'identification légale de l'éditeur (forme juridique, numéro de registre de commerce, siège social), vous pouvez nous contacter via notre formulaire de contact.",
+    "directorHeading": "2. Directeur de la publication",
+    "directorText": "La direction de la publication du site est assurée par le responsable de NEONZART, joignable via le formulaire de contact.",
+    "hostingHeading": "3. Hébergement",
+    "hostingText": "Le site est hébergé par un prestataire d'hébergement cloud tiers (Render Services, Inc. — render.com). La base de données est hébergée par MongoDB Atlas.",
+    "ipHeading": "4. Propriété intellectuelle",
+    "ipText": "L'ensemble des éléments du site (textes, visuels, logo, charte graphique) est protégé par le droit de la propriété intellectuelle et reste la propriété de NEONZART, sauf mention contraire. Toute reproduction sans autorisation préalable est interdite.",
+    "liabilityHeading": "5. Limitation de responsabilité",
+    "liabilityText": "NEONZART s'efforce d'assurer l'exactitude des informations diffusées sur le site mais ne saurait être tenu responsable des erreurs, omissions ou indisponibilités temporaires du service."
+  },
+  "Confidentialite": {
+    "title": "Politique de confidentialité",
+    "collectHeading": "1. Données collectées",
+    "collectText": "Nous collectons les données que vous nous fournissez directement : nom, coordonnées (e-mail, téléphone), adresse de livraison, ainsi que le contenu des designs que vous créez dans l'atelier de personnalisation (texte, couleurs, dimensions, images de référence).",
+    "useHeading": "2. Utilisation des données",
+    "useText": "Ces données sont utilisées pour traiter vos commandes, assurer le suivi client, répondre à vos demandes de contact et améliorer nos services. Elles ne sont jamais utilisées à des fins de prospection sans votre consentement.",
+    "shareHeading": "3. Partage des données",
+    "shareText": "Vos données ne sont ni vendues ni louées à des tiers. Elles peuvent être partagées avec nos prestataires strictement nécessaires à l'exécution de la commande (livraison, hébergement technique).",
+    "retentionHeading": "4. Durée de conservation",
+    "retentionText": "Vos données sont conservées le temps nécessaire au traitement de votre commande et au respect de nos obligations légales, puis supprimées ou anonymisées.",
+    "rightsHeading": "5. Vos droits",
+    "rightsText": "Vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles. Pour exercer ces droits, contactez-nous via notre formulaire de contact.",
+    "securityHeading": "6. Sécurité",
+    "securityText": "Nous mettons en œuvre des mesures techniques raisonnables (connexion chiffrée, accès restreint) pour protéger vos données contre tout accès non autorisé."
+  },
+  "Cgu": {
+    "title": "Conditions générales d'utilisation",
+    "purposeHeading": "1. Objet",
+    "purposeText": "Les présentes conditions générales d'utilisation régissent l'accès et l'utilisation du site NEONZART, indépendamment des conditions générales de vente applicables aux achats.",
+    "accessHeading": "2. Accès au site",
+    "accessText": "Le site est accessible gratuitement à tout utilisateur disposant d'un accès à internet. Certaines fonctionnalités (suivi de commande, historique) nécessitent la création d'un compte.",
+    "accountHeading": "3. Compte utilisateur",
+    "accountText": "L'utilisateur est responsable de la confidentialité de ses identifiants de connexion et de toute activité effectuée depuis son compte.",
+    "contentHeading": "4. Contenus déposés par l'utilisateur",
+    "contentText": "En utilisant l'atelier de personnalisation, vous garantissez détenir les droits nécessaires sur les textes, logos ou images que vous téléversez, et vous vous engagez à ne pas déposer de contenu illicite ou portant atteinte aux droits de tiers.",
+    "ipHeading": "5. Propriété intellectuelle",
+    "ipText": "Le site, sa structure et son contenu sont protégés par le droit de la propriété intellectuelle. Toute reproduction non autorisée est interdite.",
+    "changesHeading": "6. Modification des conditions",
+    "changesText": "NEONZART se réserve le droit de modifier les présentes conditions générales d'utilisation à tout moment. Les conditions applicables sont celles en vigueur au moment de la consultation du site."
+  },
+  "Cookies": {
+    "title": "Politique de cookies",
+    "whatHeading": "1. Qu'est-ce qu'un cookie ?",
+    "whatText": "Un cookie est un petit fichier texte déposé sur votre appareil lors de votre navigation, permettant de mémoriser certaines informations d'une visite à l'autre.",
+    "typesHeading": "2. Cookies utilisés",
+    "typesText": "Le site utilise uniquement des cookies essentiels au fonctionnement du service : maintien de la connexion à votre compte, mémorisation de votre langue et de votre préférence d'affichage (thème clair/sombre). Aucun cookie publicitaire ou de traçage tiers n'est utilisé.",
+    "purposeHeading": "3. Finalité",
+    "purposeText": "Ces cookies essentiels ne nécessitent pas de consentement préalable et ne peuvent pas être désactivés sans altérer le bon fonctionnement du site.",
+    "managementHeading": "4. Gestion des cookies",
+    "managementText": "Vous pouvez à tout moment configurer votre navigateur pour refuser les cookies, en gardant à l'esprit que certaines fonctionnalités du site (connexion à votre compte) pourraient alors ne plus fonctionner correctement."
+  },
   "Faq": {
     "title": "Questions fréquentes",
     "items": [
@@ -358,7 +412,12 @@
     "tagline": "Atelier d'enseignes lumineuses néon LED — prêtes à l'achat ou façonnées sur-mesure à partir de votre logo ou de votre texte.",
     "shopHeading": "Boutique",
     "helpHeading": "Aide",
+    "legalHeading": "Légal",
     "terms": "CGV",
+    "cgu": "CGU",
+    "privacy": "Confidentialité",
+    "cookies": "Cookies",
+    "legalNotice": "Mentions légales",
     "rights": "Tous droits réservés.",
     "tagline2": "Fabriqué à la main, allumé chez vous."
   },

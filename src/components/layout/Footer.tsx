@@ -13,7 +13,7 @@ export function Footer() {
           NEON<span className="tube">Z</span>ART
         </p>
 
-        <div className="mt-10 grid gap-10 md:grid-cols-3">
+        <div className="mt-10 grid gap-10 sm:grid-cols-2 md:grid-cols-4">
           <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
             {tFooter("tagline")}
           </p>
@@ -34,7 +34,18 @@ export function Footer() {
             </span>
             <Link href="/faq" className="text-muted-foreground transition-colors hover:text-foreground">{t("faq")}</Link>
             <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">{t("contact")}</Link>
+          </nav>
+
+          <nav className="flex flex-col items-start gap-2.5 text-sm">
+            <span className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <span className="tube-dash" aria-hidden />
+              {tFooter("legalHeading")}
+            </span>
             <Link href="/cgv" className="text-muted-foreground transition-colors hover:text-foreground">{tFooter("terms")}</Link>
+            <Link href="/cgu" className="text-muted-foreground transition-colors hover:text-foreground">{tFooter("cgu")}</Link>
+            <Link href="/confidentialite" className="text-muted-foreground transition-colors hover:text-foreground">{tFooter("privacy")}</Link>
+            <Link href="/cookies" className="text-muted-foreground transition-colors hover:text-foreground">{tFooter("cookies")}</Link>
+            <Link href="/mentions-legales" className="text-muted-foreground transition-colors hover:text-foreground">{tFooter("legalNotice")}</Link>
           </nav>
         </div>
 
