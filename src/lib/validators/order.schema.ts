@@ -25,6 +25,8 @@ export const orderCreateSchema = z.object({
   // est confirmé par téléphone dans tous les cas.
   contactName: z.string().min(2, "Nom requis"),
   contactPhone: z.string().min(8, "Numéro de téléphone invalide"),
+  /** Message libre du client (précisions sur la commande), affiché à l'admin. */
+  customerNote: z.string().max(1000).optional(),
 });
 
 export const orderStatusUpdateSchema = z.object({

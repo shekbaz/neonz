@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
     user: session?.user?.id,
     contactName: parsed.data.contactName,
     contactPhone: parsed.data.contactPhone,
+    customerNote: parsed.data.customerNote || undefined,
     items,
     shippingAddress: parsed.data.shippingAddress,
     payment: { status: "unpaid", depositRequired, depositReceived: false },

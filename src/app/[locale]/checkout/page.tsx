@@ -8,6 +8,7 @@ import { CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Link } from "@/i18n/navigation";
 import { calculateDeposit } from "@/lib/neon/pricing";
 import { toast } from "sonner";
@@ -34,6 +35,7 @@ export default function CheckoutPage() {
 
   const [contact, setContact] = useState({ name: "", phone: "" });
   const [address, setAddress] = useState({ city: "", wilaya: "" });
+  const [customerNote, setCustomerNote] = useState("");
 
   useEffect(() => {
     if (session?.user?.name) {
@@ -65,6 +67,7 @@ export default function CheckoutPage() {
           shippingAddress: { ...address, country: "Algérie" },
           contactName: contact.name,
           contactPhone: contact.phone,
+          customerNote: customerNote.trim() || undefined,
         }),
       });
 
@@ -158,6 +161,7 @@ export default function CheckoutPage() {
                 currency: tCommon("currency"),
               })}
             </p>
+            <p className="mt-2 text-muted-foreground">{t("estimatedPriceNotice")}</p>
           </div>
         ) : (
           <div className="rounded-xl border border-border bg-muted/50 p-4 text-sm text-muted-foreground">
@@ -191,6 +195,18 @@ export default function CheckoutPage() {
               <Input id="wilaya" required value={address.wilaya} onChange={(e) => setAddress({ ...address, wilaya: e.target.value })} />
             </div>
           </div>
+        </div>
+
+        <div>
+          <Label htmlFor="customer-note">{t("noteLabel")}</Label>
+          <Textarea
+            id="customer-note"
+            value={customerNote}
+            maxLength={1000}
+            rows={4}
+            placeholder={t("notePlaceholder")}
+            onChange={(e) => setCustomerNote(e.target.value)}
+          />
         </div>
 
         <div className="flex items-center justify-between border-t border-border pt-6">

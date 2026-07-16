@@ -74,6 +74,9 @@
     "depositNoticeTitle": "Deposit required before production",
     "depositNotice": "A deposit of {deposit} {currency} (30%) is due before production starts. The remaining {balance} {currency} is paid on delivery. Our team will call you to arrange the deposit.",
     "submitOrder": "Place my order",
+    "estimatedPriceNotice": "The displayed price is an estimate, not final: our team confirms it with you when validating the order.",
+    "noteLabel": "Message (optional)",
+    "notePlaceholder": "Details about your order: planned location, constraints, questions...",
     "errorSubmit": "Error sending the order.",
     "errorGeneric": "Something went wrong."
   },
@@ -174,6 +177,7 @@
       "supportLabel": "Backing: {support}",
       "withRemote": "With remote",
       "downloadImage": "Download image",
+      "customerNote": "Customer message",
       "total": "Total",
       "paymentTitle": "Payment",
       "codInfo": "Cash on delivery (COD) — no deposit required.",
@@ -508,7 +512,7 @@
         "plexiglass": "Plexiglass (clear acrylic)"
       },
       "controller": "Multi-zone controller (blink): +{price} {currency}",
-      "footnote": "30% deposit due at order.",
+      "footnote": "Estimated price, not final: it will be confirmed by our team when validating your order. 30% deposit due at order.",
       "continue": "Continue to order"
     },
     "instructions": {

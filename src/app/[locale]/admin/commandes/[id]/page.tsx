@@ -52,6 +52,13 @@ export default async function AdminOrderDetailPage({
               {t("call", { phone: order.contactPhone })}
             </Button>
           </a>
+
+          {order.customerNote && (
+            <div className="mt-4 rounded-lg border border-border bg-muted/50 p-3">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("customerNote")}</p>
+              <p className="whitespace-pre-wrap text-muted-foreground">{order.customerNote}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

@@ -74,6 +74,9 @@
     "depositNoticeTitle": "عربون مطلوب قبل التصنيع",
     "depositNotice": "يجب دفع عربون قدره {deposit} {currency} (30%) قبل بدء التصنيع. يتم دفع الباقي وقدره {balance} {currency} عند التسليم. سيتصل بك فريقنا لتنظيم دفع العربون.",
     "submitOrder": "إرسال طلبي",
+    "estimatedPriceNotice": "السعر المعروض تقديري وغير نهائي: يؤكده فريقنا معك عند التحقق من الطلب.",
+    "noteLabel": "رسالة (اختيارية)",
+    "notePlaceholder": "تفاصيل حول طلبك: مكان التركيب المخطط له، قيود، أسئلة...",
     "errorSubmit": "خطأ أثناء إرسال الطلب.",
     "errorGeneric": "حدث خطأ ما."
   },
@@ -174,6 +177,7 @@
       "supportLabel": "القاعدة: {support}",
       "withRemote": "مع جهاز تحكم عن بعد",
       "downloadImage": "تحميل الصورة",
+      "customerNote": "رسالة العميل",
       "total": "المجموع",
       "paymentTitle": "الدفع",
       "codInfo": "الدفع عند الاستلام — لا حاجة لعربون.",
@@ -508,7 +512,7 @@
         "plexiglass": "Plexiglass (أكريليك شفاف)"
       },
       "controller": "وحدة تحكم متعددة المناطق (وميض): +{price} {currency}",
-      "footnote": "عربون 30% عند الطلب.",
+      "footnote": "سعر تقديري غير نهائي: سيؤكده فريقنا عند التحقق من طلبك. عربون 30% عند الطلب.",
       "continue": "المتابعة إلى الطلب"
     },
     "instructions": {

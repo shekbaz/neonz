@@ -35,6 +35,8 @@ const orderSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: "User" },
     contactName: { type: String, required: true },
     contactPhone: { type: String, required: true },
+    /** Message libre laissé par le client au checkout (optionnel), affiché sur la fiche commande admin. */
+    customerNote: { type: String },
     items: { type: [orderItemSchema], required: true, validate: (v: unknown[]) => v.length > 0 },
     status: {
       type: String,

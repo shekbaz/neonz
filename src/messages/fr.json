@@ -74,6 +74,9 @@
     "depositNoticeTitle": "Acompte requis avant fabrication",
     "depositNotice": "Un acompte de {deposit} {currency} (30%) est à régler avant le lancement en fabrication. Le solde de {balance} {currency} est réglé à la livraison. Notre équipe vous appelle pour organiser le versement.",
     "submitOrder": "Envoyer ma commande",
+    "estimatedPriceNotice": "Le prix affiché est une estimation, non définitive : notre équipe le confirme avec vous lors de la validation de la commande.",
+    "noteLabel": "Message (optionnel)",
+    "notePlaceholder": "Précisions sur votre commande : emplacement prévu, contraintes, questions...",
     "errorSubmit": "Erreur lors de l'envoi de la commande.",
     "errorGeneric": "Une erreur est survenue."
   },
@@ -174,6 +177,7 @@
       "supportLabel": "Support : {support}",
       "withRemote": "Avec télécommande",
       "downloadImage": "Télécharger l'image",
+      "customerNote": "Message du client",
       "total": "Total",
       "paymentTitle": "Paiement",
       "codInfo": "Paiement à la livraison (COD) — aucun acompte requis.",
@@ -508,7 +512,7 @@
         "plexiglass": "Plexiglass (acrylique transparent)"
       },
       "controller": "Contrôleur multi-zone (clignotement) : +{price} {currency}",
-      "footnote": "Acompte de 30% à la commande.",
+      "footnote": "Prix estimé, non définitif : il sera confirmé par notre équipe lors de la validation de votre commande. Acompte de 30% à la commande.",
       "continue": "Continuer vers la commande"
     },
     "instructions": {
