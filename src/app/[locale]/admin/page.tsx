@@ -5,6 +5,7 @@ import { Product } from "@/models/Product";
 import { User } from "@/models/User";
 import { RevenueChart } from "@/components/admin/RevenueChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 
 export default async function AdminDashboardPage() {
   const t = await getTranslations("Admin");
@@ -33,10 +34,10 @@ export default async function AdminDashboardPage() {
   ]);
 
   const stats = [
-    { label: t("revenue"), value: `${(totalRevenueAgg[0]?.total ?? 0).toLocaleString()} DZD` },
-    { label: t("orders"), value: orderCount },
-    { label: t("customers"), value: customerCount },
-    { label: t("products"), value: productCount },
+    { label: t("revenue"), value: `${(totalRevenueAgg[0]?.total ?? 0).toLocaleString()} DZD`, href: "/admin/statistiques" },
+    { label: t("orders"), value: orderCount, href: "/admin/commandes" },
+    { label: t("customers"), value: customerCount, href: "/admin/clients" },
+    { label: t("products"), value: productCount, href: "/admin/produits" },
   ];
 
   const chartData = revenueByMonth.map((r) => ({
@@ -51,14 +52,16 @@ export default async function AdminDashboardPage() {
 
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((s) => (
-          <Card key={s.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="font-display text-3xl font-bold tracking-[0.02em]">{s.value}</p>
-            </CardContent>
-          </Card>
+          <Link key={s.label} href={s.href}>
+            <Card className="transition-colors hover:border-primary/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{s.label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="font-display text-3xl font-bold tracking-[0.02em]">{s.value}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 

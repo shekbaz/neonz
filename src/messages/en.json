@@ -173,6 +173,7 @@
       "dimensionsLabel": "Dimensions: {width}cm x {height}cm",
       "supportLabel": "Backing: {support}",
       "withRemote": "With remote",
+      "downloadImage": "Download image",
       "total": "Total",
       "paymentTitle": "Payment",
       "codInfo": "Cash on delivery (COD) — no deposit required.",

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Phone } from "lucide-react";
+import { Phone, Download } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { connectDB } from "@/lib/db";
 import { Order } from "@/models/Order";
@@ -124,6 +124,12 @@ export default async function AdminOrderDetailPage({
                     {t("supportLabel", { support: item.snapshot.support })}
                     {item.snapshot.hasRemote ? ` — ${t("withRemote")}` : ""}
                   </p>
+                  <a href={item.snapshot.previewImageUrl} download={`neon-${order.orderNumber}-${i + 1}.png`}>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      {t("downloadImage")}
+                    </Button>
+                  </a>
                 </div>
               )}
             </div>

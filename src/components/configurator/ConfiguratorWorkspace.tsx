@@ -1480,15 +1480,11 @@ export function ConfiguratorWorkspace({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SUPPORT_TYPES.map((type) => {
-                  const surcharge = Math.round(supportSurfaceCm2 * pricingSettings.supportPricePerCm2[type]);
-                  return (
-                    <SelectItem key={type} value={type}>
-                      {t(`price.support.${type}`)}
-                      {surcharge > 0 ? ` (+${surcharge.toLocaleString()} ${tCommon("currency")})` : ""}
-                    </SelectItem>
-                  );
-                })}
+                {SUPPORT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {t(`price.support.${type}`)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

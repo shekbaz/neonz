@@ -173,6 +173,7 @@
       "dimensionsLabel": "Dimensions : {width}cm x {height}cm",
       "supportLabel": "Support : {support}",
       "withRemote": "Avec télécommande",
+      "downloadImage": "Télécharger l'image",
       "total": "Total",
       "paymentTitle": "Paiement",
       "codInfo": "Paiement à la livraison (COD) — aucun acompte requis.",
