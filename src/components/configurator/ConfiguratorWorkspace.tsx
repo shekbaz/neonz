@@ -439,14 +439,23 @@ export function ConfiguratorWorkspace({
     return grid;
   };
 
-  const detectEdges = (img: HTMLImageElement) => {
+  const detectEdges = (img: HTMLImageElement, opts?: { scale?: number; threshold?: number; canvasW?: number; canvasH?: number }) => {
+    // Les handlers qui viennent de modifier l'état (échelle, seuil,
+    // dimensions) doivent passer la valeur fraîche en option : setState est
+    // asynchrone, lire l'état ici utiliserait la valeur du rendu précédent
+    // et les points détectés ne suivraient plus l'image affichée.
+    const scale = opts?.scale ?? imageScale;
+    const threshold = opts?.threshold ?? edgeThreshold;
+    const cw = (opts?.canvasW ?? canvasWidth) * CM_TO_PX;
+    const ch = (opts?.canvasH ?? canvasHeight) * CM_TO_PX;
+
     // Coordonnées logiques (mêmes que le rendu de l'image dans drawCanvas),
     // indépendantes du backing store suréchantillonné.
-    const imgRatio = Math.min((widthPx - 40) / img.width, (heightPx - 40) / img.height) * imageScale;
+    const imgRatio = Math.min((cw - 40) / img.width, (ch - 40) / img.height) * scale;
     const imgWidth = Math.floor(img.width * imgRatio);
     const imgHeight = Math.floor(img.height * imgRatio);
-    const imgX = Math.floor((widthPx - imgWidth) / 2);
-    const imgY = Math.floor((heightPx - imgHeight) / 2);
+    const imgX = Math.floor((cw - imgWidth) / 2);
+    const imgY = Math.floor((ch - imgHeight) / 2);
 
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = imgWidth;
@@ -466,7 +475,7 @@ export function ConfiguratorWorkspace({
     const binary = new Uint8Array(imgWidth * imgHeight);
     for (let i = 0; i < data.length; i += 4) {
       const luminance = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-      binary[i / 4] = luminance < edgeThreshold ? 1 : 0;
+      binary[i / 4] = luminance < threshold ? 1 : 0;
     }
 
     const skeleton = zhangSuenThinning(binary, imgWidth, imgHeight);
@@ -547,12 +556,6 @@ export function ConfiguratorWorkspace({
       }
       return el;
     });
-  };
-
-  const scaleEdgePoints = (oldW: number, oldH: number, newW: number, newH: number): Point[] => {
-    const scaleX = (newW * CM_TO_PX) / (oldW * CM_TO_PX);
-    const scaleY = (newH * CM_TO_PX) / (oldH * CM_TO_PX);
-    return edgePoints.map((p) => ({ x: p.x * scaleX, y: p.y * scaleY }));
   };
 
   const saveToHistory = (newElements: CanvasElement[]) => {
@@ -1388,7 +1391,7 @@ export function ConfiguratorWorkspace({
       img.onload = () => {
         setImageScale(1);
         setImage(img);
-        detectEdges(img);
+        detectEdges(img, { scale: 1 });
       };
     };
     reader.readAsDataURL(file);
@@ -1396,7 +1399,7 @@ export function ConfiguratorWorkspace({
 
   function handleImageScaleChange(scale: number) {
     setImageScale(scale);
-    if (image) detectEdges(image);
+    if (image) detectEdges(image, { scale });
   }
 
   function handleRemoveImage() {
@@ -1425,10 +1428,11 @@ export function ConfiguratorWorkspace({
       saveToHistory(scaledElements);
     }
 
-    if (edgePoints.length > 0) {
-      const scaledEdges = scaleEdgePoints(oldWidth, oldHeight, newDimensions.width, newDimensions.height);
-      setEdgePoints(scaledEdges);
-      setSpatialGrid(buildSpatialGrid(scaledEdges, snapDistance));
+    // Re-détecter plutôt qu'étirer les points : l'image, elle, reste centrée
+    // avec son ratio d'aspect préservé, un simple étirement linéaire des
+    // points les décalerait du tracé.
+    if (image) {
+      detectEdges(image, { canvasW: newDimensions.width, canvasH: newDimensions.height });
     }
 
     setCanvasWidth(newDimensions.width);
@@ -1652,8 +1656,9 @@ export function ConfiguratorWorkspace({
                   max="150"
                   value={edgeThreshold}
                   onChange={(e) => {
-                    setEdgeThreshold(parseInt(e.target.value));
-                    if (image) detectEdges(image);
+                    const threshold = parseInt(e.target.value);
+                    setEdgeThreshold(threshold);
+                    if (image) detectEdges(image, { threshold });
                   }}
                   className="h-2 w-full cursor-pointer rounded-lg bg-muted accent-amber-500"
                 />
