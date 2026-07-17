@@ -9,7 +9,7 @@ export function Footer() {
     /* La vitrine reste allumée toute la journée : le pied de page vit en mode nuit. */
     <footer className="dark border-t border-border bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-4 pb-10 pt-16 sm:px-6">
-        <p dir="ltr" className="brand-mark font-display text-6xl font-bold leading-none tracking-[0.06em] sm:text-8xl">
+        <p dir="ltr" className="brand-mark font-display text-6xl font-bold leading-none tracking-[0.03em] sm:text-8xl">
           NEON<span className="tube">Z</span>ART
         </p>
 
